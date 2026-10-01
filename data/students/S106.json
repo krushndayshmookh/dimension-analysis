@@ -1,0 +1,74 @@
+{
+  "id": "S106",
+  "name": "Fiona Gallagher",
+  "exams": [
+    {
+      "examId": "exam-1790802798322",
+      "courseName": "CS101 - Algorithms & Data Structures",
+      "examTitle": "Midterm Exam 2026",
+      "examDate": "2026-09-30",
+      "earned": 60.5,
+      "totalExam": 100,
+      "totalAttempted": 94,
+      "masteryPct": 60.5,
+      "accuracyPct": 64.4,
+      "dimensions": {
+        "Recall": {
+          "earned": 8,
+          "availableExam": 10,
+          "availableAttempted": 10,
+          "available": 10,
+          "attempted": 10,
+          "masteryPct": 80,
+          "pct": 80,
+          "accuracyPct": 80,
+          "accuracy": 80
+        },
+        "Comprehend": {
+          "earned": 11.5,
+          "availableExam": 16,
+          "availableAttempted": 16,
+          "available": 16,
+          "attempted": 16,
+          "masteryPct": 71.9,
+          "pct": 71.9,
+          "accuracyPct": 71.9,
+          "accuracy": 71.9
+        },
+        "Solve": {
+          "earned": 14.5,
+          "availableExam": 23,
+          "availableAttempted": 23,
+          "available": 23,
+          "attempted": 23,
+          "masteryPct": 63,
+          "pct": 63,
+          "accuracyPct": 63,
+          "accuracy": 63
+        },
+        "Build": {
+          "earned": 15.5,
+          "availableExam": 24,
+          "availableAttempted": 24,
+          "available": 24,
+          "attempted": 24,
+          "masteryPct": 64.6,
+          "pct": 64.6,
+          "accuracyPct": 64.6,
+          "accuracy": 64.6
+        },
+        "Evaluate": {
+          "earned": 11,
+          "availableExam": 27,
+          "availableAttempted": 21,
+          "available": 27,
+          "attempted": 21,
+          "masteryPct": 40.7,
+          "pct": 40.7,
+          "accuracyPct": 52.4,
+          "accuracy": 52.4
+        }
+      }
+    }
+  ]
+}

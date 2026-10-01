@@ -1,0 +1,5069 @@
+{
+  "id": "exam-1790802798322",
+  "courseName": "CS101 - Algorithms & Data Structures",
+  "examTitle": "Midterm Exam 2026",
+  "examDate": "2026-09-30",
+  "studentCount": 12,
+  "questionCount": 20,
+  "createdAt": "2026-09-30T21:13:18.352Z",
+  "questions": [
+    {
+      "id": "Q01",
+      "type": "MCQ",
+      "difficulty": "beginner",
+      "dimensions": [
+        "Recall"
+      ],
+      "dimension": "Recall",
+      "dimensionMarks": {
+        "Recall": 2
+      },
+      "topics": [
+        "Data Structures"
+      ],
+      "topic": "Data Structures",
+      "marks": 2
+    },
+    {
+      "id": "Q02",
+      "type": "MCQ",
+      "difficulty": "beginner",
+      "dimensions": [
+        "Recall"
+      ],
+      "dimension": "Recall",
+      "dimensionMarks": {
+        "Recall": 2
+      },
+      "topics": [
+        "Networking"
+      ],
+      "topic": "Networking",
+      "marks": 2
+    },
+    {
+      "id": "Q03",
+      "type": "Code",
+      "difficulty": "easy",
+      "dimensions": [
+        "Comprehend"
+      ],
+      "dimension": "Comprehend",
+      "dimensionMarks": {
+        "Comprehend": 4
+      },
+      "topics": [
+        "Algorithms"
+      ],
+      "topic": "Algorithms",
+      "marks": 4
+    },
+    {
+      "id": "Q04",
+      "type": "Code",
+      "difficulty": "medium",
+      "dimensions": [
+        "Recall",
+        "Comprehend"
+      ],
+      "dimension": "Recall, Comprehend",
+      "dimensionMarks": {
+        "Recall": 3,
+        "Comprehend": 3
+      },
+      "topics": [
+        "Data Structures"
+      ],
+      "topic": "Data Structures",
+      "marks": 6
+    },
+    {
+      "id": "Q05",
+      "type": "MCQ",
+      "difficulty": "beginner",
+      "dimensions": [
+        "Recall"
+      ],
+      "dimension": "Recall",
+      "dimensionMarks": {
+        "Recall": 3
+      },
+      "topics": [
+        "System Design"
+      ],
+      "topic": "System Design",
+      "marks": 3
+    },
+    {
+      "id": "Q06",
+      "type": "MCQ",
+      "difficulty": "easy",
+      "dimensions": [
+        "Comprehend"
+      ],
+      "dimension": "Comprehend",
+      "dimensionMarks": {
+        "Comprehend": 3
+      },
+      "topics": [
+        "Networking"
+      ],
+      "topic": "Networking",
+      "marks": 3
+    },
+    {
+      "id": "Q07",
+      "type": "Code",
+      "difficulty": "medium",
+      "dimensions": [
+        "Solve"
+      ],
+      "dimension": "Solve",
+      "dimensionMarks": {
+        "Solve": 5
+      },
+      "topics": [
+        "Algorithms"
+      ],
+      "topic": "Algorithms",
+      "marks": 5
+    },
+    {
+      "id": "Q08",
+      "type": "Code",
+      "difficulty": "hard",
+      "dimensions": [
+        "Comprehend",
+        "Solve"
+      ],
+      "dimension": "Comprehend, Solve",
+      "dimensionMarks": {
+        "Comprehend": 3,
+        "Solve": 3
+      },
+      "topics": [
+        "Data Structures"
+      ],
+      "topic": "Data Structures",
+      "marks": 6
+    },
+    {
+      "id": "Q09",
+      "type": "MCQ",
+      "difficulty": "beginner",
+      "dimensions": [
+        "Comprehend"
+      ],
+      "dimension": "Comprehend",
+      "dimensionMarks": {
+        "Comprehend": 3
+      },
+      "topics": [
+        "System Design"
+      ],
+      "topic": "System Design",
+      "marks": 3
+    },
+    {
+      "id": "Q10",
+      "type": "MCQ",
+      "difficulty": "easy",
+      "dimensions": [
+        "Solve"
+      ],
+      "dimension": "Solve",
+      "dimensionMarks": {
+        "Solve": 4
+      },
+      "topics": [
+        "Networking"
+      ],
+      "topic": "Networking",
+      "marks": 4
+    },
+    {
+      "id": "Q11",
+      "type": "Code",
+      "difficulty": "medium",
+      "dimensions": [
+        "Solve"
+      ],
+      "dimension": "Solve",
+      "dimensionMarks": {
+        "Solve": 5
+      },
+      "topics": [
+        "Algorithms"
+      ],
+      "topic": "Algorithms",
+      "marks": 5
+    },
+    {
+      "id": "Q12",
+      "type": "Code",
+      "difficulty": "hard",
+      "dimensions": [
+        "Solve",
+        "Build"
+      ],
+      "dimension": "Solve, Build",
+      "dimensionMarks": {
+        "Solve": 3,
+        "Build": 3
+      },
+      "topics": [
+        "Data Structures"
+      ],
+      "topic": "Data Structures",
+      "marks": 6
+    },
+    {
+      "id": "Q13",
+      "type": "MCQ",
+      "difficulty": "easy",
+      "dimensions": [
+        "Build"
+      ],
+      "dimension": "Build",
+      "dimensionMarks": {
+        "Build": 4
+      },
+      "topics": [
+        "Networking"
+      ],
+      "topic": "Networking",
+      "marks": 4
+    },
+    {
+      "id": "Q14",
+      "type": "Design",
+      "difficulty": "medium",
+      "dimensions": [
+        "Build"
+      ],
+      "dimension": "Build",
+      "dimensionMarks": {
+        "Build": 6
+      },
+      "topics": [
+        "System Design"
+      ],
+      "topic": "System Design",
+      "marks": 6
+    },
+    {
+      "id": "Q15",
+      "type": "Code",
+      "difficulty": "hard",
+      "dimensions": [
+        "Build"
+      ],
+      "dimension": "Build",
+      "dimensionMarks": {
+        "Build": 7
+      },
+      "topics": [
+        "Algorithms"
+      ],
+      "topic": "Algorithms",
+      "marks": 7
+    },
+    {
+      "id": "Q16",
+      "type": "Design",
+      "difficulty": "challenge",
+      "dimensions": [
+        "Build",
+        "Evaluate"
+      ],
+      "dimension": "Build, Evaluate",
+      "dimensionMarks": {
+        "Build": 4,
+        "Evaluate": 4
+      },
+      "topics": [
+        "System Design"
+      ],
+      "topic": "System Design",
+      "marks": 8
+    },
+    {
+      "id": "Q17",
+      "type": "Design",
+      "difficulty": "hard",
+      "dimensions": [
+        "Evaluate"
+      ],
+      "dimension": "Evaluate",
+      "dimensionMarks": {
+        "Evaluate": 6
+      },
+      "topics": [
+        "Networking"
+      ],
+      "topic": "Networking",
+      "marks": 6
+    },
+    {
+      "id": "Q18",
+      "type": "Code",
+      "difficulty": "challenge",
+      "dimensions": [
+        "Evaluate"
+      ],
+      "dimension": "Evaluate",
+      "dimensionMarks": {
+        "Evaluate": 8
+      },
+      "topics": [
+        "Algorithms"
+      ],
+      "topic": "Algorithms",
+      "marks": 8
+    },
+    {
+      "id": "Q19",
+      "type": "Design",
+      "difficulty": "challenge",
+      "dimensions": [
+        "Evaluate"
+      ],
+      "dimension": "Evaluate",
+      "dimensionMarks": {
+        "Evaluate": 6
+      },
+      "topics": [
+        "System Design"
+      ],
+      "topic": "System Design",
+      "marks": 6
+    },
+    {
+      "id": "Q20",
+      "type": "Design",
+      "difficulty": "challenge",
+      "dimensions": [
+        "Solve",
+        "Evaluate"
+      ],
+      "dimension": "Solve, Evaluate",
+      "dimensionMarks": {
+        "Solve": 3,
+        "Evaluate": 3
+      },
+      "topics": [
+        "Data Structures"
+      ],
+      "topic": "Data Structures",
+      "marks": 6
+    }
+  ],
+  "scores": {
+    "S101": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 4,
+      "Q04": 5.5,
+      "Q05": 3,
+      "Q06": 3,
+      "Q07": 5,
+      "Q08": 5,
+      "Q09": 3,
+      "Q10": 4,
+      "Q11": 5,
+      "Q12": 5.5,
+      "Q13": 4,
+      "Q14": 6,
+      "Q15": 7,
+      "Q16": 7,
+      "Q17": 6,
+      "Q18": 7.5,
+      "Q19": 5.5,
+      "Q20": 5.5
+    },
+    "S102": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 3.5,
+      "Q04": 4,
+      "Q05": 3,
+      "Q06": 2.5,
+      "Q07": 4,
+      "Q08": 4,
+      "Q09": 2,
+      "Q10": 3.5,
+      "Q11": 4,
+      "Q12": 4,
+      "Q13": 3,
+      "Q14": 4,
+      "Q15": 5,
+      "Q16": 4,
+      "Q17": 4,
+      "Q19": 3.5
+    },
+    "S103": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 4,
+      "Q04": 5,
+      "Q05": 2.5,
+      "Q06": 3,
+      "Q07": 4.5,
+      "Q08": 4,
+      "Q09": 3,
+      "Q10": 4,
+      "Q11": 4.5,
+      "Q12": 4.5,
+      "Q13": 3.5,
+      "Q14": 5,
+      "Q15": 6,
+      "Q16": 6,
+      "Q17": 5,
+      "Q18": 6,
+      "Q19": 4.5,
+      "Q20": 5
+    },
+    "S104": {
+      "Q01": 1.5,
+      "Q02": 1.5,
+      "Q03": 3.5,
+      "Q04": 3,
+      "Q05": 2,
+      "Q06": 2.5,
+      "Q07": 5,
+      "Q08": 4.5,
+      "Q09": 2,
+      "Q10": 4,
+      "Q11": 5,
+      "Q12": 5.5,
+      "Q13": 4,
+      "Q14": 5.5,
+      "Q15": 6.5,
+      "Q16": 5,
+      "Q17": 4,
+      "Q18": 5,
+      "Q19": 3,
+      "Q20": 4
+    },
+    "S105": {
+      "Q01": 1.5,
+      "Q02": 1.5,
+      "Q03": 2,
+      "Q04": 2.5,
+      "Q05": 1.5,
+      "Q06": 1.5,
+      "Q07": 2.5,
+      "Q08": 2,
+      "Q09": 1.5,
+      "Q10": 2,
+      "Q11": 2,
+      "Q12": 2,
+      "Q13": 2,
+      "Q14": 2.5,
+      "Q15": 3,
+      "Q17": 2
+    },
+    "S106": {
+      "Q01": 2,
+      "Q02": 1.5,
+      "Q03": 3,
+      "Q04": 4,
+      "Q05": 2.5,
+      "Q06": 2.5,
+      "Q07": 3.5,
+      "Q08": 3,
+      "Q09": 2.5,
+      "Q10": 3,
+      "Q11": 3.5,
+      "Q12": 3,
+      "Q13": 3.5,
+      "Q14": 4,
+      "Q15": 4.5,
+      "Q16": 4,
+      "Q17": 3.5,
+      "Q18": 4,
+      "Q20": 3
+    },
+    "S107": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 3.5,
+      "Q04": 4.5,
+      "Q05": 3,
+      "Q06": 3,
+      "Q07": 4,
+      "Q08": 3.5,
+      "Q09": 2.5,
+      "Q10": 3,
+      "Q11": 3.5,
+      "Q12": 3.5,
+      "Q13": 3,
+      "Q14": 3.5,
+      "Q17": 3.5,
+      "Q18": 4.5,
+      "Q19": 3
+    },
+    "S108": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 4,
+      "Q04": 5.5,
+      "Q05": 3,
+      "Q06": 3,
+      "Q07": 4.5,
+      "Q08": 5,
+      "Q09": 3,
+      "Q10": 4,
+      "Q11": 4.5,
+      "Q12": 5,
+      "Q13": 4,
+      "Q14": 5.5,
+      "Q15": 6,
+      "Q16": 7,
+      "Q17": 5.5,
+      "Q18": 7,
+      "Q19": 5,
+      "Q20": 5.5
+    },
+    "S109": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 3.5,
+      "Q04": 4,
+      "Q05": 2.5,
+      "Q06": 2.5,
+      "Q07": 4,
+      "Q08": 4.5,
+      "Q09": 3,
+      "Q10": 3.5,
+      "Q11": 4,
+      "Q12": 4,
+      "Q13": 3,
+      "Q14": 3,
+      "Q15": 4,
+      "Q16": 6.5,
+      "Q17": 5.5,
+      "Q18": 7.5,
+      "Q19": 5.5,
+      "Q20": 5
+    },
+    "S110": {
+      "Q01": 2,
+      "Q02": 1.5,
+      "Q03": 3,
+      "Q04": 4,
+      "Q05": 2,
+      "Q06": 2.5,
+      "Q07": 3.5,
+      "Q08": 3.5,
+      "Q09": 2.5,
+      "Q10": 3,
+      "Q11": 3.5,
+      "Q12": 3.5,
+      "Q13": 3,
+      "Q14": 4,
+      "Q15": 4.5,
+      "Q17": 3.5,
+      "Q19": 3.5,
+      "Q20": 3.5
+    },
+    "S111": {
+      "Q01": 2,
+      "Q02": 1.5,
+      "Q03": 4,
+      "Q04": 4.5,
+      "Q05": 2,
+      "Q06": 2,
+      "Q07": 4.5,
+      "Q08": 5,
+      "Q09": 2,
+      "Q10": 3.5,
+      "Q11": 5,
+      "Q12": 5,
+      "Q13": 3.5,
+      "Q14": 4,
+      "Q15": 6.5,
+      "Q16": 4.5,
+      "Q17": 3.5,
+      "Q18": 6.5,
+      "Q20": 4
+    },
+    "S112": {
+      "Q01": 2,
+      "Q02": 2,
+      "Q03": 4,
+      "Q04": 6,
+      "Q05": 3,
+      "Q06": 3,
+      "Q07": 5,
+      "Q08": 6,
+      "Q09": 3,
+      "Q10": 4,
+      "Q11": 5,
+      "Q12": 6,
+      "Q13": 4,
+      "Q14": 6,
+      "Q15": 7,
+      "Q16": 8,
+      "Q17": 5.5,
+      "Q18": 8,
+      "Q19": 5.5,
+      "Q20": 6
+    }
+  },
+  "studentInfo": {
+    "S101": {
+      "id": "S101",
+      "name": "Alice Chen"
+    },
+    "S102": {
+      "id": "S102",
+      "name": "Bob Martinez"
+    },
+    "S103": {
+      "id": "S103",
+      "name": "Charlie Kim"
+    },
+    "S104": {
+      "id": "S104",
+      "name": "Diana Prince"
+    },
+    "S105": {
+      "id": "S105",
+      "name": "Evan Wright"
+    },
+    "S106": {
+      "id": "S106",
+      "name": "Fiona Gallagher"
+    },
+    "S107": {
+      "id": "S107",
+      "name": "George Clark"
+    },
+    "S108": {
+      "id": "S108",
+      "name": "Hannah Abbott"
+    },
+    "S109": {
+      "id": "S109",
+      "name": "Ian Malcolm"
+    },
+    "S110": {
+      "id": "S110",
+      "name": "Julia Roberts"
+    },
+    "S111": {
+      "id": "S111",
+      "name": "Kevin Bacon"
+    },
+    "S112": {
+      "id": "S112",
+      "name": "Laura Croft"
+    }
+  },
+  "analysis": {
+    "students": [
+      {
+        "id": "S101",
+        "name": "Alice Chen",
+        "earned": 95.5,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 95.5,
+        "pct": 95.5,
+        "accuracyPct": 95.5,
+        "accuracy": 95.5,
+        "dimensions": {
+          "Recall": {
+            "earned": 9.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 97.5,
+            "pct": 97.5,
+            "accuracyPct": 97.5,
+            "accuracy": 97.5
+          },
+          "Comprehend": {
+            "earned": 15.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 95.3,
+            "pct": 95.3,
+            "accuracyPct": 95.3,
+            "accuracy": 95.3
+          },
+          "Solve": {
+            "earned": 22,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 95.7,
+            "pct": 95.7,
+            "accuracyPct": 95.7,
+            "accuracy": 95.7
+          },
+          "Build": {
+            "earned": 23.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 96.9,
+            "pct": 96.9,
+            "accuracyPct": 96.9,
+            "accuracy": 96.9
+          },
+          "Evaluate": {
+            "earned": 25.25,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 93.5,
+            "pct": 93.5,
+            "accuracyPct": 93.5,
+            "accuracy": 93.5
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 9.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 97.5,
+            "pct": 97.5,
+            "accuracyPct": 97.5,
+            "accuracy": 97.5
+          },
+          "Comprehend": {
+            "earned": 15.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 95.3,
+            "pct": 95.3,
+            "accuracyPct": 95.3,
+            "accuracy": 95.3
+          },
+          "Solve": {
+            "earned": 22,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 95.7,
+            "pct": 95.7,
+            "accuracyPct": 95.7,
+            "accuracy": 95.7
+          },
+          "Build": {
+            "earned": 23.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 96.9,
+            "pct": 96.9,
+            "accuracyPct": 96.9,
+            "accuracy": 96.9
+          },
+          "Evaluate": {
+            "earned": 25.25,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 93.5,
+            "pct": 93.5,
+            "accuracyPct": 93.5,
+            "accuracy": 93.5
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 21.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 97.7,
+            "pct": 97.7,
+            "accuracyPct": 97.7,
+            "accuracy": 97.7
+          },
+          "hard": {
+            "earned": 23.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 94,
+            "pct": 94,
+            "accuracyPct": 94,
+            "accuracy": 94
+          },
+          "challenge": {
+            "earned": 25.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 91.1,
+            "pct": 91.1,
+            "accuracyPct": 91.1,
+            "accuracy": 91.1
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 21.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 97.7,
+            "pct": 97.7,
+            "accuracyPct": 97.7,
+            "accuracy": 97.7
+          },
+          "hard": {
+            "earned": 23.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 94,
+            "pct": 94,
+            "accuracyPct": 94,
+            "accuracy": 94
+          },
+          "challenge": {
+            "earned": 25.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 91.1,
+            "pct": 91.1,
+            "accuracyPct": 91.1,
+            "accuracy": 91.1
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 28.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 98.3,
+            "pct": 98.3,
+            "accuracyPct": 98.3,
+            "accuracy": 98.3
+          },
+          "Data Structures": {
+            "earned": 23.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 90.4,
+            "pct": 90.4,
+            "accuracyPct": 90.4,
+            "accuracy": 90.4
+          },
+          "Networking": {
+            "earned": 19,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "System Design": {
+            "earned": 24.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 94.2,
+            "pct": 94.2,
+            "accuracyPct": 94.2,
+            "accuracy": 94.2
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 28.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 98.3,
+            "pct": 98.3,
+            "accuracyPct": 98.3,
+            "accuracy": 98.3
+          },
+          "Data Structures": {
+            "earned": 23.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 90.4,
+            "pct": 90.4,
+            "accuracyPct": 90.4,
+            "accuracy": 90.4
+          },
+          "Networking": {
+            "earned": 19,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "System Design": {
+            "earned": 24.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 94.2,
+            "pct": 94.2,
+            "accuracyPct": 94.2,
+            "accuracy": 94.2
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S102",
+        "name": "Bob Martinez",
+        "earned": 62,
+        "totalExam": 100,
+        "totalAttempted": 86,
+        "total": 100,
+        "attempted": 86,
+        "masteryPct": 62,
+        "pct": 62,
+        "accuracyPct": 72.1,
+        "accuracy": 72.1,
+        "dimensions": {
+          "Recall": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "Comprehend": {
+            "earned": 12,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Solve": {
+            "earned": 15.5,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 67.4,
+            "pct": 67.4,
+            "accuracyPct": 77.5,
+            "accuracy": 77.5
+          },
+          "Build": {
+            "earned": 16,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 66.7,
+            "pct": 66.7,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          },
+          "Evaluate": {
+            "earned": 9.5,
+            "availableExam": 27,
+            "availableAttempted": 16,
+            "available": 27,
+            "attempted": 16,
+            "masteryPct": 35.2,
+            "pct": 35.2,
+            "accuracyPct": 59.4,
+            "accuracy": 59.4
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "Comprehend": {
+            "earned": 12,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Solve": {
+            "earned": 15.5,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 67.4,
+            "pct": 67.4,
+            "accuracyPct": 77.5,
+            "accuracy": 77.5
+          },
+          "Build": {
+            "earned": 16,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 66.7,
+            "pct": 66.7,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          },
+          "Evaluate": {
+            "earned": 9.5,
+            "availableExam": 27,
+            "availableAttempted": 16,
+            "available": 27,
+            "attempted": 16,
+            "masteryPct": 35.2,
+            "pct": 35.2,
+            "accuracyPct": 59.4,
+            "accuracy": 59.4
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 16,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 72.7,
+            "pct": 72.7,
+            "accuracyPct": 72.7,
+            "accuracy": 72.7
+          },
+          "hard": {
+            "earned": 17,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 68,
+            "pct": 68,
+            "accuracyPct": 68,
+            "accuracy": 68
+          },
+          "challenge": {
+            "earned": 7.5,
+            "availableExam": 28,
+            "availableAttempted": 14,
+            "available": 28,
+            "attempted": 14,
+            "masteryPct": 26.8,
+            "pct": 26.8,
+            "accuracyPct": 53.6,
+            "accuracy": 53.6
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 16,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 72.7,
+            "pct": 72.7,
+            "accuracyPct": 72.7,
+            "accuracy": 72.7
+          },
+          "hard": {
+            "earned": 17,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 68,
+            "pct": 68,
+            "accuracyPct": 68,
+            "accuracy": 68
+          },
+          "challenge": {
+            "earned": 7.5,
+            "availableExam": 28,
+            "availableAttempted": 14,
+            "available": 28,
+            "attempted": 14,
+            "masteryPct": 26.8,
+            "pct": 26.8,
+            "accuracyPct": 53.6,
+            "accuracy": 53.6
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 16.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 56.9,
+            "pct": 56.9,
+            "accuracyPct": 78.6,
+            "accuracy": 78.6
+          },
+          "Data Structures": {
+            "earned": 14,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 53.8,
+            "pct": 53.8,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "Networking": {
+            "earned": 15,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 78.9,
+            "pct": 78.9,
+            "accuracyPct": 78.9,
+            "accuracy": 78.9
+          },
+          "System Design": {
+            "earned": 16.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 16.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 56.9,
+            "pct": 56.9,
+            "accuracyPct": 78.6,
+            "accuracy": 78.6
+          },
+          "Data Structures": {
+            "earned": 14,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 53.8,
+            "pct": 53.8,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "Networking": {
+            "earned": 15,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 78.9,
+            "pct": 78.9,
+            "accuracyPct": 78.9,
+            "accuracy": 78.9
+          },
+          "System Design": {
+            "earned": 16.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S103",
+        "name": "Charlie Kim",
+        "earned": 84,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 84,
+        "pct": 84,
+        "accuracyPct": 84,
+        "accuracy": 84,
+        "dimensions": {
+          "Recall": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "Comprehend": {
+            "earned": 14.5,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 90.6,
+            "pct": 90.6,
+            "accuracyPct": 90.6,
+            "accuracy": 90.6
+          },
+          "Solve": {
+            "earned": 19.75,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 85.9,
+            "pct": 85.9,
+            "accuracyPct": 85.9,
+            "accuracy": 85.9
+          },
+          "Build": {
+            "earned": 19.75,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 82.3,
+            "pct": 82.3,
+            "accuracyPct": 82.3,
+            "accuracy": 82.3
+          },
+          "Evaluate": {
+            "earned": 21,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 77.8,
+            "pct": 77.8,
+            "accuracyPct": 77.8,
+            "accuracy": 77.8
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 9,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 90,
+            "pct": 90,
+            "accuracyPct": 90,
+            "accuracy": 90
+          },
+          "Comprehend": {
+            "earned": 14.5,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 90.6,
+            "pct": 90.6,
+            "accuracyPct": 90.6,
+            "accuracy": 90.6
+          },
+          "Solve": {
+            "earned": 19.75,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 85.9,
+            "pct": 85.9,
+            "accuracyPct": 85.9,
+            "accuracy": 85.9
+          },
+          "Build": {
+            "earned": 19.75,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 82.3,
+            "pct": 82.3,
+            "accuracyPct": 82.3,
+            "accuracy": 82.3
+          },
+          "Evaluate": {
+            "earned": 21,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 77.8,
+            "pct": 77.8,
+            "accuracyPct": 77.8,
+            "accuracy": 77.8
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 14.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 96.7,
+            "pct": 96.7,
+            "accuracyPct": 96.7,
+            "accuracy": 96.7
+          },
+          "medium": {
+            "earned": 19,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 86.4,
+            "pct": 86.4,
+            "accuracyPct": 86.4,
+            "accuracy": 86.4
+          },
+          "hard": {
+            "earned": 19.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 78,
+            "pct": 78,
+            "accuracyPct": 78,
+            "accuracy": 78
+          },
+          "challenge": {
+            "earned": 21.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 76.8,
+            "pct": 76.8,
+            "accuracyPct": 76.8,
+            "accuracy": 76.8
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 14.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 96.7,
+            "pct": 96.7,
+            "accuracyPct": 96.7,
+            "accuracy": 96.7
+          },
+          "medium": {
+            "earned": 19,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 86.4,
+            "pct": 86.4,
+            "accuracyPct": 86.4,
+            "accuracy": 86.4
+          },
+          "hard": {
+            "earned": 19.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 78,
+            "pct": 78,
+            "accuracyPct": 78,
+            "accuracy": 78
+          },
+          "challenge": {
+            "earned": 21.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 76.8,
+            "pct": 76.8,
+            "accuracyPct": 76.8,
+            "accuracy": 76.8
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 25,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 86.2,
+            "pct": 86.2,
+            "accuracyPct": 86.2,
+            "accuracy": 86.2
+          },
+          "Data Structures": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          },
+          "Networking": {
+            "earned": 17.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 92.1,
+            "pct": 92.1,
+            "accuracyPct": 92.1,
+            "accuracy": 92.1
+          },
+          "System Design": {
+            "earned": 21,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 80.8,
+            "pct": 80.8,
+            "accuracyPct": 80.8,
+            "accuracy": 80.8
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 25,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 86.2,
+            "pct": 86.2,
+            "accuracyPct": 86.2,
+            "accuracy": 86.2
+          },
+          "Data Structures": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          },
+          "Networking": {
+            "earned": 17.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 92.1,
+            "pct": 92.1,
+            "accuracyPct": 92.1,
+            "accuracy": 92.1
+          },
+          "System Design": {
+            "earned": 21,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 80.8,
+            "pct": 80.8,
+            "accuracyPct": 80.8,
+            "accuracy": 80.8
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Comprehend",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Comprehend"
+      },
+      {
+        "id": "S104",
+        "name": "Diana Prince",
+        "earned": 77,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 77,
+        "pct": 77,
+        "accuracyPct": 77,
+        "accuracy": 77,
+        "dimensions": {
+          "Recall": {
+            "earned": 6.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 65,
+            "pct": 65,
+            "accuracyPct": 65,
+            "accuracy": 65
+          },
+          "Comprehend": {
+            "earned": 11.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 73.4,
+            "pct": 73.4,
+            "accuracyPct": 73.4,
+            "accuracy": 73.4
+          },
+          "Solve": {
+            "earned": 21,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 91.3,
+            "pct": 91.3,
+            "accuracyPct": 91.3,
+            "accuracy": 91.3
+          },
+          "Build": {
+            "earned": 21.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 88.5,
+            "pct": 88.5,
+            "accuracyPct": 88.5,
+            "accuracy": 88.5
+          },
+          "Evaluate": {
+            "earned": 16.5,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 61.1,
+            "pct": 61.1,
+            "accuracyPct": 61.1,
+            "accuracy": 61.1
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 6.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 65,
+            "pct": 65,
+            "accuracyPct": 65,
+            "accuracy": 65
+          },
+          "Comprehend": {
+            "earned": 11.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 73.4,
+            "pct": 73.4,
+            "accuracyPct": 73.4,
+            "accuracy": 73.4
+          },
+          "Solve": {
+            "earned": 21,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 91.3,
+            "pct": 91.3,
+            "accuracyPct": 91.3,
+            "accuracy": 91.3
+          },
+          "Build": {
+            "earned": 21.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 88.5,
+            "pct": 88.5,
+            "accuracyPct": 88.5,
+            "accuracy": 88.5
+          },
+          "Evaluate": {
+            "earned": 16.5,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 61.1,
+            "pct": 61.1,
+            "accuracyPct": 61.1,
+            "accuracy": 61.1
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 7,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 70,
+            "pct": 70,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "easy": {
+            "earned": 14,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 93.3,
+            "pct": 93.3,
+            "accuracyPct": 93.3,
+            "accuracy": 93.3
+          },
+          "medium": {
+            "earned": 18.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 84.1,
+            "pct": 84.1,
+            "accuracyPct": 84.1,
+            "accuracy": 84.1
+          },
+          "hard": {
+            "earned": 20.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 82,
+            "pct": 82,
+            "accuracyPct": 82,
+            "accuracy": 82
+          },
+          "challenge": {
+            "earned": 17,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 60.7,
+            "pct": 60.7,
+            "accuracyPct": 60.7,
+            "accuracy": 60.7
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 7,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 70,
+            "pct": 70,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "easy": {
+            "earned": 14,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 93.3,
+            "pct": 93.3,
+            "accuracyPct": 93.3,
+            "accuracy": 93.3
+          },
+          "medium": {
+            "earned": 18.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 84.1,
+            "pct": 84.1,
+            "accuracyPct": 84.1,
+            "accuracy": 84.1
+          },
+          "hard": {
+            "earned": 20.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 82,
+            "pct": 82,
+            "accuracyPct": 82,
+            "accuracy": 82
+          },
+          "challenge": {
+            "earned": 17,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 60.7,
+            "pct": 60.7,
+            "accuracyPct": 60.7,
+            "accuracy": 60.7
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 25,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 86.2,
+            "pct": 86.2,
+            "accuracyPct": 86.2,
+            "accuracy": 86.2
+          },
+          "Data Structures": {
+            "earned": 18.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 71.2,
+            "pct": 71.2,
+            "accuracyPct": 71.2,
+            "accuracy": 71.2
+          },
+          "Networking": {
+            "earned": 16,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 84.2,
+            "pct": 84.2,
+            "accuracyPct": 84.2,
+            "accuracy": 84.2
+          },
+          "System Design": {
+            "earned": 17.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 67.3,
+            "pct": 67.3,
+            "accuracyPct": 67.3,
+            "accuracy": 67.3
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 25,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 86.2,
+            "pct": 86.2,
+            "accuracyPct": 86.2,
+            "accuracy": 86.2
+          },
+          "Data Structures": {
+            "earned": 18.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 71.2,
+            "pct": 71.2,
+            "accuracyPct": 71.2,
+            "accuracy": 71.2
+          },
+          "Networking": {
+            "earned": 16,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 84.2,
+            "pct": 84.2,
+            "accuracyPct": 84.2,
+            "accuracy": 84.2
+          },
+          "System Design": {
+            "earned": 17.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 67.3,
+            "pct": 67.3,
+            "accuracyPct": 67.3,
+            "accuracy": 67.3
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Solve",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Solve"
+      },
+      {
+        "id": "S105",
+        "name": "Evan Wright",
+        "earned": 32,
+        "totalExam": 100,
+        "totalAttempted": 72,
+        "total": 100,
+        "attempted": 72,
+        "masteryPct": 32,
+        "pct": 32,
+        "accuracyPct": 44.4,
+        "accuracy": 44.4,
+        "dimensions": {
+          "Recall": {
+            "earned": 5.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 57.5,
+            "pct": 57.5,
+            "accuracyPct": 57.5,
+            "accuracy": 57.5
+          },
+          "Comprehend": {
+            "earned": 7.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 45.3,
+            "pct": 45.3,
+            "accuracyPct": 45.3,
+            "accuracy": 45.3
+          },
+          "Solve": {
+            "earned": 8.5,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 37,
+            "pct": 37,
+            "accuracyPct": 42.5,
+            "accuracy": 42.5
+          },
+          "Build": {
+            "earned": 8.5,
+            "availableExam": 24,
+            "availableAttempted": 20,
+            "available": 24,
+            "attempted": 20,
+            "masteryPct": 35.4,
+            "pct": 35.4,
+            "accuracyPct": 42.5,
+            "accuracy": 42.5
+          },
+          "Evaluate": {
+            "earned": 2,
+            "availableExam": 27,
+            "availableAttempted": 6,
+            "available": 27,
+            "attempted": 6,
+            "masteryPct": 7.4,
+            "pct": 7.4,
+            "accuracyPct": 33.3,
+            "accuracy": 33.3
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 5.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 57.5,
+            "pct": 57.5,
+            "accuracyPct": 57.5,
+            "accuracy": 57.5
+          },
+          "Comprehend": {
+            "earned": 7.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 45.3,
+            "pct": 45.3,
+            "accuracyPct": 45.3,
+            "accuracy": 45.3
+          },
+          "Solve": {
+            "earned": 8.5,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 37,
+            "pct": 37,
+            "accuracyPct": 42.5,
+            "accuracy": 42.5
+          },
+          "Build": {
+            "earned": 8.5,
+            "availableExam": 24,
+            "availableAttempted": 20,
+            "available": 24,
+            "attempted": 20,
+            "masteryPct": 35.4,
+            "pct": 35.4,
+            "accuracyPct": 42.5,
+            "accuracy": 42.5
+          },
+          "Evaluate": {
+            "earned": 2,
+            "availableExam": 27,
+            "availableAttempted": 6,
+            "available": 27,
+            "attempted": 6,
+            "masteryPct": 7.4,
+            "pct": 7.4,
+            "accuracyPct": 33.3,
+            "accuracy": 33.3
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 6,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 60,
+            "pct": 60,
+            "accuracyPct": 60,
+            "accuracy": 60
+          },
+          "easy": {
+            "earned": 7.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 50,
+            "accuracy": 50
+          },
+          "medium": {
+            "earned": 9.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 43.2,
+            "pct": 43.2,
+            "accuracyPct": 43.2,
+            "accuracy": 43.2
+          },
+          "hard": {
+            "earned": 9,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 36,
+            "pct": 36,
+            "accuracyPct": 36,
+            "accuracy": 36
+          },
+          "challenge": {
+            "earned": 0,
+            "availableExam": 28,
+            "availableAttempted": 0,
+            "available": 28,
+            "attempted": 0,
+            "masteryPct": 0,
+            "pct": 0,
+            "accuracyPct": null,
+            "accuracy": null
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 6,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 60,
+            "pct": 60,
+            "accuracyPct": 60,
+            "accuracy": 60
+          },
+          "easy": {
+            "earned": 7.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 50,
+            "accuracy": 50
+          },
+          "medium": {
+            "earned": 9.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 43.2,
+            "pct": 43.2,
+            "accuracyPct": 43.2,
+            "accuracy": 43.2
+          },
+          "hard": {
+            "earned": 9,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 36,
+            "pct": 36,
+            "accuracyPct": 36,
+            "accuracy": 36
+          },
+          "challenge": {
+            "earned": 0,
+            "availableExam": 28,
+            "availableAttempted": 0,
+            "available": 28,
+            "attempted": 0,
+            "masteryPct": 0,
+            "pct": 0,
+            "accuracyPct": null,
+            "accuracy": null
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 9.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 32.8,
+            "pct": 32.8,
+            "accuracyPct": 45.2,
+            "accuracy": 45.2
+          },
+          "Data Structures": {
+            "earned": 8,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 30.8,
+            "pct": 30.8,
+            "accuracyPct": 40,
+            "accuracy": 40
+          },
+          "Networking": {
+            "earned": 9,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 47.4,
+            "pct": 47.4,
+            "accuracyPct": 47.4,
+            "accuracy": 47.4
+          },
+          "System Design": {
+            "earned": 5.5,
+            "availableExam": 26,
+            "availableAttempted": 12,
+            "available": 26,
+            "attempted": 12,
+            "masteryPct": 21.2,
+            "pct": 21.2,
+            "accuracyPct": 45.8,
+            "accuracy": 45.8
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 9.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 32.8,
+            "pct": 32.8,
+            "accuracyPct": 45.2,
+            "accuracy": 45.2
+          },
+          "Data Structures": {
+            "earned": 8,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 30.8,
+            "pct": 30.8,
+            "accuracyPct": 40,
+            "accuracy": 40
+          },
+          "Networking": {
+            "earned": 9,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 47.4,
+            "pct": 47.4,
+            "accuracyPct": 47.4,
+            "accuracy": 47.4
+          },
+          "System Design": {
+            "earned": 5.5,
+            "availableExam": 26,
+            "availableAttempted": 12,
+            "available": 26,
+            "attempted": 12,
+            "masteryPct": 21.2,
+            "pct": 21.2,
+            "accuracyPct": 45.8,
+            "accuracy": 45.8
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S106",
+        "name": "Fiona Gallagher",
+        "earned": 60.5,
+        "totalExam": 100,
+        "totalAttempted": 94,
+        "total": 100,
+        "attempted": 94,
+        "masteryPct": 60.5,
+        "pct": 60.5,
+        "accuracyPct": 64.4,
+        "accuracy": 64.4,
+        "dimensions": {
+          "Recall": {
+            "earned": 8,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "Comprehend": {
+            "earned": 11.5,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 71.9,
+            "pct": 71.9,
+            "accuracyPct": 71.9,
+            "accuracy": 71.9
+          },
+          "Solve": {
+            "earned": 14.5,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 63,
+            "pct": 63,
+            "accuracyPct": 63,
+            "accuracy": 63
+          },
+          "Build": {
+            "earned": 15.5,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 64.6,
+            "pct": 64.6,
+            "accuracyPct": 64.6,
+            "accuracy": 64.6
+          },
+          "Evaluate": {
+            "earned": 11,
+            "availableExam": 27,
+            "availableAttempted": 21,
+            "available": 27,
+            "attempted": 21,
+            "masteryPct": 40.7,
+            "pct": 40.7,
+            "accuracyPct": 52.4,
+            "accuracy": 52.4
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 8,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "Comprehend": {
+            "earned": 11.5,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 71.9,
+            "pct": 71.9,
+            "accuracyPct": 71.9,
+            "accuracy": 71.9
+          },
+          "Solve": {
+            "earned": 14.5,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 63,
+            "pct": 63,
+            "accuracyPct": 63,
+            "accuracy": 63
+          },
+          "Build": {
+            "earned": 15.5,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 64.6,
+            "pct": 64.6,
+            "accuracyPct": 64.6,
+            "accuracy": 64.6
+          },
+          "Evaluate": {
+            "earned": 11,
+            "availableExam": 27,
+            "availableAttempted": 21,
+            "available": 27,
+            "attempted": 21,
+            "masteryPct": 40.7,
+            "pct": 40.7,
+            "accuracyPct": 52.4,
+            "accuracy": 52.4
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 8.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 85,
+            "pct": 85,
+            "accuracyPct": 85,
+            "accuracy": 85
+          },
+          "easy": {
+            "earned": 12,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 14,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 56,
+            "pct": 56,
+            "accuracyPct": 56,
+            "accuracy": 56
+          },
+          "challenge": {
+            "earned": 11,
+            "availableExam": 28,
+            "availableAttempted": 22,
+            "available": 28,
+            "attempted": 22,
+            "masteryPct": 39.3,
+            "pct": 39.3,
+            "accuracyPct": 50,
+            "accuracy": 50
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 8.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 85,
+            "pct": 85,
+            "accuracyPct": 85,
+            "accuracy": 85
+          },
+          "easy": {
+            "earned": 12,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 14,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 56,
+            "pct": 56,
+            "accuracyPct": 56,
+            "accuracy": 56
+          },
+          "challenge": {
+            "earned": 11,
+            "availableExam": 28,
+            "availableAttempted": 22,
+            "available": 28,
+            "attempted": 22,
+            "masteryPct": 39.3,
+            "pct": 39.3,
+            "accuracyPct": 50,
+            "accuracy": 50
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 18.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 63.8,
+            "pct": 63.8,
+            "accuracyPct": 63.8,
+            "accuracy": 63.8
+          },
+          "Data Structures": {
+            "earned": 15,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 57.7,
+            "pct": 57.7,
+            "accuracyPct": 57.7,
+            "accuracy": 57.7
+          },
+          "Networking": {
+            "earned": 14,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 73.7,
+            "pct": 73.7,
+            "accuracyPct": 73.7,
+            "accuracy": 73.7
+          },
+          "System Design": {
+            "earned": 13,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 65,
+            "accuracy": 65
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 18.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 63.8,
+            "pct": 63.8,
+            "accuracyPct": 63.8,
+            "accuracy": 63.8
+          },
+          "Data Structures": {
+            "earned": 15,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 57.7,
+            "pct": 57.7,
+            "accuracyPct": 57.7,
+            "accuracy": 57.7
+          },
+          "Networking": {
+            "earned": 14,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 73.7,
+            "pct": 73.7,
+            "accuracyPct": 73.7,
+            "accuracy": 73.7
+          },
+          "System Design": {
+            "earned": 13,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 65,
+            "accuracy": 65
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S107",
+        "name": "George Clark",
+        "earned": 55.5,
+        "totalExam": 100,
+        "totalAttempted": 79,
+        "total": 100,
+        "attempted": 79,
+        "masteryPct": 55.5,
+        "pct": 55.5,
+        "accuracyPct": 70.3,
+        "accuracy": 70.3,
+        "dimensions": {
+          "Recall": {
+            "earned": 9.25,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 92.5,
+            "pct": 92.5,
+            "accuracyPct": 92.5,
+            "accuracy": 92.5
+          },
+          "Comprehend": {
+            "earned": 13,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 81.3,
+            "pct": 81.3,
+            "accuracyPct": 81.3,
+            "accuracy": 81.3
+          },
+          "Solve": {
+            "earned": 14,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 60.9,
+            "pct": 60.9,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "Build": {
+            "earned": 8.25,
+            "availableExam": 24,
+            "availableAttempted": 13,
+            "available": 24,
+            "attempted": 13,
+            "masteryPct": 34.4,
+            "pct": 34.4,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Evaluate": {
+            "earned": 11,
+            "availableExam": 27,
+            "availableAttempted": 20,
+            "available": 27,
+            "attempted": 20,
+            "masteryPct": 40.7,
+            "pct": 40.7,
+            "accuracyPct": 55,
+            "accuracy": 55
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 9.25,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 92.5,
+            "pct": 92.5,
+            "accuracyPct": 92.5,
+            "accuracy": 92.5
+          },
+          "Comprehend": {
+            "earned": 13,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 81.3,
+            "pct": 81.3,
+            "accuracyPct": 81.3,
+            "accuracy": 81.3
+          },
+          "Solve": {
+            "earned": 14,
+            "availableExam": 23,
+            "availableAttempted": 20,
+            "available": 23,
+            "attempted": 20,
+            "masteryPct": 60.9,
+            "pct": 60.9,
+            "accuracyPct": 70,
+            "accuracy": 70
+          },
+          "Build": {
+            "earned": 8.25,
+            "availableExam": 24,
+            "availableAttempted": 13,
+            "available": 24,
+            "attempted": 13,
+            "masteryPct": 34.4,
+            "pct": 34.4,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Evaluate": {
+            "earned": 11,
+            "availableExam": 27,
+            "availableAttempted": 20,
+            "available": 27,
+            "attempted": 20,
+            "masteryPct": 40.7,
+            "pct": 40.7,
+            "accuracyPct": 55,
+            "accuracy": 55
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 15.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 70.5,
+            "pct": 70.5,
+            "accuracyPct": 70.5,
+            "accuracy": 70.5
+          },
+          "hard": {
+            "earned": 10.5,
+            "availableExam": 25,
+            "availableAttempted": 18,
+            "available": 25,
+            "attempted": 18,
+            "masteryPct": 42,
+            "pct": 42,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          },
+          "challenge": {
+            "earned": 7.5,
+            "availableExam": 28,
+            "availableAttempted": 14,
+            "available": 28,
+            "attempted": 14,
+            "masteryPct": 26.8,
+            "pct": 26.8,
+            "accuracyPct": 53.6,
+            "accuracy": 53.6
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 15.5,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 70.5,
+            "pct": 70.5,
+            "accuracyPct": 70.5,
+            "accuracy": 70.5
+          },
+          "hard": {
+            "earned": 10.5,
+            "availableExam": 25,
+            "availableAttempted": 18,
+            "available": 25,
+            "attempted": 18,
+            "masteryPct": 42,
+            "pct": 42,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          },
+          "challenge": {
+            "earned": 7.5,
+            "availableExam": 28,
+            "availableAttempted": 14,
+            "available": 28,
+            "attempted": 14,
+            "masteryPct": 26.8,
+            "pct": 26.8,
+            "accuracyPct": 53.6,
+            "accuracy": 53.6
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 15.5,
+            "availableExam": 29,
+            "availableAttempted": 22,
+            "available": 29,
+            "attempted": 22,
+            "masteryPct": 53.4,
+            "pct": 53.4,
+            "accuracyPct": 70.5,
+            "accuracy": 70.5
+          },
+          "Data Structures": {
+            "earned": 13.5,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 51.9,
+            "pct": 51.9,
+            "accuracyPct": 67.5,
+            "accuracy": 67.5
+          },
+          "Networking": {
+            "earned": 14.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 76.3,
+            "pct": 76.3,
+            "accuracyPct": 76.3,
+            "accuracy": 76.3
+          },
+          "System Design": {
+            "earned": 12,
+            "availableExam": 26,
+            "availableAttempted": 18,
+            "available": 26,
+            "attempted": 18,
+            "masteryPct": 46.2,
+            "pct": 46.2,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 15.5,
+            "availableExam": 29,
+            "availableAttempted": 22,
+            "available": 29,
+            "attempted": 22,
+            "masteryPct": 53.4,
+            "pct": 53.4,
+            "accuracyPct": 70.5,
+            "accuracy": 70.5
+          },
+          "Data Structures": {
+            "earned": 13.5,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 51.9,
+            "pct": 51.9,
+            "accuracyPct": 67.5,
+            "accuracy": 67.5
+          },
+          "Networking": {
+            "earned": 14.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 76.3,
+            "pct": 76.3,
+            "accuracyPct": 76.3,
+            "accuracy": 76.3
+          },
+          "System Design": {
+            "earned": 12,
+            "availableExam": 26,
+            "availableAttempted": 18,
+            "available": 26,
+            "attempted": 18,
+            "masteryPct": 46.2,
+            "pct": 46.2,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          }
+        },
+        "weakest": "Build",
+        "strongest": "Recall",
+        "weakestDimension": "Build",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S108",
+        "name": "Hannah Abbott",
+        "earned": 91,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 91,
+        "pct": 91,
+        "accuracyPct": 91,
+        "accuracy": 91,
+        "dimensions": {
+          "Recall": {
+            "earned": 9.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 97.5,
+            "pct": 97.5,
+            "accuracyPct": 97.5,
+            "accuracy": 97.5
+          },
+          "Comprehend": {
+            "earned": 15.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 95.3,
+            "pct": 95.3,
+            "accuracyPct": 95.3,
+            "accuracy": 95.3
+          },
+          "Solve": {
+            "earned": 20.75,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 90.2,
+            "pct": 90.2,
+            "accuracyPct": 90.2,
+            "accuracy": 90.2
+          },
+          "Build": {
+            "earned": 21.5,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 89.6,
+            "pct": 89.6,
+            "accuracyPct": 89.6,
+            "accuracy": 89.6
+          },
+          "Evaluate": {
+            "earned": 23.75,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 88,
+            "pct": 88,
+            "accuracyPct": 88,
+            "accuracy": 88
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 9.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 97.5,
+            "pct": 97.5,
+            "accuracyPct": 97.5,
+            "accuracy": 97.5
+          },
+          "Comprehend": {
+            "earned": 15.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 95.3,
+            "pct": 95.3,
+            "accuracyPct": 95.3,
+            "accuracy": 95.3
+          },
+          "Solve": {
+            "earned": 20.75,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 90.2,
+            "pct": 90.2,
+            "accuracyPct": 90.2,
+            "accuracy": 90.2
+          },
+          "Build": {
+            "earned": 21.5,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 89.6,
+            "pct": 89.6,
+            "accuracyPct": 89.6,
+            "accuracy": 89.6
+          },
+          "Evaluate": {
+            "earned": 23.75,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 88,
+            "pct": 88,
+            "accuracyPct": 88,
+            "accuracy": 88
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 20,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 90.9,
+            "pct": 90.9,
+            "accuracyPct": 90.9,
+            "accuracy": 90.9
+          },
+          "hard": {
+            "earned": 21.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 86,
+            "pct": 86,
+            "accuracyPct": 86,
+            "accuracy": 86
+          },
+          "challenge": {
+            "earned": 24.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 87.5,
+            "pct": 87.5,
+            "accuracyPct": 87.5,
+            "accuracy": 87.5
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 20,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 90.9,
+            "pct": 90.9,
+            "accuracyPct": 90.9,
+            "accuracy": 90.9
+          },
+          "hard": {
+            "earned": 21.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 86,
+            "pct": 86,
+            "accuracyPct": 86,
+            "accuracy": 86
+          },
+          "challenge": {
+            "earned": 24.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 87.5,
+            "pct": 87.5,
+            "accuracyPct": 87.5,
+            "accuracy": 87.5
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 26,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 89.7,
+            "pct": 89.7,
+            "accuracyPct": 89.7,
+            "accuracy": 89.7
+          },
+          "Data Structures": {
+            "earned": 23,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 88.5,
+            "pct": 88.5,
+            "accuracyPct": 88.5,
+            "accuracy": 88.5
+          },
+          "Networking": {
+            "earned": 18.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 97.4,
+            "pct": 97.4,
+            "accuracyPct": 97.4,
+            "accuracy": 97.4
+          },
+          "System Design": {
+            "earned": 23.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 90.4,
+            "pct": 90.4,
+            "accuracyPct": 90.4,
+            "accuracy": 90.4
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 26,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 89.7,
+            "pct": 89.7,
+            "accuracyPct": 89.7,
+            "accuracy": 89.7
+          },
+          "Data Structures": {
+            "earned": 23,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 88.5,
+            "pct": 88.5,
+            "accuracyPct": 88.5,
+            "accuracy": 88.5
+          },
+          "Networking": {
+            "earned": 18.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 97.4,
+            "pct": 97.4,
+            "accuracyPct": 97.4,
+            "accuracy": 97.4
+          },
+          "System Design": {
+            "earned": 23.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 90.4,
+            "pct": 90.4,
+            "accuracyPct": 90.4,
+            "accuracy": 90.4
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S109",
+        "name": "Ian Malcolm",
+        "earned": 79.5,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 79.5,
+        "pct": 79.5,
+        "accuracyPct": 79.5,
+        "accuracy": 79.5,
+        "dimensions": {
+          "Recall": {
+            "earned": 8.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 85,
+            "pct": 85,
+            "accuracyPct": 85,
+            "accuracy": 85
+          },
+          "Comprehend": {
+            "earned": 13.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 82.8,
+            "pct": 82.8,
+            "accuracyPct": 82.8,
+            "accuracy": 82.8
+          },
+          "Solve": {
+            "earned": 18.25,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 79.3,
+            "pct": 79.3,
+            "accuracyPct": 79.3,
+            "accuracy": 79.3
+          },
+          "Build": {
+            "earned": 15.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Evaluate": {
+            "earned": 24.25,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 89.8,
+            "pct": 89.8,
+            "accuracyPct": 89.8,
+            "accuracy": 89.8
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 8.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 85,
+            "pct": 85,
+            "accuracyPct": 85,
+            "accuracy": 85
+          },
+          "Comprehend": {
+            "earned": 13.25,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 82.8,
+            "pct": 82.8,
+            "accuracyPct": 82.8,
+            "accuracy": 82.8
+          },
+          "Solve": {
+            "earned": 18.25,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 79.3,
+            "pct": 79.3,
+            "accuracyPct": 79.3,
+            "accuracy": 79.3
+          },
+          "Build": {
+            "earned": 15.25,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Evaluate": {
+            "earned": 24.25,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 89.8,
+            "pct": 89.8,
+            "accuracyPct": 89.8,
+            "accuracy": 89.8
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 18,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 72,
+            "pct": 72,
+            "accuracyPct": 72,
+            "accuracy": 72
+          },
+          "challenge": {
+            "earned": 24.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 87.5,
+            "pct": 87.5,
+            "accuracyPct": 87.5,
+            "accuracy": 87.5
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 9.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 95,
+            "pct": 95,
+            "accuracyPct": 95,
+            "accuracy": 95
+          },
+          "easy": {
+            "earned": 12.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 83.3,
+            "pct": 83.3,
+            "accuracyPct": 83.3,
+            "accuracy": 83.3
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 18,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 72,
+            "pct": 72,
+            "accuracyPct": 72,
+            "accuracy": 72
+          },
+          "challenge": {
+            "earned": 24.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 87.5,
+            "pct": 87.5,
+            "accuracyPct": 87.5,
+            "accuracy": 87.5
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 23,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 79.3,
+            "pct": 79.3,
+            "accuracyPct": 79.3,
+            "accuracy": 79.3
+          },
+          "Data Structures": {
+            "earned": 19.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Networking": {
+            "earned": 16.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 86.8,
+            "pct": 86.8,
+            "accuracyPct": 86.8,
+            "accuracy": 86.8
+          },
+          "System Design": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 23,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 79.3,
+            "pct": 79.3,
+            "accuracyPct": 79.3,
+            "accuracy": 79.3
+          },
+          "Data Structures": {
+            "earned": 19.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Networking": {
+            "earned": 16.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 86.8,
+            "pct": 86.8,
+            "accuracyPct": 86.8,
+            "accuracy": 86.8
+          },
+          "System Design": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          }
+        },
+        "weakest": "Build",
+        "strongest": "Evaluate",
+        "weakestDimension": "Build",
+        "strongestDimension": "Evaluate"
+      },
+      {
+        "id": "S110",
+        "name": "Julia Roberts",
+        "earned": 56.5,
+        "totalExam": 100,
+        "totalAttempted": 84,
+        "total": 100,
+        "attempted": 84,
+        "masteryPct": 56.5,
+        "pct": 56.5,
+        "accuracyPct": 67.3,
+        "accuracy": 67.3,
+        "dimensions": {
+          "Recall": {
+            "earned": 7.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Comprehend": {
+            "earned": 11.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 73.4,
+            "pct": 73.4,
+            "accuracyPct": 73.4,
+            "accuracy": 73.4
+          },
+          "Solve": {
+            "earned": 15.25,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 66.3,
+            "pct": 66.3,
+            "accuracyPct": 66.3,
+            "accuracy": 66.3
+          },
+          "Build": {
+            "earned": 13.25,
+            "availableExam": 24,
+            "availableAttempted": 20,
+            "available": 24,
+            "attempted": 20,
+            "masteryPct": 55.2,
+            "pct": 55.2,
+            "accuracyPct": 66.3,
+            "accuracy": 66.3
+          },
+          "Evaluate": {
+            "earned": 8.75,
+            "availableExam": 27,
+            "availableAttempted": 15,
+            "available": 27,
+            "attempted": 15,
+            "masteryPct": 32.4,
+            "pct": 32.4,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 7.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "Comprehend": {
+            "earned": 11.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 73.4,
+            "pct": 73.4,
+            "accuracyPct": 73.4,
+            "accuracy": 73.4
+          },
+          "Solve": {
+            "earned": 15.25,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 66.3,
+            "pct": 66.3,
+            "accuracyPct": 66.3,
+            "accuracy": 66.3
+          },
+          "Build": {
+            "earned": 13.25,
+            "availableExam": 24,
+            "availableAttempted": 20,
+            "available": 24,
+            "attempted": 20,
+            "masteryPct": 55.2,
+            "pct": 55.2,
+            "accuracyPct": 66.3,
+            "accuracy": 66.3
+          },
+          "Evaluate": {
+            "earned": 8.75,
+            "availableExam": 27,
+            "availableAttempted": 15,
+            "available": 27,
+            "attempted": 15,
+            "masteryPct": 32.4,
+            "pct": 32.4,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 8,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "easy": {
+            "earned": 11.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 76.7,
+            "pct": 76.7,
+            "accuracyPct": 76.7,
+            "accuracy": 76.7
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 15,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 60,
+            "pct": 60,
+            "accuracyPct": 60,
+            "accuracy": 60
+          },
+          "challenge": {
+            "earned": 7,
+            "availableExam": 28,
+            "availableAttempted": 12,
+            "available": 28,
+            "attempted": 12,
+            "masteryPct": 25,
+            "pct": 25,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 8,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "easy": {
+            "earned": 11.5,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 76.7,
+            "pct": 76.7,
+            "accuracyPct": 76.7,
+            "accuracy": 76.7
+          },
+          "medium": {
+            "earned": 15,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 68.2,
+            "pct": 68.2,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          },
+          "hard": {
+            "earned": 15,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 60,
+            "pct": 60,
+            "accuracyPct": 60,
+            "accuracy": 60
+          },
+          "challenge": {
+            "earned": 7,
+            "availableExam": 28,
+            "availableAttempted": 12,
+            "available": 28,
+            "attempted": 12,
+            "masteryPct": 25,
+            "pct": 25,
+            "accuracyPct": 58.3,
+            "accuracy": 58.3
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 14.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 69,
+            "accuracy": 69
+          },
+          "Data Structures": {
+            "earned": 16.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Networking": {
+            "earned": 13.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 71.1,
+            "pct": 71.1,
+            "accuracyPct": 71.1,
+            "accuracy": 71.1
+          },
+          "System Design": {
+            "earned": 12,
+            "availableExam": 26,
+            "availableAttempted": 18,
+            "available": 26,
+            "attempted": 18,
+            "masteryPct": 46.2,
+            "pct": 46.2,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 14.5,
+            "availableExam": 29,
+            "availableAttempted": 21,
+            "available": 29,
+            "attempted": 21,
+            "masteryPct": 50,
+            "pct": 50,
+            "accuracyPct": 69,
+            "accuracy": 69
+          },
+          "Data Structures": {
+            "earned": 16.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 63.5,
+            "pct": 63.5,
+            "accuracyPct": 63.5,
+            "accuracy": 63.5
+          },
+          "Networking": {
+            "earned": 13.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 71.1,
+            "pct": 71.1,
+            "accuracyPct": 71.1,
+            "accuracy": 71.1
+          },
+          "System Design": {
+            "earned": 12,
+            "availableExam": 26,
+            "availableAttempted": 18,
+            "available": 26,
+            "attempted": 18,
+            "masteryPct": 46.2,
+            "pct": 46.2,
+            "accuracyPct": 66.7,
+            "accuracy": 66.7
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      },
+      {
+        "id": "S111",
+        "name": "Kevin Bacon",
+        "earned": 73.5,
+        "totalExam": 100,
+        "totalAttempted": 94,
+        "total": 100,
+        "attempted": 94,
+        "masteryPct": 73.5,
+        "pct": 73.5,
+        "accuracyPct": 78.2,
+        "accuracy": 78.2,
+        "dimensions": {
+          "Recall": {
+            "earned": 7.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 77.5,
+            "pct": 77.5,
+            "accuracyPct": 77.5,
+            "accuracy": 77.5
+          },
+          "Comprehend": {
+            "earned": 12.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 79.7,
+            "pct": 79.7,
+            "accuracyPct": 79.7,
+            "accuracy": 79.7
+          },
+          "Solve": {
+            "earned": 20,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 87,
+            "pct": 87,
+            "accuracyPct": 87,
+            "accuracy": 87
+          },
+          "Build": {
+            "earned": 18.75,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 78.1,
+            "pct": 78.1,
+            "accuracyPct": 78.1,
+            "accuracy": 78.1
+          },
+          "Evaluate": {
+            "earned": 14.25,
+            "availableExam": 27,
+            "availableAttempted": 21,
+            "available": 27,
+            "attempted": 21,
+            "masteryPct": 52.8,
+            "pct": 52.8,
+            "accuracyPct": 67.9,
+            "accuracy": 67.9
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 7.75,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 77.5,
+            "pct": 77.5,
+            "accuracyPct": 77.5,
+            "accuracy": 77.5
+          },
+          "Comprehend": {
+            "earned": 12.75,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 79.7,
+            "pct": 79.7,
+            "accuracyPct": 79.7,
+            "accuracy": 79.7
+          },
+          "Solve": {
+            "earned": 20,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 87,
+            "pct": 87,
+            "accuracyPct": 87,
+            "accuracy": 87
+          },
+          "Build": {
+            "earned": 18.75,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 78.1,
+            "pct": 78.1,
+            "accuracyPct": 78.1,
+            "accuracy": 78.1
+          },
+          "Evaluate": {
+            "earned": 14.25,
+            "availableExam": 27,
+            "availableAttempted": 21,
+            "available": 27,
+            "attempted": 21,
+            "masteryPct": 52.8,
+            "pct": 52.8,
+            "accuracyPct": 67.9,
+            "accuracy": 67.9
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 7.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "easy": {
+            "earned": 13,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 86.7,
+            "pct": 86.7,
+            "accuracyPct": 86.7,
+            "accuracy": 86.7
+          },
+          "medium": {
+            "earned": 18,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 81.8,
+            "pct": 81.8,
+            "accuracyPct": 81.8,
+            "accuracy": 81.8
+          },
+          "hard": {
+            "earned": 20,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "challenge": {
+            "earned": 15,
+            "availableExam": 28,
+            "availableAttempted": 22,
+            "available": 28,
+            "attempted": 22,
+            "masteryPct": 53.6,
+            "pct": 53.6,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 7.5,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 75,
+            "pct": 75,
+            "accuracyPct": 75,
+            "accuracy": 75
+          },
+          "easy": {
+            "earned": 13,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 86.7,
+            "pct": 86.7,
+            "accuracyPct": 86.7,
+            "accuracy": 86.7
+          },
+          "medium": {
+            "earned": 18,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 81.8,
+            "pct": 81.8,
+            "accuracyPct": 81.8,
+            "accuracy": 81.8
+          },
+          "hard": {
+            "earned": 20,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 80,
+            "pct": 80,
+            "accuracyPct": 80,
+            "accuracy": 80
+          },
+          "challenge": {
+            "earned": 15,
+            "availableExam": 28,
+            "availableAttempted": 22,
+            "available": 28,
+            "attempted": 22,
+            "masteryPct": 53.6,
+            "pct": 53.6,
+            "accuracyPct": 68.2,
+            "accuracy": 68.2
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 26.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 91.4,
+            "pct": 91.4,
+            "accuracyPct": 91.4,
+            "accuracy": 91.4
+          },
+          "Data Structures": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          },
+          "Networking": {
+            "earned": 14,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 73.7,
+            "pct": 73.7,
+            "accuracyPct": 73.7,
+            "accuracy": 73.7
+          },
+          "System Design": {
+            "earned": 12.5,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 48.1,
+            "pct": 48.1,
+            "accuracyPct": 62.5,
+            "accuracy": 62.5
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 26.5,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 91.4,
+            "pct": 91.4,
+            "accuracyPct": 91.4,
+            "accuracy": 91.4
+          },
+          "Data Structures": {
+            "earned": 20.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 78.8,
+            "pct": 78.8,
+            "accuracyPct": 78.8,
+            "accuracy": 78.8
+          },
+          "Networking": {
+            "earned": 14,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 73.7,
+            "pct": 73.7,
+            "accuracyPct": 73.7,
+            "accuracy": 73.7
+          },
+          "System Design": {
+            "earned": 12.5,
+            "availableExam": 26,
+            "availableAttempted": 20,
+            "available": 26,
+            "attempted": 20,
+            "masteryPct": 48.1,
+            "pct": 48.1,
+            "accuracyPct": 62.5,
+            "accuracy": 62.5
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Solve",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Solve"
+      },
+      {
+        "id": "S112",
+        "name": "Laura Croft",
+        "earned": 99,
+        "totalExam": 100,
+        "totalAttempted": 100,
+        "total": 100,
+        "attempted": 100,
+        "masteryPct": 99,
+        "pct": 99,
+        "accuracyPct": 99,
+        "accuracy": 99,
+        "dimensions": {
+          "Recall": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Comprehend": {
+            "earned": 16,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Solve": {
+            "earned": 23,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Build": {
+            "earned": 24,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Evaluate": {
+            "earned": 26,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 96.3,
+            "pct": 96.3,
+            "accuracyPct": 96.3,
+            "accuracy": 96.3
+          }
+        },
+        "dimension": {
+          "Recall": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Comprehend": {
+            "earned": 16,
+            "availableExam": 16,
+            "availableAttempted": 16,
+            "available": 16,
+            "attempted": 16,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Solve": {
+            "earned": 23,
+            "availableExam": 23,
+            "availableAttempted": 23,
+            "available": 23,
+            "attempted": 23,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Build": {
+            "earned": 24,
+            "availableExam": 24,
+            "availableAttempted": 24,
+            "available": 24,
+            "attempted": 24,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Evaluate": {
+            "earned": 26,
+            "availableExam": 27,
+            "availableAttempted": 27,
+            "available": 27,
+            "attempted": 27,
+            "masteryPct": 96.3,
+            "pct": 96.3,
+            "accuracyPct": 96.3,
+            "accuracy": 96.3
+          }
+        },
+        "difficulties": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 22,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "hard": {
+            "earned": 24.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 98,
+            "pct": 98,
+            "accuracyPct": 98,
+            "accuracy": 98
+          },
+          "challenge": {
+            "earned": 27.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 98.2,
+            "pct": 98.2,
+            "accuracyPct": 98.2,
+            "accuracy": 98.2
+          }
+        },
+        "difficulty": {
+          "beginner": {
+            "earned": 10,
+            "availableExam": 10,
+            "availableAttempted": 10,
+            "available": 10,
+            "attempted": 10,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "easy": {
+            "earned": 15,
+            "availableExam": 15,
+            "availableAttempted": 15,
+            "available": 15,
+            "attempted": 15,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "medium": {
+            "earned": 22,
+            "availableExam": 22,
+            "availableAttempted": 22,
+            "available": 22,
+            "attempted": 22,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "hard": {
+            "earned": 24.5,
+            "availableExam": 25,
+            "availableAttempted": 25,
+            "available": 25,
+            "attempted": 25,
+            "masteryPct": 98,
+            "pct": 98,
+            "accuracyPct": 98,
+            "accuracy": 98
+          },
+          "challenge": {
+            "earned": 27.5,
+            "availableExam": 28,
+            "availableAttempted": 28,
+            "available": 28,
+            "attempted": 28,
+            "masteryPct": 98.2,
+            "pct": 98.2,
+            "accuracyPct": 98.2,
+            "accuracy": 98.2
+          }
+        },
+        "topics": {
+          "Algorithms": {
+            "earned": 29,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Data Structures": {
+            "earned": 26,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Networking": {
+            "earned": 18.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 97.4,
+            "pct": 97.4,
+            "accuracyPct": 97.4,
+            "accuracy": 97.4
+          },
+          "System Design": {
+            "earned": 25.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 98.1,
+            "pct": 98.1,
+            "accuracyPct": 98.1,
+            "accuracy": 98.1
+          }
+        },
+        "topic": {
+          "Algorithms": {
+            "earned": 29,
+            "availableExam": 29,
+            "availableAttempted": 29,
+            "available": 29,
+            "attempted": 29,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Data Structures": {
+            "earned": 26,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 100,
+            "pct": 100,
+            "accuracyPct": 100,
+            "accuracy": 100
+          },
+          "Networking": {
+            "earned": 18.5,
+            "availableExam": 19,
+            "availableAttempted": 19,
+            "available": 19,
+            "attempted": 19,
+            "masteryPct": 97.4,
+            "pct": 97.4,
+            "accuracyPct": 97.4,
+            "accuracy": 97.4
+          },
+          "System Design": {
+            "earned": 25.5,
+            "availableExam": 26,
+            "availableAttempted": 26,
+            "available": 26,
+            "attempted": 26,
+            "masteryPct": 98.1,
+            "pct": 98.1,
+            "accuracyPct": 98.1,
+            "accuracy": 98.1
+          }
+        },
+        "weakest": "Evaluate",
+        "strongest": "Recall",
+        "weakestDimension": "Evaluate",
+        "strongestDimension": "Recall"
+      }
+    ],
+    "cohort": {
+      "id": "cohort",
+      "name": "Cohort (12)",
+      "earned": 72.17,
+      "totalExam": 100,
+      "totalAttempted": 92.42,
+      "total": 100,
+      "attempted": 92.42,
+      "masteryPct": 72.2,
+      "pct": 72.2,
+      "accuracyPct": 78.1,
+      "accuracy": 78.1,
+      "dimensions": {
+        "Recall": {
+          "earned": 8.4,
+          "availableExam": 10,
+          "available": 10,
+          "availableAttempted": 10,
+          "attempted": 10,
+          "masteryPct": 84,
+          "pct": 84,
+          "accuracyPct": 84,
+          "accuracy": 84
+        },
+        "Comprehend": {
+          "earned": 12.85,
+          "availableExam": 16,
+          "available": 16,
+          "availableAttempted": 16,
+          "attempted": 16,
+          "masteryPct": 80.3,
+          "pct": 80.3,
+          "accuracyPct": 80.3,
+          "accuracy": 80.3
+        },
+        "Solve": {
+          "earned": 17.71,
+          "availableExam": 23,
+          "available": 23,
+          "availableAttempted": 22.25,
+          "attempted": 22.25,
+          "masteryPct": 77,
+          "pct": 77,
+          "accuracyPct": 79.6,
+          "accuracy": 79.6
+        },
+        "Build": {
+          "earned": 17.1,
+          "availableExam": 24,
+          "available": 24,
+          "availableAttempted": 22.42,
+          "attempted": 22.42,
+          "masteryPct": 71.3,
+          "pct": 71.3,
+          "accuracyPct": 76.3,
+          "accuracy": 76.3
+        },
+        "Evaluate": {
+          "earned": 16.1,
+          "availableExam": 27,
+          "available": 27,
+          "availableAttempted": 21.75,
+          "attempted": 21.75,
+          "masteryPct": 59.6,
+          "pct": 59.6,
+          "accuracyPct": 74,
+          "accuracy": 74
+        }
+      },
+      "dimension": {
+        "Recall": {
+          "earned": 8.4,
+          "availableExam": 10,
+          "available": 10,
+          "availableAttempted": 10,
+          "attempted": 10,
+          "masteryPct": 84,
+          "pct": 84,
+          "accuracyPct": 84,
+          "accuracy": 84
+        },
+        "Comprehend": {
+          "earned": 12.85,
+          "availableExam": 16,
+          "available": 16,
+          "availableAttempted": 16,
+          "attempted": 16,
+          "masteryPct": 80.3,
+          "pct": 80.3,
+          "accuracyPct": 80.3,
+          "accuracy": 80.3
+        },
+        "Solve": {
+          "earned": 17.71,
+          "availableExam": 23,
+          "available": 23,
+          "availableAttempted": 22.25,
+          "attempted": 22.25,
+          "masteryPct": 77,
+          "pct": 77,
+          "accuracyPct": 79.6,
+          "accuracy": 79.6
+        },
+        "Build": {
+          "earned": 17.1,
+          "availableExam": 24,
+          "available": 24,
+          "availableAttempted": 22.42,
+          "attempted": 22.42,
+          "masteryPct": 71.3,
+          "pct": 71.3,
+          "accuracyPct": 76.3,
+          "accuracy": 76.3
+        },
+        "Evaluate": {
+          "earned": 16.1,
+          "availableExam": 27,
+          "available": 27,
+          "availableAttempted": 21.75,
+          "attempted": 21.75,
+          "masteryPct": 59.6,
+          "pct": 59.6,
+          "accuracyPct": 74,
+          "accuracy": 74
+        }
+      },
+      "difficulties": {
+        "beginner": {
+          "earned": 8.71,
+          "availableExam": 10,
+          "available": 10,
+          "availableAttempted": 10,
+          "attempted": 10,
+          "masteryPct": 87.1,
+          "pct": 87.1,
+          "accuracyPct": 87.1,
+          "accuracy": 87.1
+        },
+        "easy": {
+          "earned": 12.92,
+          "availableExam": 15,
+          "available": 15,
+          "availableAttempted": 15,
+          "attempted": 15,
+          "masteryPct": 86.1,
+          "pct": 86.1,
+          "accuracyPct": 86.1,
+          "accuracy": 86.1
+        },
+        "medium": {
+          "earned": 17.08,
+          "availableExam": 22,
+          "available": 22,
+          "availableAttempted": 22,
+          "attempted": 22,
+          "masteryPct": 77.6,
+          "pct": 77.6,
+          "accuracyPct": 77.6,
+          "accuracy": 77.6
+        },
+        "hard": {
+          "earned": 17.75,
+          "availableExam": 25,
+          "available": 25,
+          "availableAttempted": 24.42,
+          "attempted": 24.42,
+          "masteryPct": 71,
+          "pct": 71,
+          "accuracyPct": 72.7,
+          "accuracy": 72.7
+        },
+        "challenge": {
+          "earned": 15.71,
+          "availableExam": 28,
+          "available": 28,
+          "availableAttempted": 21,
+          "attempted": 21,
+          "masteryPct": 56.1,
+          "pct": 56.1,
+          "accuracyPct": 74.8,
+          "accuracy": 74.8
+        }
+      },
+      "difficulty": {
+        "beginner": {
+          "earned": 8.71,
+          "availableExam": 10,
+          "available": 10,
+          "availableAttempted": 10,
+          "attempted": 10,
+          "masteryPct": 87.1,
+          "pct": 87.1,
+          "accuracyPct": 87.1,
+          "accuracy": 87.1
+        },
+        "easy": {
+          "earned": 12.92,
+          "availableExam": 15,
+          "available": 15,
+          "availableAttempted": 15,
+          "attempted": 15,
+          "masteryPct": 86.1,
+          "pct": 86.1,
+          "accuracyPct": 86.1,
+          "accuracy": 86.1
+        },
+        "medium": {
+          "earned": 17.08,
+          "availableExam": 22,
+          "available": 22,
+          "availableAttempted": 22,
+          "attempted": 22,
+          "masteryPct": 77.6,
+          "pct": 77.6,
+          "accuracyPct": 77.6,
+          "accuracy": 77.6
+        },
+        "hard": {
+          "earned": 17.75,
+          "availableExam": 25,
+          "available": 25,
+          "availableAttempted": 24.42,
+          "attempted": 24.42,
+          "masteryPct": 71,
+          "pct": 71,
+          "accuracyPct": 72.7,
+          "accuracy": 72.7
+        },
+        "challenge": {
+          "earned": 15.71,
+          "availableExam": 28,
+          "available": 28,
+          "availableAttempted": 21,
+          "attempted": 21,
+          "masteryPct": 56.1,
+          "pct": 56.1,
+          "accuracyPct": 74.8,
+          "accuracy": 74.8
+        }
+      },
+      "topics": {
+        "Algorithms": {
+          "earned": 21.46,
+          "availableExam": 29,
+          "available": 29,
+          "availableAttempted": 26.42,
+          "attempted": 26.42,
+          "masteryPct": 74,
+          "pct": 74,
+          "accuracyPct": 81.2,
+          "accuracy": 81.2
+        },
+        "Data Structures": {
+          "earned": 18.21,
+          "availableExam": 26,
+          "available": 26,
+          "availableAttempted": 24.5,
+          "attempted": 24.5,
+          "masteryPct": 70,
+          "pct": 70,
+          "accuracyPct": 74.3,
+          "accuracy": 74.3
+        },
+        "Networking": {
+          "earned": 15.5,
+          "availableExam": 19,
+          "available": 19,
+          "availableAttempted": 19,
+          "attempted": 19,
+          "masteryPct": 81.6,
+          "pct": 81.6,
+          "accuracyPct": 81.6,
+          "accuracy": 81.6
+        },
+        "System Design": {
+          "earned": 17,
+          "availableExam": 26,
+          "available": 26,
+          "availableAttempted": 22.5,
+          "attempted": 22.5,
+          "masteryPct": 65.4,
+          "pct": 65.4,
+          "accuracyPct": 75.6,
+          "accuracy": 75.6
+        }
+      },
+      "topic": {
+        "Algorithms": {
+          "earned": 21.46,
+          "availableExam": 29,
+          "available": 29,
+          "availableAttempted": 26.42,
+          "attempted": 26.42,
+          "masteryPct": 74,
+          "pct": 74,
+          "accuracyPct": 81.2,
+          "accuracy": 81.2
+        },
+        "Data Structures": {
+          "earned": 18.21,
+          "availableExam": 26,
+          "available": 26,
+          "availableAttempted": 24.5,
+          "attempted": 24.5,
+          "masteryPct": 70,
+          "pct": 70,
+          "accuracyPct": 74.3,
+          "accuracy": 74.3
+        },
+        "Networking": {
+          "earned": 15.5,
+          "availableExam": 19,
+          "available": 19,
+          "availableAttempted": 19,
+          "attempted": 19,
+          "masteryPct": 81.6,
+          "pct": 81.6,
+          "accuracyPct": 81.6,
+          "accuracy": 81.6
+        },
+        "System Design": {
+          "earned": 17,
+          "availableExam": 26,
+          "available": 26,
+          "availableAttempted": 22.5,
+          "attempted": 22.5,
+          "masteryPct": 65.4,
+          "pct": 65.4,
+          "accuracyPct": 75.6,
+          "accuracy": 75.6
+        }
+      },
+      "weakest": "Evaluate",
+      "strongest": "Recall",
+      "weakestDimension": "Evaluate",
+      "strongestDimension": "Recall"
+    },
+    "dimensions": [
+      "Recall",
+      "Comprehend",
+      "Solve",
+      "Build",
+      "Evaluate"
+    ],
+    "difficulties": [
+      "beginner",
+      "easy",
+      "medium",
+      "hard",
+      "challenge"
+    ],
+    "topics": [
+      "Algorithms",
+      "Data Structures",
+      "Networking",
+      "System Design"
+    ]
+  }
+}

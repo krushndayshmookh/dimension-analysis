@@ -1,0 +1,74 @@
+{
+  "id": "S110",
+  "name": "Julia Roberts",
+  "exams": [
+    {
+      "examId": "exam-1790802798322",
+      "courseName": "CS101 - Algorithms & Data Structures",
+      "examTitle": "Midterm Exam 2026",
+      "examDate": "2026-09-30",
+      "earned": 56.5,
+      "totalExam": 100,
+      "totalAttempted": 84,
+      "masteryPct": 56.5,
+      "accuracyPct": 67.3,
+      "dimensions": {
+        "Recall": {
+          "earned": 7.5,
+          "availableExam": 10,
+          "availableAttempted": 10,
+          "available": 10,
+          "attempted": 10,
+          "masteryPct": 75,
+          "pct": 75,
+          "accuracyPct": 75,
+          "accuracy": 75
+        },
+        "Comprehend": {
+          "earned": 11.75,
+          "availableExam": 16,
+          "availableAttempted": 16,
+          "available": 16,
+          "attempted": 16,
+          "masteryPct": 73.4,
+          "pct": 73.4,
+          "accuracyPct": 73.4,
+          "accuracy": 73.4
+        },
+        "Solve": {
+          "earned": 15.25,
+          "availableExam": 23,
+          "availableAttempted": 23,
+          "available": 23,
+          "attempted": 23,
+          "masteryPct": 66.3,
+          "pct": 66.3,
+          "accuracyPct": 66.3,
+          "accuracy": 66.3
+        },
+        "Build": {
+          "earned": 13.25,
+          "availableExam": 24,
+          "availableAttempted": 20,
+          "available": 24,
+          "attempted": 20,
+          "masteryPct": 55.2,
+          "pct": 55.2,
+          "accuracyPct": 66.3,
+          "accuracy": 66.3
+        },
+        "Evaluate": {
+          "earned": 8.75,
+          "availableExam": 27,
+          "availableAttempted": 15,
+          "available": 27,
+          "attempted": 15,
+          "masteryPct": 32.4,
+          "pct": 32.4,
+          "accuracyPct": 58.3,
+          "accuracy": 58.3
+        }
+      }
+    }
+  ]
+}

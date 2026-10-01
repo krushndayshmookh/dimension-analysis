@@ -1,0 +1,162 @@
+{
+  "id": "STU140",
+  "name": "Jasmine Bacon",
+  "exams": [
+    {
+      "examId": "exam-1790805302316",
+      "courseName": "CS201 - Advanced Data Structures & Algorithms",
+      "examTitle": "Grand Semester Coding Contest 2026",
+      "examDate": "2026-10-15",
+      "earned": 26.5,
+      "totalExam": 135,
+      "totalAttempted": 100,
+      "masteryPct": 19.6,
+      "accuracyPct": 26.5,
+      "dimensions": {
+        "Recall": {
+          "earned": 4,
+          "availableExam": 9.5,
+          "availableAttempted": 9.5,
+          "available": 9.5,
+          "attempted": 9.5,
+          "masteryPct": 42.1,
+          "pct": 42.1,
+          "accuracyPct": 42.1,
+          "accuracy": 42.1,
+          "status": "weak",
+          "diffFromCohort": -33.5
+        },
+        "Comprehend": {
+          "earned": 8.5,
+          "availableExam": 17,
+          "availableAttempted": 17,
+          "available": 17,
+          "attempted": 17,
+          "masteryPct": 50,
+          "pct": 50,
+          "accuracyPct": 50,
+          "accuracy": 50,
+          "status": "average",
+          "diffFromCohort": -15.5
+        },
+        "Solve": {
+          "earned": 4.67,
+          "availableExam": 36.5,
+          "availableAttempted": 29,
+          "available": 36.5,
+          "attempted": 29,
+          "masteryPct": 12.8,
+          "pct": 12.8,
+          "accuracyPct": 16.1,
+          "accuracy": 16.1,
+          "status": "weak",
+          "diffFromCohort": -33.1
+        },
+        "Build": {
+          "earned": 5.17,
+          "availableExam": 40.5,
+          "availableAttempted": 23,
+          "available": 40.5,
+          "attempted": 23,
+          "masteryPct": 12.8,
+          "pct": 12.8,
+          "accuracyPct": 22.5,
+          "accuracy": 22.5,
+          "status": "weak",
+          "diffFromCohort": -23.2
+        },
+        "Evaluate": {
+          "earned": 4.17,
+          "availableExam": 31.5,
+          "availableAttempted": 21.5,
+          "available": 31.5,
+          "attempted": 21.5,
+          "masteryPct": 13.2,
+          "pct": 13.2,
+          "accuracyPct": 19.4,
+          "accuracy": 19.4,
+          "status": "weak",
+          "diffFromCohort": -18.9
+        }
+      }
+    },
+    {
+      "examId": "exam-1790806388883",
+      "courseName": "CS201 - Advanced Data Structures & Algorithms",
+      "examTitle": "Grand Semester Coding Contest 2026",
+      "examDate": "2026-10-15",
+      "earned": 82,
+      "totalExam": 100,
+      "totalAttempted": 100,
+      "masteryPct": 82,
+      "accuracyPct": 82,
+      "dimensions": {
+        "Recall": {
+          "earned": 24,
+          "availableExam": 28,
+          "availableAttempted": 28,
+          "available": 28,
+          "attempted": 28,
+          "masteryPct": 85.7,
+          "pct": 85.7,
+          "accuracyPct": 85.7,
+          "accuracy": 85.7,
+          "status": "average",
+          "diffFromCohort": 14.3
+        },
+        "Comprehend": {
+          "earned": 18,
+          "availableExam": 20,
+          "availableAttempted": 20,
+          "available": 20,
+          "attempted": 20,
+          "masteryPct": 90,
+          "pct": 90,
+          "accuracyPct": 90,
+          "accuracy": 90,
+          "status": "strong",
+          "diffFromCohort": 22.8
+        },
+        "Solve": {
+          "earned": 27,
+          "availableExam": 31,
+          "availableAttempted": 31,
+          "available": 31,
+          "attempted": 31,
+          "masteryPct": 87.1,
+          "pct": 87.1,
+          "accuracyPct": 87.1,
+          "accuracy": 87.1,
+          "status": "strong",
+          "diffFromCohort": 21.6
+        },
+        "Build": {
+          "earned": 8,
+          "availableExam": 8,
+          "availableAttempted": 8,
+          "available": 8,
+          "attempted": 8,
+          "masteryPct": 100,
+          "pct": 100,
+          "accuracyPct": 100,
+          "accuracy": 100,
+          "status": "strong",
+          "diffFromCohort": 25.6
+        },
+        "Evaluate": {
+          "earned": 5,
+          "availableExam": 13,
+          "availableAttempted": 13,
+          "available": 13,
+          "attempted": 13,
+          "masteryPct": 38.5,
+          "pct": 38.5,
+          "accuracyPct": 38.5,
+          "accuracy": 38.5,
+          "status": "average",
+          "diffFromCohort": -14.4
+        }
+      }
+    }
+  ]
+}

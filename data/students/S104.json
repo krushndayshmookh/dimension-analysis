@@ -1,0 +1,74 @@
+{
+  "id": "S104",
+  "name": "Diana Prince",
+  "exams": [
+    {
+      "examId": "exam-1790802798322",
+      "courseName": "CS101 - Algorithms & Data Structures",
+      "examTitle": "Midterm Exam 2026",
+      "examDate": "2026-09-30",
+      "earned": 77,
+      "totalExam": 100,
+      "totalAttempted": 100,
+      "masteryPct": 77,
+      "accuracyPct": 77,
+      "dimensions": {
+        "Recall": {
+          "earned": 6.5,
+          "availableExam": 10,
+          "availableAttempted": 10,
+          "available": 10,
+          "attempted": 10,
+          "masteryPct": 65,
+          "pct": 65,
+          "accuracyPct": 65,
+          "accuracy": 65
+        },
+        "Comprehend": {
+          "earned": 11.75,
+          "availableExam": 16,
+          "availableAttempted": 16,
+          "available": 16,
+          "attempted": 16,
+          "masteryPct": 73.4,
+          "pct": 73.4,
+          "accuracyPct": 73.4,
+          "accuracy": 73.4
+        },
+        "Solve": {
+          "earned": 21,
+          "availableExam": 23,
+          "availableAttempted": 23,
+          "available": 23,
+          "attempted": 23,
+          "masteryPct": 91.3,
+          "pct": 91.3,
+          "accuracyPct": 91.3,
+          "accuracy": 91.3
+        },
+        "Build": {
+          "earned": 21.25,
+          "availableExam": 24,
+          "availableAttempted": 24,
+          "available": 24,
+          "attempted": 24,
+          "masteryPct": 88.5,
+          "pct": 88.5,
+          "accuracyPct": 88.5,
+          "accuracy": 88.5
+        },
+        "Evaluate": {
+          "earned": 16.5,
+          "availableExam": 27,
+          "availableAttempted": 27,
+          "available": 27,
+          "attempted": 27,
+          "masteryPct": 61.1,
+          "pct": 61.1,
+          "accuracyPct": 61.1,
+          "accuracy": 61.1
+        }
+      }
+    }
+  ]
+}
