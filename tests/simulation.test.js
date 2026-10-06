@@ -4,13 +4,19 @@ import {
   DEFAULT_SIM_PARAMS,
   validateSimParams,
   simulateCohort,
+  simulateMany,
   compareToActual,
 } from '../src/lib/simulation.js'
 import { loadAnalysis, loadDataset, closeTo } from './fixtures.js'
 
-const singleQuestionDataset = (type, rate, marks = 10) => ({
-  questions: [{ id: 'Q1', type, difficulty: 'medium', dimensions: ['Solve'], topics: ['T'], marks, expectedSolveRate: rate }],
-  students: [{ id: 'S1', name: 'S1', scores: { Q1: marks } }],
+// One question and a single student; `observed` are the scores that decide
+// whether the question is detected as partial credit.
+const singleQuestionDataset = ({ rate, marks = 10, correctOption = null, observed = [marks] }) => ({
+  questions: [{
+    id: 'Q1', type: 'assessment', difficulty: 'medium', dimensions: ['Solve'], topics: ['T'],
+    marks, expectedSolveRate: rate, correctOption,
+  }],
+  students: observed.map((score, i) => ({ id: `S${i}`, name: `S${i}`, section: null, scores: { Q1: score } })),
 })
 
 describe('validateSimParams', () => {
@@ -20,30 +26,31 @@ describe('validateSimParams', () => {
     assert.deepEqual(params, DEFAULT_SIM_PARAMS)
   })
 
-  it('exposes every tunable parameter', () => {
+  it('exposes every tunable parameter and no question-type lists', () => {
     for (const key of [
-      'cohortSize', 'seed', 'abilityMean', 'abilitySd', 'discrimination', 'guessing', 'guessingTypes',
-      'partialCreditTypes', 'testCases', 'partialAbilityEffect', 'minExpectedRatePct', 'maxExpectedRatePct',
+      'cohortSize', 'seed', 'runs', 'abilityMean', 'abilitySd', 'discrimination', 'guessing',
+      'partialCredit', 'testCases', 'partialAbilityEffect', 'minExpectedRatePct', 'maxExpectedRatePct',
     ]) {
       assert.ok(key in DEFAULT_SIM_PARAMS, `missing ${key}`)
     }
+    assert.ok(!('guessingTypes' in DEFAULT_SIM_PARAMS))
+    assert.ok(!('partialCreditTypes' in DEFAULT_SIM_PARAMS))
   })
 
   it('reports invalid values per parameter', () => {
     const bad = {
-      cohortSize: 0,
-      abilitySd: -1,
-      discrimination: 0,
-      guessing: 1,
-      testCases: 0,
-      minExpectedRatePct: 60,
-      maxExpectedRatePct: 40,
-      seed: 1.5,
+      cohortSize: 0, abilitySd: -1, discrimination: 0, guessing: 1, testCases: 0,
+      minExpectedRatePct: 60, maxExpectedRatePct: 40, seed: 1.5, runs: 0, partialCredit: 'sometimes',
     }
     const { errors } = validateSimParams(bad)
     for (const key of Object.keys(bad)) {
       assert.ok(errors.some((e) => e.includes(key)), `expected an error mentioning ${key}`)
     }
+  })
+
+  it('limits the total work (cohort size x runs)', () => {
+    const { errors } = validateSimParams({ cohortSize: 100000, runs: 100 })
+    assert.ok(errors.some((e) => e.includes('runs')))
   })
 
   it('does not mutate its input', () => {
@@ -79,49 +86,72 @@ describe('simulateCohort', () => {
     assert.throws(() => simulateCohort(dataset, { cohortSize: 0 }), /cohortSize/)
   })
 
-  it('reproduces the expected solve rate when ability has no spread, including with guessing', () => {
-    for (const type of ['Essay', 'MCQ']) {
-      const result = simulateCohort(singleQuestionDataset(type, 60), {
-        cohortSize: 20000,
-        abilitySd: 0,
-        guessing: 0.2,
-        guessingTypes: ['MCQ'],
-        seed: 1,
+  it('reproduces the expected solve rate when ability has no spread, with or without guessing', () => {
+    for (const correctOption of [null, 'B']) {
+      const result = simulateCohort(singleQuestionDataset({ rate: 60, correctOption }), {
+        cohortSize: 20000, abilitySd: 0, guessing: 0.2, seed: 1,
       })
-      assert.ok(closeTo(result.pct.mean, 60, 1.5), `${type}: got ${result.pct.mean}`)
+      assert.ok(closeTo(result.pct.mean, 60, 1.5), `${correctOption}: got ${result.pct.mean}`)
     }
   })
 
-  it('applies guessing only to the configured question types', () => {
-    const noGuess = simulateCohort(singleQuestionDataset('Essay', 60), {
-      cohortSize: 20000, abilitySd: 3, guessing: 0.5, guessingTypes: ['MCQ'], seed: 3,
-    })
-    const guess = simulateCohort(singleQuestionDataset('MCQ', 60), {
-      cohortSize: 20000, abilitySd: 3, guessing: 0.5, guessingTypes: ['MCQ'], seed: 3,
-    })
+  it('applies the guessing floor only to questions with an answer key', () => {
+    const options = { cohortSize: 20000, abilitySd: 3, guessing: 0.5, seed: 3 }
+    const open = simulateCohort(singleQuestionDataset({ rate: 60 }), options)
+    const multipleChoice = simulateCohort(singleQuestionDataset({ rate: 60, correctOption: 'A' }), options)
     // Same ability spread and rate; a guessing floor of 0.5 flattens the success curve.
-    assert.ok(noGuess.pct.stdDev > guess.pct.stdDev, `${noGuess.pct.stdDev} should exceed ${guess.pct.stdDev}`)
+    assert.ok(open.pct.stdDev > multipleChoice.pct.stdDev, `${open.pct.stdDev} should exceed ${multipleChoice.pct.stdDev}`)
+    assert.equal(open.modes.guessing, 0)
+    assert.equal(multipleChoice.modes.guessing, 1)
   })
 
-  it('awards partial credit for the configured types', () => {
-    const result = simulateCohort(singleQuestionDataset('Coding', 30), {
-      cohortSize: 2000, partialCreditTypes: ['Coding'], testCases: 5, seed: 5,
+  describe('partial credit', () => {
+    const interior = (r) => r.markBins.some((b, i) => i > 0 && i < r.markBins.length - 1 && b.count > 0)
+    const partialObserved = { rate: 30, observed: [10, 5, 0, 10] }
+    const fullOnly = { rate: 30, observed: [10, 0, 10, 0] }
+
+    it('is detected from the actual scores by default', () => {
+      const detected = simulateCohort(singleQuestionDataset(partialObserved), { cohortSize: 2000, seed: 5 })
+      assert.ok(interior(detected))
+      assert.equal(detected.modes.partialCredit, 1)
+      const notDetected = simulateCohort(singleQuestionDataset(fullOnly), { cohortSize: 2000, seed: 5 })
+      assert.ok(!interior(notDetected), 'all-or-nothing questions stay all-or-nothing')
+      assert.equal(notDetected.modes.partialCredit, 0)
     })
-    const partial = result.markBins.some((b, i) => i > 0 && i < result.markBins.length - 1 && b.count > 0)
-    assert.ok(partial, 'some synthetic students land strictly between 0 and full marks')
-  })
 
-  it('treats type lists case-insensitively', () => {
-    const upper = simulateCohort(singleQuestionDataset('CODING', 30), { cohortSize: 500, partialCreditTypes: ['coding'], seed: 5 })
-    const lower = simulateCohort(singleQuestionDataset('coding', 30), { cohortSize: 500, partialCreditTypes: ['CODING'], seed: 5 })
-    assert.deepEqual(upper.pct, lower.pct)
+    it('can be forced for every question or switched off', () => {
+      const all = simulateCohort(singleQuestionDataset(fullOnly), { cohortSize: 2000, seed: 5, partialCredit: 'all' })
+      assert.ok(interior(all))
+      const none = simulateCohort(singleQuestionDataset(partialObserved), { cohortSize: 2000, seed: 5, partialCredit: 'none' })
+      assert.ok(!interior(none))
+    })
+
+    it('uses the configured number of test cases', () => {
+      const two = simulateCohort(singleQuestionDataset(partialObserved), { cohortSize: 3000, seed: 5, testCases: 2 })
+      const distinct = (r) => r.markBins.filter((b) => b.count > 0).length
+      assert.ok(distinct(two) <= 10)
+      assert.ok(interior(two))
+    })
+
+    it('does not apply guessing to a partial-credit question', () => {
+      const result = simulateCohort(singleQuestionDataset({ ...partialObserved, correctOption: 'A' }), { cohortSize: 100, seed: 5 })
+      assert.equal(result.modes.guessing, 0)
+      assert.equal(result.modes.partialCredit, 1)
+    })
   })
 
   it('uses the CSV expected rate, else the difficulty default, exactly as the solve-rate analysis does', () => {
-    const explicit = simulateCohort(singleQuestionDataset('Essay', 20), { cohortSize: 20000, abilitySd: 0, seed: 1 })
-    const fallback = simulateCohort(singleQuestionDataset('Essay', null), { cohortSize: 20000, abilitySd: 0, seed: 1 })
+    const explicit = simulateCohort(singleQuestionDataset({ rate: 20 }), { cohortSize: 20000, abilitySd: 0, seed: 1 })
+    const fallback = simulateCohort(singleQuestionDataset({ rate: null }), { cohortSize: 20000, abilitySd: 0, seed: 1 })
     assert.ok(closeTo(explicit.pct.mean, 20, 1.5))
     assert.ok(closeTo(fallback.pct.mean, 55, 1.5), 'medium default is 55')
+  })
+
+  it('reports how each question was modelled', () => {
+    const result = simulateCohort(dataset, { seed: 2, cohortSize: 10 })
+    assert.deepEqual(result.questions.map((q) => q.id), ['Q1', 'Q2', 'Q3'])
+    assert.ok(result.questions.every((q) => ['full', 'partial'].includes(q.mode)))
+    assert.equal(result.modes.partialCredit + result.modes.standard, 3)
   })
 
   it('reports expected mastery per dimension and topic from the same mark-splitting rules as profiles', () => {
@@ -137,6 +167,46 @@ describe('simulateCohort', () => {
     assert.equal(result.decileBins.length, 10)
     assert.equal(result.markBins.length, 8)
     assert.equal(result.decileBins.reduce((n, b) => n + b.count, 0), 100)
+  })
+})
+
+describe('simulateMany (range over repeated runs)', () => {
+  let dataset
+  before(async () => {
+    dataset = await loadDataset()
+  })
+  const options = { seed: 11, cohortSize: 300, runs: 20 }
+
+  it('returns the single run for the given seed plus a range over all runs', () => {
+    const many = simulateMany(dataset, options)
+    const single = simulateCohort(dataset, options)
+    assert.deepEqual(many.pct, single.pct)
+    assert.equal(many.bands.runs, 20)
+  })
+
+  it('is deterministic', () => {
+    assert.deepEqual(simulateMany(dataset, options), simulateMany(dataset, options))
+  })
+
+  it('gives a 90% range for the mean, median and standard deviation', () => {
+    const { bands } = simulateMany(dataset, options)
+    for (const key of ['mean', 'median', 'stdDev']) {
+      const b = bands[key]
+      assert.ok(b.lowPct <= b.meanPct && b.meanPct <= b.highPct, `${key}: ${JSON.stringify(b)}`)
+    }
+    assert.ok(bands.mean.highPct > bands.mean.lowPct, 'runs differ')
+  })
+
+  it('gives a range for each decile bin and each dimension', () => {
+    const { bands } = simulateMany(dataset, options)
+    assert.equal(bands.decileBins.length, 10)
+    for (const b of bands.decileBins) assert.ok(b.lowPct <= b.meanPct && b.meanPct <= b.highPct)
+    assert.deepEqual(Object.keys(bands.dimensions), ['Recall', 'Comprehend', 'Solve'])
+  })
+
+  it('collapses to a point with a single run', () => {
+    const { bands } = simulateMany(dataset, { ...options, runs: 1 })
+    assert.equal(bands.mean.lowPct, bands.mean.highPct)
   })
 })
 
@@ -179,5 +249,18 @@ describe('compareToActual', () => {
     assert.ok(comparison.topics.some((t) => t.topic === 'Sorting'))
     for (const key of ['status', 'statusLabel', 'recommendation']) assert.ok(!(key in recall))
     assert.ok(!('insights' in comparison))
+  })
+
+  it('adds the range and whether the actual value falls inside it when given repeated runs', () => {
+    const many = simulateMany(analysis.dataset, { seed: 9, cohortSize: 300, runs: 20 })
+    const withBands = compareToActual(many, analysis.profiles, analysis.paper)
+    const mean = withBands.mean
+    assert.ok('lowPct' in mean && 'highPct' in mean)
+    assert.equal(mean.withinRange, mean.actualPct >= mean.lowPct && mean.actualPct <= mean.highPct)
+    const bin = withBands.decileBins[9]
+    assert.ok('lowPct' in bin && 'highPct' in bin && typeof bin.withinRange === 'boolean')
+    const recall = withBands.dimensions.find((d) => d.dimension === 'Recall')
+    assert.ok('lowPct' in recall && typeof recall.withinRange === 'boolean')
+    assert.ok(!('lowPct' in comparison.mean), 'no range without repeated runs')
   })
 })

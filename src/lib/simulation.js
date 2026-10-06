@@ -7,30 +7,37 @@ import { round, describe, decileBins, markBins } from './stats.js'
 //
 // Each synthetic student has an ability theta ~ Normal(abilityMean, abilitySd).
 //
-//  * Partial-credit types: the student earns full marks with probability
+//  * Partial-credit questions: the student earns full marks with probability
 //    pFull = clamp(expectedRate + partialAbilityEffect * (theta - abilityMean), 0, 1).
 //    Otherwise each of `testCases` test cases passes independently with
 //    probability sqrt(pFull) and marks are proportional to cases passed.
-//  * All other types: a logistic item model
+//    A question is partial credit when `partialCredit` is 'all', or 'auto' and
+//    some student's actual score is strictly between 0 and the question's marks.
+//  * All other questions: a logistic item model
 //      p = g + (1 - g) / (1 + exp(-discrimination * (theta - b)))
-//    where g = guessing for guessingTypes and 0 otherwise. The item location b
-//    is solved so that a student of mean ability succeeds with probability
-//    exactly equal to the question's expected solve rate. Full marks or none.
+//    where g = guessing for questions with an answer key (correct_option) and
+//    0 otherwise. The item location b is solved so that a student of mean
+//    ability succeeds with probability exactly equal to the question's expected
+//    solve rate. Full marks or none.
 
 export const DEFAULT_SIM_PARAMS = {
   cohortSize: 1000,
   seed: 12345,
+  runs: 50,
   abilityMean: 0,
   abilitySd: 1,
   discrimination: 1.4,
   guessing: 0.2,
-  guessingTypes: ['MCQ'],
-  partialCreditTypes: ['Coding', 'Code'],
+  partialCredit: 'auto',
   testCases: 5,
   partialAbilityEffect: 0.15,
   minExpectedRatePct: 5,
   maxExpectedRatePct: 95,
 }
+
+const MAX_WORK = 2_000_000
+const PARTIAL_MODES = ['auto', 'all', 'none']
+const EPSILON = 1e-9
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 const isNumber = (v) => typeof v === 'number' && Number.isFinite(v)
@@ -44,6 +51,13 @@ export function validateSimParams(input = {}) {
   }
 
   check('cohortSize', Number.isInteger(params.cohortSize) && params.cohortSize >= 1 && params.cohortSize <= 100000, 'must be a whole number from 1 to 100000')
+  check('runs', Number.isInteger(params.runs) && params.runs >= 1 && params.runs <= 500, 'must be a whole number from 1 to 500')
+  check(
+    'runs',
+    !Number.isInteger(params.runs) || !Number.isInteger(params.cohortSize) || params.runs * params.cohortSize <= MAX_WORK,
+    `cohortSize x runs must not exceed ${MAX_WORK.toLocaleString('en')}`
+  )
+  check('partialCredit', PARTIAL_MODES.includes(params.partialCredit), `must be one of: ${PARTIAL_MODES.join(', ')}`)
   check('seed', Number.isInteger(params.seed), 'must be a whole number')
   check('abilityMean', isNumber(params.abilityMean), 'must be a number')
   check('abilitySd', isNumber(params.abilitySd) && params.abilitySd >= 0, 'must be a number, 0 or greater')
@@ -58,9 +72,6 @@ export function validateSimParams(input = {}) {
     !isNumber(params.minExpectedRatePct) || !isNumber(params.maxExpectedRatePct) || params.minExpectedRatePct < params.maxExpectedRatePct,
     'must be less than maxExpectedRatePct'
   )
-  for (const key of ['guessingTypes', 'partialCreditTypes']) {
-    check(key, Array.isArray(params[key]) && params[key].every((t) => typeof t === 'string'), 'must be a list of question types')
-  }
 
   return { params, errors }
 }
@@ -75,16 +86,25 @@ function mulberry32(seed) {
   }
 }
 
-const typeSet = (list) => new Set(list.map((t) => t.trim().toLowerCase()))
+// Ids of questions where some student's actual score is strictly between 0 and the marks.
+function observedPartialCredit(dataset) {
+  const found = new Set()
+  for (const q of dataset.questions) {
+    if (dataset.students.some((s) => q.id in s.scores && s.scores[q.id] > EPSILON && s.scores[q.id] < q.marks - EPSILON)) {
+      found.add(q.id)
+    }
+  }
+  return found
+}
 
-function prepareQuestion(q, params, partialTypes, guessTypes) {
+function prepareQuestion(q, params, partialIds) {
   const { ratePct } = resolveExpectedSolveRate(q)
   const rate = clamp(ratePct, params.minExpectedRatePct, params.maxExpectedRatePct) / 100
-  const type = q.type.trim().toLowerCase()
 
-  if (partialTypes.has(type)) return { q, mode: 'partial', rate }
+  const partial = params.partialCredit === 'all' || (params.partialCredit === 'auto' && partialIds.has(q.id))
+  if (partial) return { q, mode: 'partial', rate }
 
-  const g = guessTypes.has(type) ? params.guessing : 0
+  const g = q.correctOption ? params.guessing : 0
   const s = clamp((rate - g) / (1 - g), 0.01, 0.99)
   const location = params.abilityMean - Math.log(s / (1 - s)) / params.discrimination
   return { q, mode: 'full', g, location }
@@ -103,9 +123,8 @@ export function simulateCohort(dataset, rawParams = {}) {
     return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * rand())
   }
 
-  const partialTypes = typeSet(params.partialCreditTypes)
-  const guessTypes = typeSet(params.guessingTypes)
-  const prepared = questions.map((q) => prepareQuestion(q, params, partialTypes, guessTypes))
+  const partialIds = params.partialCredit === 'auto' ? observedPartialCredit(dataset) : new Set()
+  const prepared = questions.map((q) => prepareQuestion(q, params, partialIds))
   const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0)
 
   const groups = { dimensions: {}, topics: {} }
@@ -172,6 +191,12 @@ export function simulateCohort(dataset, rawParams = {}) {
     params,
     studentCount: params.cohortSize,
     totalMarks: round(totalMarks),
+    questions: prepared.map((p) => ({ id: p.q.id, mode: p.mode === 'partial' ? 'partial' : 'full', guessing: p.mode === 'full' ? p.g : 0 })),
+    modes: {
+      partialCredit: prepared.filter((p) => p.mode === 'partial').length,
+      guessing: prepared.filter((p) => p.mode === 'full' && p.g > 0).length,
+      standard: prepared.filter((p) => p.mode === 'full' && p.g === 0).length,
+    },
     pct: describe(items.map((i) => i.pct)),
     earned: describe(items.map((i) => i.earned)),
     decileBins: decileBins(items),
@@ -181,39 +206,97 @@ export function simulateCohort(dataset, rawParams = {}) {
   }
 }
 
-// Gaps are always actual minus expected, in percentage points.
+const percentile = (sorted, p) => {
+  const position = p * (sorted.length - 1)
+  const lower = Math.floor(position)
+  const upper = Math.ceil(position)
+  return sorted[lower] + (sorted[upper] - sorted[lower]) * (position - lower)
+}
+
+// 90% range (5th to 95th percentile) and mean of a list of values.
+function range(values) {
+  const sorted = [...values].sort((a, b) => a - b)
+  return {
+    meanPct: round(values.reduce((a, b) => a + b, 0) / values.length),
+    lowPct: round(percentile(sorted, 0.05)),
+    highPct: round(percentile(sorted, 0.95)),
+  }
+}
+
+// The run for params.seed, plus the 90% range of key results over params.runs
+// runs (seeds seed, seed + 1, ...). Throws on invalid parameters.
+export function simulateMany(dataset, rawParams = {}) {
+  const { params, errors } = validateSimParams(rawParams)
+  if (errors.length) throw new Error(`Invalid simulation parameters: ${errors.join('; ')}`)
+  const first = simulateCohort(dataset, params)
+  const results = [first]
+  for (let i = 1; i < params.runs; i++) results.push(simulateCohort(dataset, { ...params, seed: params.seed + i }))
+
+  const stat = (key) => range(results.map((r) => r.pct[key]))
+  return {
+    ...first,
+    bands: {
+      runs: params.runs,
+      mean: stat('mean'),
+      median: stat('median'),
+      stdDev: stat('stdDev'),
+      decileBins: first.decileBins.map((bin, i) => ({ label: bin.label, ...range(results.map((r) => r.decileBins[i].percentage)) })),
+      dimensions: Object.fromEntries(
+        Object.keys(first.dimensions).map((d) => [d, range(results.map((r) => r.dimensions[d].expectedMasteryPct))])
+      ),
+    },
+  }
+}
+
+// Adds lowPct / highPct / withinRange to a row when a range is available.
+const withRange = (row, actual, band) =>
+  band ? { ...row, lowPct: band.lowPct, highPct: band.highPct, withinRange: actual != null && actual >= band.lowPct && actual <= band.highPct } : row
+
+// Gaps are always actual minus expected, in percentage points. If the
+// simulation came from simulateMany, rows also carry the 90% range.
 export function compareToActual(simulation, profiles, paper) {
+  const bands = simulation.bands ?? null
   const gap = (actual, expected) => (actual == null || expected == null ? null : round(actual - expected))
-  const stat = (key) => ({
-    expectedPct: simulation.pct[key],
-    actualPct: paper.overall.pct[key],
-    gapPp: gap(paper.overall.pct[key], simulation.pct[key]),
-  })
-  const binRows = (expectedBins, actualBins) =>
+  const stat = (key) =>
+    withRange(
+      { expectedPct: simulation.pct[key], actualPct: paper.overall.pct[key], gapPp: gap(paper.overall.pct[key], simulation.pct[key]) },
+      paper.overall.pct[key],
+      bands?.[key]
+    )
+  const binRows = (expectedBins, actualBins, bandBins = null) =>
     expectedBins.map((expected, i) => {
       const actual = actualBins[i]
-      return {
-        label: expected.label,
-        expectedCount: expected.count,
-        expectedPct: expected.percentage,
-        actualCount: actual?.count ?? 0,
-        actualPct: actual?.percentage ?? 0,
-        deltaPp: round((actual?.percentage ?? 0) - expected.percentage),
-      }
+      const actualPct = actual?.percentage ?? 0
+      return withRange(
+        {
+          label: expected.label,
+          expectedCount: expected.count,
+          expectedPct: expected.percentage,
+          actualCount: actual?.count ?? 0,
+          actualPct,
+          deltaPp: round(actualPct - expected.percentage),
+        },
+        actualPct,
+        bandBins?.[i]
+      )
     })
 
-  const deciles = binRows(simulation.decileBins, paper.overall.decileBins)
+  const deciles = binRows(simulation.decileBins, paper.overall.decileBins, bands?.decileBins)
 
-  const gapRows = (expectedGroup, actualGroup, key) =>
+  const gapRows = (expectedGroup, actualGroup, key, bandGroup = null) =>
     Object.entries(expectedGroup).map(([name, e]) => {
       const actualMasteryPct = actualGroup[name]?.masteryPct ?? null
-      return {
-        [key]: name,
-        availableMarks: e.availableMarks,
-        expectedMasteryPct: e.expectedMasteryPct,
+      return withRange(
+        {
+          [key]: name,
+          availableMarks: e.availableMarks,
+          expectedMasteryPct: e.expectedMasteryPct,
+          actualMasteryPct,
+          gapPp: gap(actualMasteryPct, e.expectedMasteryPct),
+        },
         actualMasteryPct,
-        gapPp: gap(actualMasteryPct, e.expectedMasteryPct),
-      }
+        bandGroup?.[name]
+      )
     })
 
   return {
@@ -223,7 +306,7 @@ export function compareToActual(simulation, profiles, paper) {
     distributionDistancePct: round(deciles.reduce((sum, b) => sum + Math.abs(b.deltaPp), 0) / 2),
     decileBins: deciles,
     markBins: binRows(simulation.markBins, paper.overall.markBins),
-    dimensions: gapRows(simulation.dimensions, profiles.cohort.dimensions, 'dimension'),
+    dimensions: gapRows(simulation.dimensions, profiles.cohort.dimensions, 'dimension', bands?.dimensions),
     topics: gapRows(simulation.topics, profiles.cohort.topics, 'topic'),
   }
 }

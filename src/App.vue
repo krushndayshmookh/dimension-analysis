@@ -467,14 +467,17 @@
             <small class="hint">{{ f.hint }}</small>
           </div>
           <div class="form-group">
-            <label for="sim-guessingTypes">Guessing question types</label>
-            <input id="sim-guessingTypes" v-model="simForm.guessingTypesText" type="text" />
-            <small class="hint">Comma-separated question_type values the guessing floor applies to.</small>
-          </div>
-          <div class="form-group">
-            <label for="sim-partialTypes">Partial-credit question types</label>
-            <input id="sim-partialTypes" v-model="simForm.partialCreditTypesText" type="text" />
-            <small class="hint">Comma-separated question_type values scored by test cases passed.</small>
+            <label for="sim-partialCredit">Partial-credit questions</label>
+            <select id="sim-partialCredit" v-model="simForm.partialCredit">
+              <option value="auto">Detect from the actual scores</option>
+              <option value="all">All questions</option>
+              <option value="none">None</option>
+            </select>
+            <small class="hint">
+              Partial-credit questions are scored by test cases passed instead of all-or-nothing. Detection looks for
+              students whose actual score is between 0 and full marks. The guessing floor applies to questions with a
+              <code>correct_option</code> ({{ answerKeyCount }} here).
+            </small>
           </div>
         </div>
         <div v-if="simErrors.length" class="notice notice-error">
@@ -508,9 +511,9 @@
         <p class="stats-line">
           Last run: {{ simResult.studentCount }} synthetic students · seed {{ simResult.params.seed }} · ability
           N({{ simResult.params.abilityMean }}, {{ simResult.params.abilitySd }}) · discrimination
-          {{ simResult.params.discrimination }} · guessing {{ simResult.params.guessing }}
-          ({{ simResult.params.guessingTypes.join(', ') || 'none' }}) · partial credit
-          ({{ simResult.params.partialCreditTypes.join(', ') || 'none' }}), {{ simResult.params.testCases }} test cases
+          {{ simResult.params.discrimination }} · {{ simResult.modes.partialCredit }} partial-credit question(s)
+          ({{ simResult.params.testCases }} test cases) · guessing floor {{ simResult.params.guessing }} on
+          {{ simResult.modes.guessing }} question(s) · range from {{ simResult.bands.runs }} run(s)
         </p>
 
         <div class="stat-cards-grid">
@@ -520,6 +523,10 @@
             <span class="stat-desc">
               actual {{ pct(s.actualPct) }} · gap {{ signed(s.gapPp, ' pp') }}
               <VerdictTag v-if="s.tagged" :verdict="V.gapVerdict(s.gapPp, settings)" />
+            </span>
+            <span v-if="s.lowPct != null && simResult.bands.runs > 1" class="stat-desc">
+              90% range of expected {{ pct(s.lowPct) }} – {{ pct(s.highPct) }}
+              <span class="tag" :class="s.withinRange ? 'tag-good' : 'tag-warn'">{{ s.withinRange ? 'Actual within range' : 'Actual outside range' }}</span>
             </span>
           </div>
           <div class="stat-card">
@@ -834,7 +841,7 @@ import { parseCsv } from './lib/csv.js'
 import { readDataset } from './lib/input.js'
 import { analyzeDataset } from './lib/analysis.js'
 import { DIMENSIONS, DEFAULT_EXPECTED_SOLVE_RATES } from './lib/constants.js'
-import { DEFAULT_SIM_PARAMS, validateSimParams, simulateCohort, compareToActual } from './lib/simulation.js'
+import { DEFAULT_SIM_PARAMS, validateSimParams, simulateMany, compareToActual } from './lib/simulation.js'
 import { formatNumber as num, formatPct as pct, formatSigned as signed, clampPct } from './lib/format.js'
 import { DEFAULT_SETTINGS, SETTINGS_SCHEMA, mergeSettings, validateSettings, getPath, setPath, cloneSettings } from './lib/settings.js'
 import * as V from './lib/verdicts.js'
@@ -1353,6 +1360,7 @@ const deviationCounts = computed(() =>
 const simFields = [
   { key: 'cohortSize', label: 'Synthetic cohort size', step: 1, hint: 'Simulated students (1–100000). Larger values reduce sampling noise.' },
   { key: 'seed', label: 'Random seed', step: 1, hint: 'The same seed and parameters reproduce the same result.' },
+  { key: 'runs', label: 'Runs for the range', step: 1, hint: 'Simulations (seed, seed+1, ...) used for the 90% range of expected results. 1 disables the range.' },
   { key: 'abilityMean', label: 'Ability mean', step: 0.1, hint: 'A student at this ability succeeds at exactly the expected solve rate.' },
   { key: 'abilitySd', label: 'Ability standard deviation', step: 0.05, hint: 'Spread of ability. 0 makes every synthetic student identical.' },
   { key: 'discrimination', label: 'Discrimination', step: 0.1, hint: 'How sharply the chance of success rises with ability.' },
@@ -1363,11 +1371,7 @@ const simFields = [
   { key: 'maxExpectedRatePct', label: 'Maximum expected rate (%)', step: 1, hint: 'Higher expected rates are lowered to this before simulating.' },
 ]
 
-const defaultsForForm = () => ({
-  ...DEFAULT_SIM_PARAMS,
-  guessingTypesText: DEFAULT_SIM_PARAMS.guessingTypes.join(', '),
-  partialCreditTypesText: DEFAULT_SIM_PARAMS.partialCreditTypes.join(', '),
-})
+const defaultsForForm = () => ({ ...DEFAULT_SIM_PARAMS })
 
 const simForm = reactive(defaultsForForm())
 const simResult = shallowRef(null)
@@ -1375,20 +1379,15 @@ const comparison = shallowRef(null)
 const simErrors = ref([])
 const simDirty = ref(false)
 
-const splitList = (text) => String(text ?? '').split(',').map((t) => t.trim()).filter(Boolean)
-
-function formParams() {
-  const { guessingTypesText, partialCreditTypesText, ...numbers } = simForm
-  return { ...numbers, guessingTypes: splitList(guessingTypesText), partialCreditTypes: splitList(partialCreditTypesText) }
-}
+const answerKeyCount = computed(() => dataset.value.questions.filter((q) => q.correctOption).length)
 
 function runSimulation(newSeed) {
   if (!exam.value) return
   if (newSeed) simForm.seed = Math.floor(Math.random() * 2 ** 31)
-  const { params, errors } = validateSimParams(formParams())
+  const { params, errors } = validateSimParams({ ...simForm })
   simErrors.value = errors
   if (errors.length) return
-  simResult.value = simulateCohort(dataset.value, params)
+  simResult.value = simulateMany(dataset.value, params)
   comparison.value = compareToActual(simResult.value, profiles.value, paper.value)
   simDirty.value = false
 }
@@ -1409,6 +1408,17 @@ const comparisonStats = computed(() => [
   { label: 'Standard deviation (pp)', tagged: false, ...comparison.value.stdDev },
 ])
 
+// Present only when the simulation ran more than once.
+const rangeColumns = [
+  { key: 'range', label: 'Expected 90% range', type: 'text', value: (r) => (r.lowPct == null ? null : `${r.lowPct}% – ${r.highPct}%`) },
+  {
+    key: 'inRange',
+    label: 'Actual vs range',
+    type: 'text',
+    verdict: (r) => (r.withinRange == null ? null : { label: r.withinRange ? 'Within' : 'Outside', tone: r.withinRange ? 'good' : 'warn' }),
+  },
+]
+
 const comparisonBinColumns = [
   { key: 'label', label: 'Range', type: 'text' },
   { key: 'expectedCount', label: 'Expected students', type: 'number' },
@@ -1417,6 +1427,7 @@ const comparisonBinColumns = [
   { key: 'actualPct', label: 'Actual %', type: 'number', format: (v) => pct(v) },
   { key: 'deltaPp', label: 'Actual − expected', type: 'number' },
   { key: 'gapLevel', label: 'Level', type: 'text', verdict: (r) => V.gapVerdict(r.deltaPp, settings.value) },
+  ...rangeColumns,
   { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualPct, filterable: false, sortable: false, exportable: false },
 ]
 
@@ -1427,6 +1438,7 @@ const gapColumns = (key, label) => [
   { key: 'actualMasteryPct', label: 'Actual mastery', type: 'number', format: (v) => pct(v) },
   { key: 'gapPp', label: 'Actual − expected', type: 'number' },
   { key: 'gapLevel', label: 'Level', type: 'text', verdict: (r) => V.gapVerdict(r.gapPp, settings.value) },
+  ...rangeColumns,
   { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualMasteryPct, filterable: false, sortable: false, exportable: false },
 ]
 
