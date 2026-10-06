@@ -1,38 +1,25 @@
 import { spawn } from 'node:child_process'
+import { createRequire } from 'node:module'
+import path from 'node:path'
 
-// Spawn server process
-const server = spawn('node', ['server/server.js'], {
-  stdio: 'inherit',
-  shell: true,
-})
+// Runs the storage server and the Vite dev server together.
+const require = createRequire(import.meta.url)
+const viteBin = path.join(path.dirname(require.resolve('vite/package.json')), 'bin', 'vite.js')
 
-// Spawn client dev server
-const client = spawn('npx', ['vite'], {
-  stdio: 'inherit',
-  shell: true,
-})
+const children = [
+  spawn(process.execPath, ['server/server.js'], { stdio: 'inherit' }),
+  spawn(process.execPath, [viteBin], { stdio: 'inherit' }),
+]
 
-const cleanup = (code = 0) => {
-  try {
-    server.kill()
-  } catch {}
-  try {
-    client.kill()
-  } catch {}
+const stop = (code = 0) => {
+  for (const child of children) child.kill()
   process.exit(code)
 }
 
-process.on('SIGINT', () => cleanup(0))
-process.on('SIGTERM', () => cleanup(0))
-
-server.on('exit', (code) => {
-  if (code !== 0 && code !== null) {
-    cleanup(code)
-  }
-})
-
-client.on('exit', (code) => {
-  if (code !== 0 && code !== null) {
-    cleanup(code)
-  }
-})
+process.on('SIGINT', () => stop(0))
+process.on('SIGTERM', () => stop(0))
+for (const child of children) {
+  child.on('exit', (code) => {
+    if (code) stop(code)
+  })
+}
