@@ -99,8 +99,8 @@ describe('simulateCohort', () => {
     const guess = simulateCohort(singleQuestionDataset('MCQ', 60), {
       cohortSize: 20000, abilitySd: 3, guessing: 0.5, guessingTypes: ['MCQ'], seed: 3,
     })
-    assert.ok(guess.pct.min === 0 || guess.pct.min === null || true)
-    assert.ok(noGuess.pct.mean !== guess.pct.mean)
+    // Same ability spread and rate; a guessing floor of 0.5 flattens the success curve.
+    assert.ok(noGuess.pct.stdDev > guess.pct.stdDev, `${noGuess.pct.stdDev} should exceed ${guess.pct.stdDev}`)
   })
 
   it('awards partial credit for the configured types', () => {
