@@ -19,8 +19,9 @@ function solveRateOf(row) {
 // The rows are never dropped: the instructor decides what to keep.
 export function readListing(parsed) {
   const seen = new Set()
-  const questions = (parsed.data ?? []).map((raw, index) => {
+  const questions = (parsed.data ?? []).flatMap((raw, index) => {
     const row = lowerRow(raw)
+    if (Object.values(row).every((v) => v === '')) return []
     const problems = []
 
     const id = row['question id']
@@ -55,7 +56,7 @@ export function readListing(parsed) {
       problems.push(`solve rate "${expectedSolveRate}" must be a percentage from 0 to 100`)
     }
 
-    return { row: index + 2, id, passage: row.comprehensionid ?? '', type, set, difficulty, dimensions, topics, expectedSolveRate, problems }
+    return [{ row: index + 2, id, passage: row.comprehensionid ?? '', type, set, difficulty, dimensions, topics, expectedSolveRate, problems }]
   })
 
   // Questions on one passage share its topics: borrow them when a question has none.

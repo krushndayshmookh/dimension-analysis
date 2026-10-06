@@ -94,6 +94,11 @@ describe('readListing', () => {
     assert.deepEqual(questions.map((q) => q.row), [2, 3])
   })
 
+  it('skips rows where every cell is empty', async () => {
+    const { questions } = readListing(await parse('Question ID,Type,Set,Difficulty,Dimensions,Topics\n1,Assessment,A,EASY,Recall,T\n,,,,,\n'))
+    assert.equal(questions.length, 1)
+  })
+
   it('reports duplicate ids', async () => {
     const { questions } = readListing(await parse('Question ID,Type,Set,Difficulty,Dimensions,Topics\n1,Assessment,A,EASY,Recall,T\n1,Assessment,B,EASY,Recall,T\n'))
     assert.ok(questions[1].problems.some((p) => /more than once|duplicate/i.test(p)))
