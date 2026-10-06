@@ -22,7 +22,7 @@ export const PAGES = [
   { id: 'paper', label: 'Paper analysis', group: 'analysis', needsExam: true, component: PaperPage },
   { id: 'simulation', label: 'Simulation', group: 'analysis', needsExam: true, component: SimulationPage },
   { id: 'student', label: 'Student profile', group: 'analysis', needsExam: true, component: StudentPage },
-  ...TOOLS.map((t) => ({ id: t.id, label: t.label, group: 'tools', needsExam: true, component: t.component })),
+  ...TOOLS.map((t) => ({ id: t.id, label: t.label, group: 'tools', needsExam: t.needsExam ?? true, component: t.component })),
   { id: 'upload', label: 'Upload', group: 'library', needsExam: false, component: UploadPage },
   { id: 'history', label: 'History', group: 'library', needsExam: false, component: HistoryPage },
   { id: 'compare', label: 'Compare exams', group: 'library', needsExam: false, component: ComparePage },

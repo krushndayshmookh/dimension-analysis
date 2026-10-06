@@ -153,5 +153,5 @@ export function scoresTable(config, students, fractions) {
 
 export const studentsTable = (students) => ({
   columns: STUDENT_COLUMNS,
-  rows: students.map((s) => ({ student_id: s.id, student_name: s.name || s.id, section: '', attendance: s.absent ? 'absent' : 'present' })),
+  rows: students.map((s) => ({ student_id: s.id, student_name: s.name || s.id, section: s.section ?? '', attendance: s.absent ? 'absent' : 'present' })),
 })

@@ -47,3 +47,7 @@ One row per student, one column per question.
 | `attendance` | Optional. `present` or `absent`; blank means present. Absent students stay in the cohort with the scores given (normally blank, which counts as zero), are counted as absent, and are left out of attempt rates and skipping statistics. |
 
 Without this file, student ids are used as names and there are no sections. Extra columns are ignored.
+
+## Converting the analytics team's sheets
+
+Tools → **Sheet converter** (or `node scripts/convert.js`, see the comment at the top of the script) turns the question listing, the coding scores, the quiz scores and the enrolled students into these three files. Each sheet is recognised by its columns. Total marks of the coding questions and of the quiz questions are given on the page and divided equally over the questions of that type; coding scores follow the share of test cases passed, negative quiz marks count as 0, and a blank stays unattempted. Listing rows that are not in the score sheets are listed so they can be added or left out, and every cell can be edited before downloading.

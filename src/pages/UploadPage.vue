@@ -34,7 +34,7 @@
           </Field>
           <Field label="Student details (optional)" html-for="studentsFile">
             <FileInput id="studentsFile" aria-label="Student details file" @change="(f) => pick('students', f)" />
-            <template #hint>student_id, student_name[, section]</template>
+            <template #hint>student_id, student_name[, section][, attendance]</template>
           </Field>
         </div>
         <div>

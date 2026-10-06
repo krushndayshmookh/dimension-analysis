@@ -208,7 +208,7 @@ const skipperColumns = [
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'section', label: 'Section', type: 'text' },
   { key: 'skippedCount', label: 'Questions blank', type: 'number' },
-  { key: 'skippedIds', label: 'Not attempted', type: 'text', format: (v) => v.join(', '), value: (r) => r.skippedIds.join(' ') },
+  { key: 'skippedIds', label: 'Not attempted', type: 'text' },
   { key: 'attemptRatePct', label: 'Attempt rate', type: 'number', format: (v) => pct(v) },
   { key: 'skippedMarks', label: 'Marks left', type: 'number', format: (v) => num(v) },
   { key: 'skippedMarksPct', label: '% of exam marks', type: 'number', format: (v) => pct(v) },
