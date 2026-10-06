@@ -38,7 +38,7 @@
       </SectionCard>
 
       <SectionCard title="Dimension balance by section">
-        <RadarChart :series="radarSeries" />
+        <div class="mx-auto w-full max-w-2xl"><RadarChart :series="radarSeries" height-class="h-96" /></div>
       </SectionCard>
 
       <SectionCard title="Score distribution by section" description="Share of each section's students in each decile of mastery.">

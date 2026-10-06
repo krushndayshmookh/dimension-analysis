@@ -1,5 +1,5 @@
 <template>
-  <div class="radar-chart-container">
+  <div class="relative w-full" :class="heightClass">
     <canvas ref="canvasRef"></canvas>
   </div>
 </template>
@@ -18,6 +18,8 @@ const props = defineProps({
   referenceLabel: { type: String, default: 'Cohort' },
   // Several series instead of values/referenceValues: [{ label, values, color }].
   series: { type: Array, default: null },
+  // Tailwind height class of the chart area.
+  heightClass: { type: String, default: 'h-80' },
 })
 
 const canvasRef = ref(null)

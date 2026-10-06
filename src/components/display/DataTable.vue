@@ -32,7 +32,8 @@
                 v-if="column.filterable !== false"
                 v-model="filters[column.key]"
                 type="text"
-                class="h-7 min-w-16 px-2 text-xs"
+                size="1"
+                class="h-7 min-w-14 px-2 text-xs"
                 :placeholder="column.type === 'number' ? '>50  40..60' : 'filter'"
                 :aria-label="`Filter ${column.label}`"
               />
@@ -90,6 +91,7 @@ import VerdictTag from './VerdictTag.vue'
 import { applyTableState, columnText, columnValue, tableToCsv, verdictList } from '@/lib/table.js'
 import { downloadText } from '@/lib/download.js'
 import { TONE_DOT } from '@/lib/tones.js'
+import { cn } from '@/lib/utils'
 import { useSettingsStore } from '@/stores/settings.js'
 
 const props = defineProps({
@@ -157,5 +159,12 @@ function toggleSort(column) {
 
 const sortIcon = (column) => (sortKey.value !== column.key ? ArrowUpDownIcon : sortDir.value === 'asc' ? ArrowUpIcon : ArrowDownIcon)
 const ariaSort = (column) => (sortKey.value !== column.key ? 'none' : sortDir.value === 'asc' ? 'ascending' : 'descending')
-const cellClass = (column) => (column.type === 'number' || column.align === 'right' ? 'text-right tabular-nums' : '')
+// Bar columns get most of the spare width; a column can add its own classes with `class`.
+const BAR_KEYS = ['bar', 'bars']
+const cellClass = (column) =>
+  cn(
+    column.type === 'number' || column.align === 'right' ? 'text-right tabular-nums' : '',
+    BAR_KEYS.includes(column.key) ? 'w-[34%] min-w-48 text-left' : '',
+    column.class
+  )
 </script>

@@ -33,6 +33,17 @@ describe('distributionRows', () => {
     assert.deepEqual(top.students, [{ id: 'a', label: 'Alice (95%)' }])
   })
 
+  it('scales each bar to the largest bin so the shape of the distribution shows', () => {
+    const twoBins = distributionRows(
+      { decileBins: decileBins([{ id: 'a', pct: 95 }, { id: 'a', pct: 96 }, { id: 'b', pct: 5 }]), markBins: [] },
+      'percentage', students, valueOf
+    )
+    assert.equal(twoBins[0].barPct, 100, 'the fullest bin fills the bar')
+    assert.ok(Math.abs(twoBins.at(-1).barPct - 50) < 0.1, 'half of the fullest bin (percentages are rounded)')
+    assert.equal(twoBins[1].barPct, 0)
+    assert.ok(distributionRows({ decileBins: decileBins([]), markBins: [] }, 'percentage', students, valueOf).every((r) => r.barPct === 0))
+  })
+
   it('does not change the bins it is given', () => {
     distributionRows(dist, 'percentage', students, valueOf)
     assert.equal(dist.decileBins[0].label, '0-10%')

@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-container"><canvas ref="canvasRef"></canvas></div>
+  <div class="relative w-full" :class="heightClass"><canvas ref="canvasRef"></canvas></div>
 </template>
 
 <script setup>
@@ -16,6 +16,8 @@ const props = defineProps({
   yMin: { type: Number, default: 0 },
   yMax: { type: Number, default: 100 },
   diagonal: { type: Boolean, default: false },
+  // Tailwind height class of the chart area.
+  heightClass: { type: String, default: 'h-80' },
 })
 
 const canvasRef = ref(null)
