@@ -270,3 +270,91 @@ describe('readDataset', () => {
     assert.ok(result.errors.length >= 1)
   })
 })
+
+describe('readAnswers (optional student_answers.csv)', () => {
+  const keyed = `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option
+Q1,assessment,easy,Recall,Arrays,1,,B
+Q2,assignment,easy,Recall,Arrays,5,,
+Q3,assessment,easy,Recall,Arrays,1,,A
+`
+  const scores = 'student_id,Q1,Q2,Q3\nS1,1,5,0\nS2,0,3,1\nS3,,2,\n'
+  const setup = async () => {
+    const config = await parse(keyed)
+    const { questions } = readExamConfig(config)
+    const { students } = readScores(await parse(scores), questions)
+    return { questions, studentIds: students.map((s) => s.id) }
+  }
+
+  it('reads one chosen option per student and question, upper-cased, blank meaning no answer', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    const { answers, errors } = readAnswers(await parse('student_id,Q1,Q3\nS1,b,C\nS2,A,\nS3,,\n'), questions, studentIds)
+    assert.deepEqual(errors, [])
+    assert.deepEqual(answers, { S1: { Q1: 'B', Q3: 'C' }, S2: { Q1: 'A' }, S3: {} })
+  })
+
+  it('rejects columns for questions that have no answer key, or that do not exist', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q2,Q3\nS1,B,A,A\n'), questions, studentIds), 'Q2'))
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3,Q9\nS1,B,A,A\n'), questions, studentIds), 'Q9'))
+  })
+
+  it('rejects a file that lacks a column for a question with an answer key', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1\nS1,B\n'), questions, studentIds), 'Q3'))
+  })
+
+  it('rejects an unknown or duplicate student, and a first column that is not student_id', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS9,B,A\n'), questions, studentIds), 'S9'))
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS1,B,A\nS1,B,A\n'), questions, studentIds), 'duplicate'))
+    assert.ok(hasError(readAnswers(await parse('id,Q1,Q3\nS1,B,A\n'), questions, studentIds), 'student_id'))
+  })
+
+  it('rejects options that are not a short word', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS1,"B, C",A\n'), questions, studentIds), 'option'))
+  })
+
+  it('warns about students with no row, and answers that disagree with the scores', async () => {
+    const { readAnswers } = await import('../src/lib/input.js')
+    const { questions, studentIds } = await setup()
+    // S1 chose the key (B) on Q1 and scored 1: fine. S2 chose the key (A) on Q3 and scored 1: fine.
+    const consistent = readAnswers(await parse('student_id,Q1,Q3\nS1,B,C\nS2,C,A\n'), questions, studentIds, readScores(await parse(scores), questions).students)
+    assert.deepEqual(consistent.errors, [])
+    assert.ok(consistent.warnings.some((w) => w.includes('S3')), 'S3 has no row')
+    assert.ok(!consistent.warnings.some((w) => /disagree/i.test(w)))
+    const clash = readAnswers(await parse('student_id,Q1,Q3\nS1,A,C\nS2,C,A\nS3,,\n'), questions, studentIds, readScores(await parse(scores), questions).students)
+    assert.ok(clash.warnings.some((w) => /disagree/i.test(w) && w.includes('S1')))
+  })
+
+  it('is attached to the dataset by readDataset', async () => {
+    const { readDataset } = await import('../src/lib/input.js')
+    const result = readDataset({
+      config: await parse(keyed),
+      scores: await parse(scores),
+      students: null,
+      answers: await parse('student_id,Q1,Q3\nS1,B,C\nS2,A,A\nS3,,\n'),
+    })
+    assert.deepEqual(result.errors, [])
+    assert.deepEqual(result.dataset.students[0].answers, { Q1: 'B', Q3: 'C' })
+    assert.deepEqual(result.dataset.students[2].answers, {})
+  })
+
+  it('reports answer-file errors with the other files’ errors, and needs an answer key', async () => {
+    const { readDataset } = await import('../src/lib/input.js')
+    const noKeys = await readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null, answers: await parse('student_id,Q1\nS1,B\n') })
+    assert.ok(noKeys.errors.some((e) => /correct_option/.test(e)), 'an answers file needs questions with a correct_option')
+    assert.equal(noKeys.dataset, null)
+  })
+
+  it('leaves students without an answers property when no file is given', async () => {
+    const { readDataset } = await import('../src/lib/input.js')
+    const result = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
+    assert.ok(result.dataset.students.every((s) => !('answers' in s)))
+  })
+})

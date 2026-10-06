@@ -78,7 +78,7 @@
             <div class="form-group">
               <label for="configFile">Exam config *</label>
               <input id="configFile" type="file" accept=".csv" @change="onFile('config', $event)" />
-              <small class="hint">question_id, question_type, question_difficulty, question_dimension, question_topics, marks[, expected_solve_rate]</small>
+              <small class="hint">question_id, question_type, question_difficulty, question_dimension, question_topics, marks[, expected_solve_rate][, correct_option]</small>
             </div>
             <div class="form-group">
               <label for="scoresFile">Student scores *</label>
@@ -88,7 +88,12 @@
             <div class="form-group">
               <label for="studentsFile">Student details (optional)</label>
               <input id="studentsFile" type="file" accept=".csv" @change="onFile('students', $event)" />
-              <small class="hint">student_id, student_name</small>
+              <small class="hint">student_id, student_name[, section]</small>
+            </div>
+            <div class="form-group">
+              <label for="answersFile">Student answers (optional)</label>
+              <input id="answersFile" type="file" accept=".csv" @change="onFile('answers', $event)" />
+              <small class="hint">student_id, then the option each student chose for every question with a correct_option. For distractor analysis.</small>
             </div>
           </div>
           <div class="form-actions">
@@ -889,7 +894,7 @@ const draft = ref(cloneSettings(settings.value))
 const analyzing = ref(false)
 
 const meta = reactive({ courseName: '', examTitle: '', examDate: new Date().toISOString().slice(0, 10) })
-const files = reactive({ config: null, scores: null, students: null })
+const files = reactive({ config: null, scores: null, students: null, answers: null })
 const inputIssues = reactive({ errors: [], warnings: [] })
 
 // { id, courseName, examTitle, examDate, dataset, profiles, paper }
@@ -985,6 +990,7 @@ async function analyze() {
       config: await parseCsv(files.config),
       scores: await parseCsv(files.scores),
       students: files.students ? await parseCsv(files.students) : null,
+      answers: files.answers ? await parseCsv(files.answers) : null,
     })
     inputIssues.warnings = result.warnings
     if (result.errors.length) {

@@ -38,6 +38,7 @@ describe('default settings', () => {
     assert.deepEqual(d.sections, { minSize: 5, significance: 0.05 })
     assert.deepEqual(d.correlation, { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 })
     assert.deepEqual(d.bands, [{ label: 'A', from: 80 }, { label: 'B', from: 65 }, { label: 'C', from: 50 }, { label: 'D', from: 40 }, { label: 'F', from: 0 }])
+    assert.deepEqual(d.distractors, { nonFunctioningBelow: 5 })
     assert.deepEqual(d.feedback, { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true })
   })
 
@@ -130,6 +131,7 @@ describe('validateSettings', () => {
     assert.ok(errorsFor('attention.weakDimensionCount', 0).some((e) => e.includes('attention.weakDimensionCount')))
     assert.ok(errorsFor('reliability.acceptableFrom', 1.5).some((e) => e.includes('reliability.acceptableFrom')))
     assert.ok(errorsFor('review.alphaGainFrom', 2).some((e) => e.includes('review.alphaGainFrom')))
+    assert.ok(errorsFor('distractors.nonFunctioningBelow', 60).some((e) => e.includes('distractors.nonFunctioningBelow')))
     assert.ok(errorsFor('sections.minSize', 0).some((e) => e.includes('sections.minSize')))
     assert.ok(errorsFor('sections.minSize', 2.5).some((e) => e.includes('sections.minSize')))
     assert.ok(errorsFor('sections.significance', 0.9).some((e) => e.includes('sections.significance')))

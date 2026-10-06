@@ -44,3 +44,16 @@ One row per student, one column per question.
 | `section` | Optional. The student's section or batch, used to compare sections. Blank means no section. |
 
 Without this file, student ids are used as names and there are no sections. Extra columns are ignored.
+
+## `student_answers.csv` (optional)
+
+Needed only for distractor analysis. One row per student, one column per
+question that has a `correct_option` in the exam config.
+
+- The first column is `student_id`; every student must be in the scores file.
+- Every question with a `correct_option` must have a column, and no other
+  question may.
+- A cell is the option the student chose (a short label such as `A`; case is
+  ignored), or blank for no answer.
+- Answers that disagree with the scores (the correct option chosen without full
+  marks, or another option with full marks) are reported as a warning.

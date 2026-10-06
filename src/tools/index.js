@@ -4,6 +4,7 @@ import Correlations from './Correlations.vue'
 import FeedbackSheets from './FeedbackSheets.vue'
 import WhatIf from './WhatIf.vue'
 import GradeBands from './GradeBands.vue'
+import Distractors from './Distractors.vue'
 
 // Registry of the tool pages shown under "Tools". Each entry is
 // { id, label, component }. A tool reads the open exam, saved exams and settings
@@ -15,4 +16,5 @@ export const TOOLS = [
   { id: 'feedback', label: 'Feedback sheets', component: FeedbackSheets },
   { id: 'whatif', label: 'What-if', component: WhatIf },
   { id: 'bands', label: 'Grade bands', component: GradeBands },
+  { id: 'distractors', label: 'Distractors', component: Distractors },
 ]

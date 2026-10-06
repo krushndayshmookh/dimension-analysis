@@ -214,8 +214,80 @@ export function readStudentNames(parsed) {
   return { names, sections, errors: out.finish(), warnings }
 }
 
-// config and scores are required; students (names) is optional.
-export function readDataset({ config, scores, students }) {
+const OPTION_PATTERN = /^[A-Za-z0-9_-]{1,20}$/
+
+// Optional answers file: student_id, then one column per question that has a
+// correct_option. A cell is the option the student chose (compared ignoring
+// case) or blank for no answer. scoredStudents ([{ id, scores }]) lets it warn
+// about answers that disagree with the scores.
+export function readAnswers(parsed, questions, studentIds, scoredStudents = null) {
+  const label = 'Student answers'
+  const out = collector()
+  const warnings = []
+  const answers = {}
+  const fields = parsed?.meta?.fields ?? []
+
+  if (normalizeName(fields[0]) !== 'student_id') {
+    out.add(`${label}: the first column must be student_id`)
+  } else {
+    const idField = fields[0]
+    const keyed = new Map(questions.filter((q) => q.correctOption).map((q) => [q.id, q]))
+    const known = new Set(questions.map((q) => q.id))
+    const questionFields = fields.slice(1)
+    const seenFields = new Set()
+    for (const field of questionFields) {
+      if (seenFields.has(field)) out.add(`${label}: column "${field}" appears more than once`)
+      seenFields.add(field)
+      if (!known.has(field)) out.add(`${label}: column "${field}" is not a question_id in the exam config`)
+      else if (!keyed.has(field)) out.add(`${label}: question ${field} has no correct_option in the exam config`)
+    }
+    const absent = [...keyed.keys()].filter((id) => !seenFields.has(id))
+    if (absent.length) out.add(`${label}: no column for question(s) with a correct_option: ${absent.join(', ')}`)
+    for (const e of parsed.errors ?? []) {
+      if (e.type === 'FieldMismatch') out.add(`${label}: data row ${(e.row ?? 0) + 1}: ${e.message}`)
+    }
+
+    const scored = new Set(studentIds)
+    const scoresById = new Map((scoredStudents ?? []).map((s) => [s.id, s.scores]))
+    let clashes = 0
+    let firstClash = null
+    ;(parsed.data ?? []).forEach((row, i) => {
+      const id = String(row[idField] ?? '').trim()
+      const where = `${label}: row ${i + 1}${id ? ` (${id})` : ''}`
+      if (!id) return out.add(`${where}: student_id is empty`)
+      if (id in answers) out.add(`${where}: duplicate student_id "${id}"`)
+      if (!scored.has(id)) out.add(`${where}: "${id}" is not a student in the scores file`)
+
+      const chosen = {}
+      for (const field of questionFields) {
+        const q = keyed.get(field)
+        if (!q) continue
+        const raw = String(row[field] ?? '').trim()
+        if (raw === '') continue
+        if (!OPTION_PATTERN.test(raw)) {
+          out.add(`${where}, ${field}: option "${raw}" must be a short label such as A or B (letters, digits, - or _)`)
+          continue
+        }
+        chosen[field] = raw.toUpperCase()
+        const score = scoresById.get(id)?.[field]
+        if (scoredStudents && (score === undefined || (chosen[field] === q.correctOption) !== (score >= q.marks - EPSILON))) {
+          clashes++
+          firstClash ??= `${id} ${field}`
+        }
+      }
+      answers[id] = chosen
+    })
+    if (!(parsed.data ?? []).length) out.add(`${label}: the file has no student rows`)
+    const missingRows = studentIds.filter((id) => !(id in answers))
+    if (missingRows.length) warnings.push(`${label}: no row for ${missingRows.length} scored student(s), treated as no answers: ${missingRows.slice(0, 10).join(', ')}${missingRows.length > 10 ? ', ...' : ''}`)
+    if (clashes) warnings.push(`${label}: ${clashes} answer(s) disagree with the scores (the key chosen without full marks, another option with full marks, or an answer where the score is blank); first: ${firstClash}`)
+  }
+
+  return { answers, errors: out.finish(), warnings }
+}
+
+// config and scores are required; students (names) and answers are optional.
+export function readDataset({ config, scores, students, answers = null }) {
   const configResult = readExamConfig(config)
   const errors = [...configResult.errors]
   const warnings = [...configResult.warnings]
@@ -226,6 +298,17 @@ export function readDataset({ config, scores, students }) {
     : readScores(scores, configResult.questions)
   errors.push(...scoresResult.errors)
   warnings.push(...scoresResult.warnings)
+
+  let answersResult = null
+  if (answers && !errors.length) {
+    if (!configResult.questions.some((q) => q.correctOption)) {
+      errors.push('Student answers: the exam config has no correct_option for any question, so the answers cannot be used')
+    } else {
+      answersResult = readAnswers(answers, configResult.questions, scoresResult.students.map((s) => s.id), scoresResult.students)
+      errors.push(...answersResult.errors)
+      warnings.push(...answersResult.warnings)
+    }
+  }
 
   let names = null
   let sections = {}
@@ -250,7 +333,13 @@ export function readDataset({ config, scores, students }) {
   return {
     dataset: {
       questions: configResult.questions,
-      students: scoresResult.students.map((s) => ({ id: s.id, name: names?.[s.id] ?? s.id, section: sections[s.id] ?? null, scores: s.scores })),
+      students: scoresResult.students.map((s) => ({
+        id: s.id,
+        name: names?.[s.id] ?? s.id,
+        section: sections[s.id] ?? null,
+        scores: s.scores,
+        ...(answersResult ? { answers: answersResult.answers[s.id] ?? {} } : {}),
+      })),
     },
     errors: [],
     warnings,

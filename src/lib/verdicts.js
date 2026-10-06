@@ -166,3 +166,22 @@ export function correlationVerdict(r, s) {
   if (size >= s.correlation.moderateFrom) return verdict('moderate', 'Moderate', 'neutral', { direction })
   return verdict('weak', 'Weak', 'neutral', { direction })
 }
+
+// q: one question from analyzeDistractors(). Returns [{ id, label, tone }].
+export function distractorFlags(q, s) {
+  const flags = []
+  const wrong = q.options.filter((o) => !o.isCorrect)
+  const correct = q.options.find((o) => o.isCorrect)
+
+  const rare = wrong.filter((o) => o.pctOfAnswered != null && o.pctOfAnswered < s.distractors.nonFunctioningBelow)
+  if (rare.length) flags.push({ id: 'non-functioning', label: `Rarely chosen: ${rare.map((o) => o.option).join(', ')}`, tone: 'info' })
+
+  const preferred = wrong
+    .filter((o) => o.pctTop != null && correct?.pctTop != null && o.pctTop > correct.pctTop)
+    .sort((a, b) => b.pctTop - a.pctTop)[0]
+  if (preferred) flags.push({ id: 'top-prefers-wrong', label: `Top students prefer ${preferred.option}`, tone: 'bad' })
+
+  const popular = wrong.filter((o) => correct && o.count > correct.count).sort((a, b) => b.count - a.count)[0]
+  if (popular) flags.push({ id: 'wrong-most-popular', label: `${popular.option} chosen more than the key`, tone: 'warn' })
+  return flags
+}

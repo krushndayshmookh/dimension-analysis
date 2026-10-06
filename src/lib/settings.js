@@ -30,6 +30,7 @@ export const DEFAULT_SETTINGS = {
   review: { alphaGainFrom: 0.02, flagReuse: true },
   sections: { minSize: 5, significance: 0.05 },
   correlation: { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 },
+  distractors: { nonFunctioningBelow: 5 },
   feedback: { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true },
   blueprint: {
     tolerancePp: 5,
@@ -211,6 +212,13 @@ export const SETTINGS_SCHEMA = [
       { path: 'correlation.moderateFrom', label: 'Moderate from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Moderate; smaller values are Weak.' },
       { path: 'correlation.strongFrom', label: 'Strong from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Strong.' },
       { path: 'correlation.minStudents', label: 'Students needed', type: 'number', unit: 'students', min: 3, max: 10000, step: 1, integer: true, description: 'Correlations based on fewer students than this are shown with a caution, because they change a lot with a few students.' },
+    ],
+  },
+  {
+    title: 'Distractors',
+    description: 'Used by the Distractors tool, which shows how often each answer option of a multiple-choice question was chosen.',
+    fields: [
+      pctField('distractors.nonFunctioningBelow', 'Rarely chosen below', 'A wrong option chosen by less than this percentage of the students who answered is flagged as rarely chosen, which means it is not working as a distractor.', { max: 50 }),
     ],
   },
   {

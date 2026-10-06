@@ -215,6 +215,25 @@ function simulateContestScores(students, questions) {
 // Deterministic answer key (A-D) for a multiple-choice question id.
 const answerKey = (id) => 'ABCD'[(Number(id.replace(/\D/g, '')) * 7 + 3) % 4]
 
+// Chosen options for the multiple-choice questions, consistent with the scores:
+// full marks means the key; otherwise a wrong option, the first wrong option
+// being the most attractive.
+function generateAnswersCsv(students, questions, scoresByStudent) {
+  const mcq = questions.filter((q) => q.type === 'MCQ')
+  const header = ['student_id', ...mcq.map((q) => q.id)].join(',')
+  const rows = students.map((stu) => {
+    const cells = mcq.map((q) => {
+      const key = answerKey(q.id)
+      if (scoresByStudent[stu.id][q.id] >= q.marks) return key
+      const wrong = 'ABCD'.split('').filter((o) => o !== key)
+      const u = rng()
+      return u < 0.5 ? wrong[0] : u < 0.8 ? wrong[1] : wrong[2]
+    })
+    return [stu.id, ...cells].join(',')
+  })
+  return [header, ...rows].join('\n')
+}
+
 // 4. Generate CSV Strings
 function generateExamConfigCsv(questions) {
   const header = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option'
@@ -256,6 +275,7 @@ export function generateContestDataset() {
   const examConfigCsv = generateExamConfigCsv(QUESTIONS)
   const studentsCsv = generateStudentsCsv(students)
   const scoresCsv = generateScoresCsvWide(students, QUESTIONS, scoresByStudent)
+  const answersCsv = generateAnswersCsv(students, QUESTIONS, scoresByStudent)
 
   return {
     questions: QUESTIONS,
@@ -264,6 +284,7 @@ export function generateContestDataset() {
     examConfigCsv,
     studentsCsv,
     scoresCsv,
+    answersCsv,
   }
 }
 
@@ -279,6 +300,7 @@ if (isDirectRun) {
   fs.writeFileSync(path.join(outDir, 'exam_config.csv'), data.examConfigCsv + '\n', 'utf8')
   fs.writeFileSync(path.join(outDir, 'students.csv'), data.studentsCsv + '\n', 'utf8')
   fs.writeFileSync(path.join(outDir, 'student_scores.csv'), data.scoresCsv + '\n', 'utf8')
+  fs.writeFileSync(path.join(outDir, 'student_answers.csv'), data.answersCsv + '\n', 'utf8')
 
   console.log(`Wrote ${data.questions.length} questions and ${data.students.length} students to ${outDir}`)
 }
