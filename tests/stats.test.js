@@ -117,3 +117,35 @@ describe('markBins', () => {
     assert.ok(closeTo(bins[7].percentage, 25))
   })
 })
+
+describe('oneWayAnova', () => {
+  it('matches a textbook example (three groups, F(2,15) = 9.26, p = 0.0025)', async () => {
+    const { oneWayAnova } = await import('../src/lib/stats.js')
+    const result = oneWayAnova([[6, 8, 4, 5, 3, 4], [8, 12, 9, 11, 6, 8], [13, 9, 11, 8, 7, 12]])
+    assert.deepEqual([result.df1, result.df2], [2, 15])
+    assert.ok(closeTo(result.f, 9.26, 0.01), `F ${result.f}`)
+    assert.ok(closeTo(result.p, 0.0025, 0.0003), `p ${result.p}`)
+  })
+
+  it('has a closed-form p-value for F(1,1)', async () => {
+    const { oneWayAnova } = await import('../src/lib/stats.js')
+    const result = oneWayAnova([[100, 43.75], [0]])
+    assert.ok(closeTo(result.f, 2.177, 0.005))
+    assert.ok(closeTo(result.p, 0.379, 0.005), `p ${result.p}`)
+  })
+
+  it('gives p = 1 when the groups have identical means', async () => {
+    const { oneWayAnova } = await import('../src/lib/stats.js')
+    const result = oneWayAnova([[1, 3], [2, 2]])
+    assert.equal(result.f, 0)
+    assert.equal(result.p, 1)
+  })
+
+  it('is null when it cannot be computed', async () => {
+    const { oneWayAnova } = await import('../src/lib/stats.js')
+    assert.equal(oneWayAnova([[1, 2, 3]]), null, 'one group')
+    assert.equal(oneWayAnova([[1], [2]]), null, 'no degrees of freedom within groups')
+    assert.equal(oneWayAnova([[5, 5], [5, 5]]), null, 'no variation at all')
+    assert.equal(oneWayAnova([[1, 2], []]), null, 'an empty group')
+  })
+})
