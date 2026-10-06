@@ -158,3 +158,36 @@ describe('tableToCsv', () => {
     assert.ok(!tableToCsv(rows, cols).split('\n')[0].includes(',,'))
   })
 })
+
+describe('verdict columns', () => {
+  const verdictCols = [
+    { key: 'id', label: 'ID', type: 'text' },
+    {
+      key: 'level',
+      label: 'Level',
+      type: 'text',
+      verdict: (r) => (r.score == null ? null : r.score >= 70 ? { label: 'Strong', tone: 'good' } : { label: 'Weak', tone: 'bad' }),
+    },
+    {
+      key: 'flags',
+      label: 'Flags',
+      type: 'text',
+      verdict: (r) => r.dims.map((d) => ({ label: d, tone: 'info' })),
+    },
+  ]
+
+  it('are searched, filtered and sorted by their labels', () => {
+    assert.deepEqual(ids(applyTableState(rows, verdictCols, { search: 'strong' })), ['S1', 'S3'])
+    assert.deepEqual(ids(applyTableState(rows, verdictCols, { filters: { level: 'weak' } })), ['S2'])
+    assert.deepEqual(ids(applyTableState(rows, verdictCols, { sortKey: 'level', sortDir: 'asc' })).slice(0, 2), ['S10', 'S1'])
+  })
+
+  it('support several verdicts per cell', () => {
+    assert.deepEqual(ids(applyTableState(rows, verdictCols, { filters: { flags: 'solve' } })), ['S1'])
+  })
+
+  it('export their labels', async () => {
+    const { tableToCsv } = await import('../src/lib/table.js')
+    assert.equal(tableToCsv([rows[0]], verdictCols).split('\n')[1], 'S1,Strong,Recall; Solve')
+  })
+})

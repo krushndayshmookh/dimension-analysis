@@ -23,7 +23,7 @@
         <thead>
           <tr>
             <th
-              v-for="column in columns"
+              v-for="column in shownColumns"
               :key="column.key"
               :class="cellClass(column)"
               :aria-sort="ariaSort(column)"
@@ -42,7 +42,7 @@
             </th>
           </tr>
           <tr class="dt-filters">
-            <th v-for="column in columns" :key="column.key">
+            <th v-for="column in shownColumns" :key="column.key">
               <input
                 v-if="column.filterable !== false"
                 v-model="filters[column.key]"
@@ -60,19 +60,30 @@
             :class="{ clickable }"
             @click="clickable && $emit('row-click', row)"
           >
-            <td v-for="column in columns" :key="column.key" :class="cellClass(column)">
+            <td v-for="column in shownColumns" :key="column.key" :class="cellClass(column)">
               <slot
                 :name="`cell-${column.key}`"
                 :row="row"
                 :value="columnValue(column, row)"
                 :text="columnText(column, row)"
               >
-                {{ columnText(column, row) || '—' }}
+                <template v-if="column.verdict">
+                  <VerdictTag v-for="(v, i) in verdictList(column, row)" :key="i" :verdict="v" />
+                  <span v-if="!verdictList(column, row).length" class="muted">—</span>
+                </template>
+                <template v-else>
+                  <span
+                    v-if="column.dot && showVerdicts && column.dot(row)"
+                    class="dot"
+                    :class="`dot-${column.dot(row).tone}`"
+                    :title="column.dot(row).label"
+                  ></span>{{ columnText(column, row) || '—' }}
+                </template>
               </slot>
             </td>
           </tr>
           <tr v-if="!visibleRows.length">
-            <td :colspan="columns.length" class="dt-empty">
+            <td :colspan="shownColumns.length" class="dt-empty">
               {{ rows.length ? 'No rows match the current search and filters.' : emptyText }}
             </td>
           </tr>
@@ -83,8 +94,9 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
-import { applyTableState, columnText, columnValue, tableToCsv } from '../lib/table.js'
+import { computed, inject, reactive, ref } from 'vue'
+import VerdictTag from './VerdictTag.vue'
+import { applyTableState, columnText, columnValue, tableToCsv, verdictList } from '../lib/table.js'
 
 const props = defineProps({
   columns: { type: Array, required: true },
@@ -101,13 +113,19 @@ const props = defineProps({
 
 defineEmits(['row-click'])
 
+const settings = inject('settings', null)
+const showVerdicts = computed(() => settings?.value?.showVerdicts ?? true)
+
+// Verdict columns disappear when the instructor turns verdict tags off.
+const shownColumns = computed(() => props.columns.filter((c) => !c.verdict || showVerdicts.value))
+
 const search = ref('')
 const filters = reactive({})
 const sortKey = ref(props.defaultSort?.key ?? null)
 const sortDir = ref(props.defaultSort?.dir ?? 'asc')
 
 const visibleRows = computed(() =>
-  applyTableState(props.rows, props.columns, {
+  applyTableState(props.rows, shownColumns.value, {
     search: search.value,
     filters,
     sortKey: sortKey.value,
@@ -121,7 +139,7 @@ const hasActiveFilters = computed(
 
 // Exports the rows as currently searched, filtered and sorted.
 function exportCsv() {
-  const blob = new Blob([tableToCsv(visibleRows.value, props.columns)], { type: 'text/csv;charset=utf-8' })
+  const blob = new Blob([tableToCsv(visibleRows.value, shownColumns.value)], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

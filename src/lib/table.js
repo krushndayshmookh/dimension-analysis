@@ -1,9 +1,21 @@
 // Pure filter / search / sort logic behind DataTable.vue.
 //
 // A column is { key, label, type: 'text' | 'number', value?: (row) => any,
-// format?: (value, row) => string }. `value` defaults to row[key].
+// format?: (value, row) => string, verdict?: (row) => verdict(s), dot?: (row) => verdict }.
+// `value` defaults to row[key] (or the verdict labels for a verdict column).
 
-export const columnValue = (column, row) => (column.value ? column.value(row) : row[column.key])
+// A verdict column has verdict: (row) => verdict | [verdict] | null (see lib/verdicts.js).
+export const verdictList = (column, row) => {
+  const v = column.verdict ? column.verdict(row) : null
+  return v == null ? [] : Array.isArray(v) ? v : [v]
+}
+
+// Verdict columns are searched, filtered and sorted by their labels.
+export const columnValue = (column, row) => {
+  if (column.value) return column.value(row)
+  if (column.verdict) return verdictList(column, row).map((v) => v.label)
+  return row[column.key]
+}
 
 const asText = (value) => {
   if (value == null) return ''
