@@ -44,11 +44,20 @@
       <button
         type="button"
         class="tab-btn"
+        :class="{ active: currentTab === 'simulation' }"
+        :disabled="!profileData"
+        @click="currentTab = 'simulation'"
+      >
+        4. Expectations Simulation
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
         :class="{ active: currentTab === 'student' }"
         :disabled="!profileData || !selectedStudent"
         @click="currentTab = 'student'"
       >
-        4. Student Profile Deep Dive
+        5. Student Profile Deep Dive
       </button>
       <button
         type="button"
@@ -56,7 +65,7 @@
         :class="{ active: currentTab === 'history' }"
         @click="currentTab = 'history'"
       >
-        5. Longitudinal History
+        6. Longitudinal History
       </button>
       <button
         type="button"
@@ -64,7 +73,7 @@
         :class="{ active: currentTab === 'saved' }"
         @click="currentTab = 'saved'"
       >
-        6. Saved Exams
+        7. Saved Exams
       </button>
     </nav>
 
@@ -181,19 +190,19 @@
           <div class="stat-card">
             <span class="stat-label">Dimensions Found</span>
             <span class="stat-value">{{ validationSummary.dimensionsCount }}</span>
-            <span class="stat-desc">Recall, Comprehend, Solve, Build, Evaluate</span>
+            <span class="stat-desc">{{ validationSummary.dimensionsList && validationSummary.dimensionsList.length ? validationSummary.dimensionsList.join(', ') : 'No dimensions specified' }}</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">Students Parsed</span>
             <span class="stat-value">{{ validationSummary.studentsCount }}</span>
-            <span class="stat-desc">Graded submissions</span>
+            <span class="stat-desc">{{ validationSummary.studentsCount === 1 ? '1 graded candidate' : `${validationSummary.studentsCount} graded candidates` }}</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">Validation Status</span>
             <span class="stat-value" :style="{ color: validationSummary.warnings.length ? '#b45309' : '#15803d' }">
               {{ validationSummary.warnings.length ? 'Warnings' : 'Valid' }}
             </span>
-            <span class="stat-desc">{{ validationSummary.warnings.length }} warnings found</span>
+            <span class="stat-desc">{{ validationSummary.warnings.length === 0 ? 'Clean configuration & scores' : `${validationSummary.warnings.length} warning${validationSummary.warnings.length === 1 ? '' : 's'} flagged` }}</span>
           </div>
         </div>
 
@@ -250,7 +259,7 @@
       <div class="side-by-side-container">
         <div class="card-box">
           <h3>Class Dimension Balance (Radar)</h3>
-          <p class="stat-desc" style="margin-bottom: 8px;">Mastery percentage distribution across the 5 cognitive dimensions.</p>
+          <p class="stat-desc" style="margin-bottom: 8px;">Mastery percentage distribution across all {{ profileData.dimensions.length }} cognitive dimensions.</p>
           <RadarChart
             :student-data="cohortDimensionScores"
             student-label="Cohort Average"
@@ -308,17 +317,39 @@
           <table>
             <thead>
               <tr>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th class="num-cell">Total Score</th>
-                <th class="num-cell">Mastery %</th>
-                <th class="num-cell">Accuracy %</th>
-                <th class="num-cell">Recall %</th>
-                <th class="num-cell">Comprehend %</th>
-                <th class="num-cell">Solve %</th>
-                <th class="num-cell">Build %</th>
-                <th class="num-cell">Evaluate %</th>
-                <th>Weakest Dimension</th>
+                <th class="sortable-th" @click="setCohortSort('id')">
+                  Student ID <span class="sort-icon">{{ cohortSortIcon('id') }}</span>
+                </th>
+                <th class="sortable-th" @click="setCohortSort('name')">
+                  Name <span class="sort-icon">{{ cohortSortIcon('name') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('score')">
+                  Total Score <span class="sort-icon">{{ cohortSortIcon('score') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('mastery')">
+                  Mastery % <span class="sort-icon">{{ cohortSortIcon('mastery') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('accuracy')">
+                  Accuracy % <span class="sort-icon">{{ cohortSortIcon('accuracy') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('Recall')">
+                  Recall % <span class="sort-icon">{{ cohortSortIcon('Recall') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('Comprehend')">
+                  Comprehend % <span class="sort-icon">{{ cohortSortIcon('Comprehend') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('Solve')">
+                  Solve % <span class="sort-icon">{{ cohortSortIcon('Solve') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('Build')">
+                  Build % <span class="sort-icon">{{ cohortSortIcon('Build') }}</span>
+                </th>
+                <th class="num-cell sortable-th" @click="setCohortSort('Evaluate')">
+                  Evaluate % <span class="sort-icon">{{ cohortSortIcon('Evaluate') }}</span>
+                </th>
+                <th class="sortable-th" @click="setCohortSort('weakest')">
+                  Weakest Dimension <span class="sort-icon">{{ cohortSortIcon('weakest') }}</span>
+                </th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -377,7 +408,10 @@
             Cohort Enrollment: <strong>{{ profileData.students.length }} students</strong>
           </p>
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-primary" @click="currentTab = 'simulation'">
+            🎲 Run Expectations vs. Reality Simulation &rarr;
+          </button>
           <button type="button" class="btn-secondary" @click="currentTab = 'cohort'">
             &larr; Cohort Overview
           </button>
@@ -785,7 +819,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="tier in difficultySpreadList" :key="tier.difficulty">
+              <tr v-for="tier in difficultySpreadList" :key="tier.difficulty" :title="tier.description">
                 <td>
                   <span class="badge badge-tier" style="font-weight: 700;">{{ tier.label }}</span>
                 </td>
@@ -816,7 +850,7 @@
                   <span v-else class="text-muted">No Questions</span>
                 </td>
                 <td>
-                  <span :class="['badge-status', tier.statusClass]">{{ tier.statusText }}</span>
+                  <span :class="['badge-status', tier.statusClass]" :title="tier.description">{{ tier.statusText }}</span>
                 </td>
               </tr>
             </tbody>
@@ -864,6 +898,7 @@
                   :key="cell.difficulty"
                   class="matrix-cell"
                   :class="cell.tintClass"
+                  :title="cell.tooltip"
                 >
                   <div v-if="cell.availMarks > 0" class="matrix-cell-content">
                     <div class="cell-marks">{{ cell.availMarks }} pts ({{ cell.qCount }} Q{{ cell.qCount === 1 ? '' : 's' }})</div>
@@ -872,7 +907,7 @@
                   <div v-else class="matrix-cell-empty-text">—</div>
                 </td>
                 <!-- Row Total Cell -->
-                <td class="matrix-cell matrix-row-total-cell">
+                <td class="matrix-cell matrix-row-total-cell" :title="row.tooltip">
                   <div class="matrix-cell-content">
                     <div class="cell-marks"><strong>{{ row.totalMarks }} pts</strong> ({{ row.totalQs }} Q{{ row.totalQs === 1 ? '' : 's' }})</div>
                     <div class="cell-mastery"><strong>{{ row.masteryPct }}%</strong></div>
@@ -886,6 +921,7 @@
                   v-for="colTotal in crossMatrixColTotals"
                   :key="colTotal.difficulty"
                   class="matrix-cell matrix-col-total-cell"
+                  :title="colTotal.tooltip"
                 >
                   <div v-if="colTotal.availMarks > 0" class="matrix-cell-content">
                     <div class="cell-marks"><strong>{{ colTotal.availMarks }} pts</strong> ({{ colTotal.qCount }} Q{{ colTotal.qCount === 1 ? '' : 's' }})</div>
@@ -894,7 +930,7 @@
                   <div v-else class="matrix-cell-empty-text">—</div>
                 </td>
                 <!-- Grand Total Cell -->
-                <td class="matrix-cell matrix-grand-total-cell">
+                <td class="matrix-cell matrix-grand-total-cell" :title="crossMatrixGrandTotal.tooltip">
                   <div class="matrix-cell-content">
                     <div class="cell-marks"><strong>{{ crossMatrixGrandTotal.totalMarks }} pts</strong> ({{ crossMatrixGrandTotal.totalQs }} Qs)</div>
                     <div class="cell-mastery-grand">{{ crossMatrixGrandTotal.masteryPct }}%</div>
@@ -1192,10 +1228,324 @@
             </span>
           </div>
         </div>
+
+        <!-- Expectations Simulation Quick Callout -->
+        <div style="margin-top: 16px; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-weight: 700; color: #1e40af; font-size: 0.95rem;">🎲 Monte Carlo Cohort Simulation Lab</div>
+            <div style="color: #1e3a8a; font-size: 0.85rem; margin-top: 2px;">Simulate synthetic cohort outcomes using IRT 3PL &amp; Partial Credit modeling and compare against actual exam results.</div>
+          </div>
+          <button type="button" class="btn-primary" @click="currentTab = 'simulation'">
+            🎲 Run Expectations vs. Reality Simulation &rarr;
+          </button>
+        </div>
       </div>
     </section>
 
-    <!-- VIEW 4: STUDENT PROFILE DEEP DIVE -->
+    <!-- VIEW 4: EXPECTATIONS SIMULATION -->
+    <section v-if="currentTab === 'simulation' && profileData" class="view-panel">
+      <!-- Section Header -->
+      <header class="view-header">
+        <div>
+          <h2 class="view-title">🎲 Expectations vs. Reality: Monte Carlo Calibration Lab</h2>
+          <p class="view-desc">
+            Item Response Theory (3PL &amp; Partial Credit) Monte Carlo simulation benchmarked against actual cohort performance across {{ activeExamInfo?.examTitle || 'Exam' }}.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" class="btn-secondary" @click="currentTab = 'paper'">
+            &larr; Paper Analysis
+          </button>
+          <button type="button" class="btn-secondary" @click="currentTab = 'cohort'">
+            Cohort Overview
+          </button>
+        </div>
+      </header>
+
+      <!-- Interactive Simulation Controls Bar -->
+      <div class="simulation-controls-bar">
+        <div class="sim-control-group">
+          <label for="simulationBinModeSelect" style="font-weight: 600;">Binning Mode:</label>
+          <select id="simulationBinModeSelect" v-model="simulationBinMode">
+            <option value="percentage">Decile % Bins (90-100% &hellip; 0-10%)</option>
+            <option value="raw">Raw Mark Bins</option>
+          </select>
+        </div>
+
+        <div class="sim-control-group">
+          <button type="button" class="btn-secondary" @click="rerunSimulation">
+            🎲 Re-run Monte Carlo Simulation
+          </button>
+          <span class="sim-meta">Seed: {{ simulationSeed }}</span>
+        </div>
+
+        <div class="sim-meta" style="margin-left: auto;">
+          <span>Cohort Size: <strong>{{ profileData.students?.length || 0 }} students</strong></span>
+          &middot;
+          <span>Questions: <strong>{{ currentQuestions.length }}</strong></span>
+          &middot;
+          <span>Total Exam Marks: <strong>{{ profileData.cohort.totalExam || profileData.cohort.total }} pts</strong></span>
+        </div>
+      </div>
+
+      <!-- 4 Diagnostic Metric Cards in a grid -->
+      <div class="stat-cards-grid">
+        <div class="stat-card">
+          <span class="stat-label">Expected vs. Actual Median</span>
+          <span class="stat-value">
+            {{ simulationData?.expectedCohort?.medianPct ?? 0 }}% <span style="font-weight: normal; font-size: 1rem; color: #64748b;">vs</span> {{ profileData.cohort.medianPct ?? 0 }}%
+          </span>
+          <span class="stat-desc" style="margin-top: 6px;">
+            <span :class="getGapBadgeClass(simulationData?.overallGap?.medianGap)">
+              Gap: {{ simulationData?.overallGap?.medianGap != null ? (simulationData.overallGap.medianGap > 0 ? '+' : '') + simulationData.overallGap.medianGap + ' pp' : 'N/A' }}
+            </span>
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Expected vs. Actual Mean</span>
+          <span class="stat-value">
+            {{ simulationData?.expectedCohort?.meanPct ?? 0 }}% <span style="font-weight: normal; font-size: 1rem; color: #64748b;">vs</span> {{ profileData.cohort.meanPct ?? profileData.cohort.masteryPct ?? 0 }}%
+          </span>
+          <span class="stat-desc" style="margin-top: 6px;">
+            <span :class="getGapBadgeClass(simulationData?.overallGap?.meanGap)">
+              Gap: {{ simulationData?.overallGap?.meanGap != null ? (simulationData.overallGap.meanGap > 0 ? '+' : '') + simulationData.overallGap.meanGap + ' pp' : 'N/A' }}
+            </span>
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Curriculum Calibration Score</span>
+          <span class="stat-value" style="color: #2563eb;">
+            {{ calibrationScore }}%
+          </span>
+          <span class="stat-desc">
+            Divergence score: {{ simulationData?.overallGap?.divergenceScore ?? 0 }} pp
+          </span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Primary Course Deficit</span>
+          <span class="stat-value" :style="{ color: (primaryDeficitDimension?.gap ?? 0) < -5 ? '#dc2626' : '#16a34a' }">
+            {{ primaryDeficitDimension ? primaryDeficitDimension.dimension : 'None' }}
+            <span v-if="primaryDeficitDimension" style="font-size: 0.95rem; font-weight: normal;">
+              ({{ primaryDeficitDimension.gap > 0 ? '+' : '' }}{{ primaryDeficitDimension.gap }} pp)
+            </span>
+          </span>
+          <span class="stat-desc" style="margin-top: 6px;">
+            <span v-if="primaryDeficitDimension" :class="getGapBadgeClass(primaryDeficitDimension.gap)">
+              {{ primaryDeficitDimension.statusLabel }}
+            </span>
+            <span v-else class="badge-gap-aligned">On Target</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Pedagogical Diagnosis Alert Banner -->
+      <div v-if="simulationData?.insights?.length" class="paper-insights-banner" style="margin-bottom: 24px;">
+        <div class="banner-title">&#128161; Pedagogical Diagnosis &amp; Calibration Insights</div>
+        <ul class="banner-list">
+          <li v-for="(insight, idx) in simulationData.insights" :key="idx">
+            {{ insight }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section 1: Score Distribution: Expected vs. Actual -->
+      <div class="card-box" style="margin-bottom: 24px;">
+        <div class="view-header" style="margin-bottom: 12px;">
+          <div>
+            <h3>1. Score Distribution: Expected vs. Actual</h3>
+            <p class="stat-desc">
+              Comparison of Monte Carlo synthetic population distribution against actual observed cohort frequencies (ordered High &darr; Low).
+            </p>
+          </div>
+          <div style="font-size: 0.8rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <span style="display: inline-flex; align-items: center; gap: 4px;">
+              <span style="display: inline-block; width: 12px; height: 8px; background: #3b82f6; border-radius: 2px;"></span> Expected
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">
+              <span style="display: inline-block; width: 12px; height: 8px; background: #10b981; border-radius: 2px;"></span> Actual (Aligned/Surplus)
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">
+              <span style="display: inline-block; width: 12px; height: 8px; background: #ef4444; border-radius: 2px;"></span> Actual (Deficit)
+            </span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Score Range (Bin)</th>
+                <th class="num-cell">Expected Students</th>
+                <th class="num-cell">Expected %</th>
+                <th class="num-cell">Actual Students</th>
+                <th class="num-cell">Actual %</th>
+                <th class="num-cell">Delta (pp)</th>
+                <th style="min-width: 140px;">Distribution Comparison</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="bin in simulationComparisonBins" :key="bin.label">
+                <td><strong>{{ bin.label }}</strong></td>
+                <td class="num-cell">{{ bin.expectedCount }}</td>
+                <td class="num-cell">{{ bin.expectedPct }}%</td>
+                <td class="num-cell">{{ bin.actualCount }}</td>
+                <td class="num-cell"><strong>{{ bin.actualPct }}%</strong></td>
+                <td class="num-cell">
+                  <span :class="getGapBadgeClass(bin.deltaPct)">
+                    {{ bin.deltaPct > 0 ? '+' : '' }}{{ bin.deltaPct }} pp
+                  </span>
+                </td>
+                <td>
+                  <div class="dual-bar-track" :title="'Expected: ' + bin.expectedPct + '% | Actual: ' + bin.actualPct + '%'">
+                    <div
+                      class="dual-bar-expected"
+                      :style="{ width: Math.min(100, Math.max(3, bin.expectedPct * 2.5)) + '%' }"
+                    ></div>
+                    <div
+                      class="dual-bar-actual"
+                      :class="bin.deltaPct < -5 ? 'dual-bar-deficit' : 'dual-bar-ok'"
+                      :style="{ width: Math.min(100, Math.max(3, bin.actualPct * 2.5)) + '%' }"
+                    ></div>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="!simulationComparisonBins.length">
+                <td colspan="7" style="text-align: center; color: #64748b; padding: 16px;">
+                  No distribution bins available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 2: Cognitive Dimension Gap Analysis (RCSBE table) -->
+      <div class="card-box" style="margin-bottom: 24px;">
+        <div class="view-header" style="margin-bottom: 12px;">
+          <div>
+            <h3>2. Cognitive Dimension Gap Analysis (RCSBE)</h3>
+            <p class="stat-desc">
+              Pedagogical alignment across Recall, Comprehend, Solve, Build, and Evaluate dimensions. Negative gaps highlight critical course blindspots.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Dimension</th>
+                <th class="num-cell">Available Marks</th>
+                <th class="num-cell">Expected Mastery %</th>
+                <th class="num-cell">Actual Mastery %</th>
+                <th class="num-cell">Gap (pp)</th>
+                <th>Status</th>
+                <th style="min-width: 140px;">Comparison Meter</th>
+                <th style="min-width: 240px;">Actionable Recommendation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="dim in simulationDimensionGaps" :key="dim.dimension">
+                <td>
+                  <span :class="['badge', getDimensionBadgeClass(dim.dimension)]">
+                    {{ dim.dimension }}
+                  </span>
+                </td>
+                <td class="num-cell">{{ dim.availableMarks }}</td>
+                <td class="num-cell">{{ dim.expectedMasteryPct }}%</td>
+                <td class="num-cell"><strong>{{ dim.actualMasteryPct != null ? dim.actualMasteryPct + '%' : '—' }}</strong></td>
+                <td class="num-cell">
+                  <span :class="getGapBadgeClass(dim.gap)">
+                    {{ dim.gap != null ? (dim.gap > 0 ? '+' : '') + dim.gap + ' pp' : '—' }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="getGapBadgeClass(dim.gap)">
+                    {{ dim.statusLabel }}
+                  </span>
+                </td>
+                <td>
+                  <div class="dual-bar-track" :title="'Expected: ' + dim.expectedMasteryPct + '% | Actual: ' + (dim.actualMasteryPct ?? 0) + '%'">
+                    <div
+                      class="dual-bar-expected"
+                      :style="{ width: Math.min(100, Math.max(3, dim.expectedMasteryPct)) + '%' }"
+                    ></div>
+                    <div
+                      class="dual-bar-actual"
+                      :class="(dim.gap ?? 0) < -5 ? 'dual-bar-deficit' : 'dual-bar-ok'"
+                      :style="{ width: Math.min(100, Math.max(3, dim.actualMasteryPct ?? 0)) + '%' }"
+                    ></div>
+                  </div>
+                </td>
+                <td class="recommendation-cell">
+                  {{ dim.recommendation }}
+                </td>
+              </tr>
+              <tr v-if="!simulationDimensionGaps.length">
+                <td colspan="8" style="text-align: center; color: #64748b; padding: 16px;">
+                  No dimension gaps available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3: Topic-Level Course Understanding Breakdown -->
+      <div class="card-box" style="margin-bottom: 24px;">
+        <div class="view-header" style="margin-bottom: 12px;">
+          <div>
+            <h3>3. Topic-Level Course Understanding Breakdown</h3>
+            <p class="stat-desc">
+              Granular topic diagnostic benchmarking expected topic solve rates against actual cohort performance.
+            </p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Topic</th>
+                <th class="num-cell">Available Marks</th>
+                <th class="num-cell">Expected Mastery %</th>
+                <th class="num-cell">Actual Mastery %</th>
+                <th class="num-cell">Gap (pp)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="topic in simulationTopicGaps" :key="topic.topic">
+                <td><strong>{{ topic.topic }}</strong></td>
+                <td class="num-cell">{{ topic.availableMarks }}</td>
+                <td class="num-cell">{{ topic.expectedMasteryPct }}%</td>
+                <td class="num-cell"><strong>{{ topic.actualMasteryPct != null ? topic.actualMasteryPct + '%' : '—' }}</strong></td>
+                <td class="num-cell">
+                  <span :class="getGapBadgeClass(topic.gap)">
+                    {{ topic.gap != null ? (topic.gap > 0 ? '+' : '') + topic.gap + ' pp' : '—' }}
+                  </span>
+                </td>
+                <td>
+                  <span :class="getGapBadgeClass(topic.gap)">
+                    {{ topic.statusLabel }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="!simulationTopicGaps.length">
+                <td colspan="6" style="text-align: center; color: #64748b; padding: 16px;">
+                  No topic-level metadata available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: STUDENT PROFILE DEEP DIVE -->
     <section v-if="currentTab === 'student' && profileData" class="view-panel">
       <div class="view-header">
         <div>
@@ -1282,11 +1632,12 @@
                       :key="sDim"
                       class="badge badge-strong"
                       style="font-size: 0.85rem; padding: 4px 10px;"
+                      :title="getStudentDimensionHighlightTooltip(sDim, 'strong')"
                     >
-                      {{ sDim }}
+                      {{ sDim }} ({{ getStudentDimensionMastery(sDim) }}%)
                     </span>
                   </template>
-                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;">
+                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;" title="No dimensions met criteria: ≥80% mastery and >15% above cohort benchmark">
                     None (within &plusmn;15% of class avg or &lt;80%)
                   </span>
                 </div>
@@ -1300,11 +1651,12 @@
                       :key="wDim"
                       class="badge badge-weak"
                       style="font-size: 0.85rem; padding: 4px 10px;"
+                      :title="getStudentDimensionHighlightTooltip(wDim, 'weak')"
                     >
-                      {{ wDim }}
+                      {{ wDim }} ({{ getStudentDimensionMastery(wDim) }}%)
                     </span>
                   </template>
-                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;">
+                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;" title="No dimensions met criteria: <50% mastery and >15% below cohort benchmark">
                     None (no dimension &lt;50% &amp; &gt;15% below avg)
                   </span>
                 </div>
@@ -1318,11 +1670,12 @@
                       :key="aDim"
                       class="badge badge-neutral"
                       style="font-size: 0.85rem; padding: 4px 10px;"
+                      :title="getStudentDimensionHighlightTooltip(aDim, 'average')"
                     >
-                      {{ aDim }}
+                      {{ aDim }} ({{ getStudentDimensionMastery(aDim) }}%)
                     </span>
                   </template>
-                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;">
+                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;" title="All assessed dimensions are distinctly strong or weak">
                     None
                   </span>
                 </div>
@@ -1330,19 +1683,27 @@
               <div class="highlight-item">
                 <div class="highlight-label">Strongest Dimension</div>
                 <div class="highlight-value">
-                  <span v-if="selectedStudent.strongestDimension || selectedStudent.strongest" class="badge badge-strong">
-                    {{ selectedStudent.strongestDimension || selectedStudent.strongest }}
+                  <span
+                    v-if="selectedStudent.strongestDimension || selectedStudent.strongest"
+                    class="badge badge-strong"
+                    :title="getStudentDimensionHighlightTooltip(selectedStudent.strongestDimension || selectedStudent.strongest, 'strongest')"
+                  >
+                    {{ selectedStudent.strongestDimension || selectedStudent.strongest }} ({{ getStudentDimensionMastery(selectedStudent.strongestDimension || selectedStudent.strongest) }}%)
                   </span>
-                  <span v-else class="badge badge-none">None</span>
+                  <span v-else class="badge badge-none" title="No dimension reached ≥80% strong threshold">None (&lt;80%)</span>
                 </div>
               </div>
               <div class="highlight-item">
                 <div class="highlight-label">Weakest Dimension</div>
                 <div class="highlight-value">
-                  <span v-if="selectedStudent.weakestDimension || selectedStudent.weakest" class="badge badge-weak">
-                    {{ selectedStudent.weakestDimension || selectedStudent.weakest }}
+                  <span
+                    v-if="selectedStudent.weakestDimension || selectedStudent.weakest"
+                    class="badge badge-weak"
+                    :title="getStudentDimensionHighlightTooltip(selectedStudent.weakestDimension || selectedStudent.weakest, 'weakest')"
+                  >
+                    {{ selectedStudent.weakestDimension || selectedStudent.weakest }} ({{ getStudentDimensionMastery(selectedStudent.weakestDimension || selectedStudent.weakest) }}%)
                   </span>
-                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;">
+                  <span v-else class="badge badge-none" style="font-size: 0.82rem; font-weight: normal; color: #64748b;" title="No dimension scored below 50% weak threshold">
                     None (&ge;50%)
                   </span>
                 </div>
@@ -1365,7 +1726,7 @@
         <!-- Detailed Dimension Breakdown Table -->
         <div class="card-box" style="margin-top: 20px;">
           <h3>Detailed Dimension Breakdown</h3>
-          <p class="stat-desc" style="margin-bottom: 12px;">Detailed breakdown for {{ selectedStudent.name }} across all 5 cognitive dimensions.</p>
+          <p class="stat-desc" style="margin-bottom: 12px;">Detailed breakdown for {{ selectedStudent.name }} across all {{ profileData.dimensions.length }} cognitive dimensions.</p>
           <div class="table-responsive">
             <table>
               <thead>
@@ -1389,21 +1750,21 @@
                     <span
                       v-if="getStudentDimensionStatus(dim) === 'strong'"
                       class="badge badge-strong"
-                      title="Strong (≥80% and >15% above class avg)"
+                      :title="getStudentDimensionHighlightTooltip(dim, 'strong')"
                     >
                       Strong
                     </span>
                     <span
                       v-else-if="getStudentDimensionStatus(dim) === 'weak'"
                       class="badge badge-weak"
-                      title="Weak (<50% and >15% below class avg)"
+                      :title="getStudentDimensionHighlightTooltip(dim, 'weak')"
                     >
                       Weak
                     </span>
                     <span
                       v-else
                       class="badge badge-neutral"
-                      title="Average (within ±15% of class avg)"
+                      :title="getStudentDimensionHighlightTooltip(dim, 'average')"
                     >
                       Average
                     </span>
@@ -1494,7 +1855,7 @@
       </div>
     </section>
 
-    <!-- VIEW 4: LONGITUDINAL HISTORY -->
+    <!-- VIEW 6: LONGITUDINAL HISTORY -->
     <section v-if="currentTab === 'history'" class="view-panel">
       <div class="view-header">
         <div>
@@ -1507,8 +1868,10 @@
             id="historyStudentSelect"
             v-model="historyStudentId"
             style="min-width: 220px;"
+            :disabled="!historyStudentOptions.length"
             @change="fetchStudentHistory(historyStudentId)"
           >
+            <option v-if="!historyStudentOptions.length" value="" disabled>No students loaded</option>
             <option v-for="sOpt in historyStudentOptions" :key="sOpt.id" :value="sOpt.id">
               {{ sOpt.id }} - {{ sOpt.name }}
             </option>
@@ -1557,14 +1920,15 @@
         </div>
       </div>
       <div v-else class="empty-state">
-        <p>No historical exams recorded for this student yet.</p>
+        <p v-if="historyStudentId">No historical exams recorded for {{ currentHistoryStudentName }} yet.</p>
+        <p v-else>No student selected. Load or upload exam data to inspect longitudinal progression.</p>
         <button type="button" class="btn-secondary" @click="currentTab = 'upload'">
           Upload New Exam Data
         </button>
       </div>
     </section>
 
-    <!-- VIEW 5: SAVED EXAMS -->
+    <!-- VIEW 7: SAVED EXAMS -->
     <section v-if="currentTab === 'saved'" class="view-panel">
       <div class="view-header">
         <div>
@@ -1646,7 +2010,8 @@ import {
   computeDecileBins,
   computeRawMarkBins,
   computeDistributionStats,
-  computeQuestionSolveRates
+  computeQuestionSolveRates,
+  simulateExpectedCohort
 } from './profile.js'
 import {
   SAMPLE_QUESTIONS_CSV,
@@ -1693,9 +2058,25 @@ const selectedMetric = ref('mastery') // 'mastery' or 'accuracy'
 
 // Cohort view state
 const cohortSearchQuery = ref('')
+const cohortSortColumn = ref('id')
+const cohortSortDirection = ref('asc')
+
+function setCohortSort(col) {
+  if (cohortSortColumn.value === col) {
+    cohortSortDirection.value = cohortSortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    cohortSortColumn.value = col
+    cohortSortDirection.value = (col === 'id' || col === 'name' || col === 'weakest') ? 'asc' : 'desc'
+  }
+}
+
+function cohortSortIcon(col) {
+  if (cohortSortColumn.value !== col) return '↕'
+  return cohortSortDirection.value === 'asc' ? '▲' : '▼'
+}
 
 // Longitudinal history state
-const historyStudentId = ref('S101')
+const historyStudentId = ref('')
 const studentHistoryRecords = ref([])
 
 // Saved exams state
@@ -1721,14 +2102,18 @@ function getDimensionBadgeClass(dim) {
 const validationSummary = computed(() => {
   if (!currentQuestions.value.length && !profileData.value) return null
   const questionsCount = currentQuestions.value.length
-  const totalMarks = currentQuestions.value.reduce((acc, q) => acc + (q.marks || 0), 0)
+  const totalMarks = Number(currentQuestions.value.reduce((acc, q) => acc + (q.marks || 0), 0).toFixed(1))
   const studentsCount = profileData.value ? profileData.value.students.length : Object.keys(currentScores.value).length
-  const dimensionsCount = profileData.value ? profileData.value.dimensions.length : 0
+  const dimensionsList = profileData.value
+    ? profileData.value.dimensions
+    : [...new Set(currentQuestions.value.flatMap((q) => q.dimensions || []))].filter(Boolean)
+  const dimensionsCount = dimensionsList.length
   return {
     questionsCount,
     totalMarks,
     studentsCount,
     dimensionsCount,
+    dimensionsList,
     warnings: currentWarnings.value
   }
 })
@@ -1752,12 +2137,62 @@ const cohortDimensionScores = computed(() => {
 })
 
 const filteredStudents = computed(() => {
-  if (!profileData.value) return []
+  if (!profileData.value || !profileData.value.students) return []
   const q = cohortSearchQuery.value.trim().toLowerCase()
-  if (!q) return profileData.value.students
-  return profileData.value.students.filter(
-    (s) => s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)
-  )
+  let list = profileData.value.students
+  if (q) {
+    list = list.filter(
+      (s) => (s.name || '').toLowerCase().includes(q) || (s.id || '').toLowerCase().includes(q)
+    )
+  }
+
+  const col = cohortSortColumn.value
+  const dir = cohortSortDirection.value === 'asc' ? 1 : -1
+
+  return [...list].sort((a, b) => {
+    switch (col) {
+      case 'id':
+        return dir * (a.id || '').localeCompare(b.id || '', undefined, { numeric: true, sensitivity: 'base' })
+      case 'name':
+        return dir * (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' })
+      case 'score':
+      case 'earned':
+      case 'total': {
+        const valA = a.earned ?? 0
+        const valB = b.earned ?? 0
+        return dir * (valA - valB)
+      }
+      case 'mastery':
+      case 'masteryPct': {
+        const valA = a.masteryPct ?? a.pct ?? 0
+        const valB = b.masteryPct ?? b.pct ?? 0
+        return dir * (valA - valB)
+      }
+      case 'accuracy':
+      case 'accuracyPct': {
+        const valA = a.accuracyPct ?? a.accuracy ?? 0
+        const valB = b.accuracyPct ?? b.accuracy ?? 0
+        return dir * (valA - valB)
+      }
+      case 'Recall':
+      case 'Comprehend':
+      case 'Solve':
+      case 'Build':
+      case 'Evaluate': {
+        const valA = a.dimension?.[col]?.masteryPct ?? a.dimension?.[col]?.pct ?? 0
+        const valB = b.dimension?.[col]?.masteryPct ?? b.dimension?.[col]?.pct ?? 0
+        return dir * (valA - valB)
+      }
+      case 'weakest':
+      case 'weakestDimension': {
+        const valA = a.weakestDimension || a.weakest || ''
+        const valB = b.weakestDimension || b.weakest || ''
+        return dir * valA.localeCompare(valB)
+      }
+      default:
+        return 0
+    }
+  })
 })
 
 // --- Paper Analysis Reactive State & Computed Properties ---
@@ -1974,7 +2409,7 @@ const difficultySpreadList = computed(() => {
   const N = profileData.value.students.length
   const totalExam = profileData.value.cohort.totalExam || profileData.value.cohort.total || 0
 
-  let previousMastery = null
+  let previousActiveTier = null
 
   return TIER_ORDER.map((diff) => {
     const label = diff.charAt(0).toUpperCase() + diff.slice(1)
@@ -1994,29 +2429,34 @@ const difficultySpreadList = computed(() => {
         minPct: 0,
         maxPct: 0,
         statusText: 'No Questions',
-        statusClass: 'status-neutral'
+        statusClass: 'status-neutral',
+        description: `No questions assessed in the ${label} tier for this examination.`
       }
     }
 
     const studentPcts = profileData.value.students.map((s) => {
-      return s.difficulties[diff]?.masteryPct ?? 0
+      return s.difficulties?.[diff]?.masteryPct ?? s.difficulty?.[diff]?.masteryPct ?? 0
     })
 
     const cohortEarned = profileData.value.cohort.difficulty[diff]?.earned ?? 0
     const masteryPct = Number(((cohortEarned / availableMarks) * 100).toFixed(1))
-    const minPct = Number(Math.min(...studentPcts).toFixed(1))
-    const maxPct = Number(Math.max(...studentPcts).toFixed(1))
+    const minPct = studentPcts.length ? Number(Math.min(...studentPcts).toFixed(1)) : 0
+    const maxPct = studentPcts.length ? Number(Math.max(...studentPcts).toFixed(1)) : 0
 
     let statusText = 'Aligned'
     let statusClass = 'status-success'
+    let description = previousActiveTier !== null
+      ? `Normal cognitive progression: cohort scored ${masteryPct}% mastery across ${qCount} questions (stepped down from ${previousActiveTier.label} tier's ${previousActiveTier.masteryPct}%).`
+      : `Baseline cognitive tier: cohort achieved ${masteryPct}% mastery across ${qCount} questions (range: ${minPct}%–${maxPct}%).`
 
     // Check for inversion against previous tier
-    if (previousMastery !== null && masteryPct > previousMastery + 2) {
+    if (previousActiveTier !== null && masteryPct > previousActiveTier.masteryPct + 2) {
       statusText = 'Inversion Anomaly'
       statusClass = 'status-warning'
+      description = `Inversion anomaly: ${label} mastery (${masteryPct}%) exceeds easier ${previousActiveTier.label} tier (${previousActiveTier.masteryPct}%), indicating potential rubric miscalibration, ambiguous phrasing, or non-discriminating distractors.`
     }
 
-    previousMastery = masteryPct
+    previousActiveTier = { label, masteryPct }
 
     return {
       difficulty: diff,
@@ -2028,7 +2468,8 @@ const difficultySpreadList = computed(() => {
       minPct,
       maxPct,
       statusText,
-      statusClass
+      statusClass,
+      description
     }
   })
 })
@@ -2051,54 +2492,136 @@ const difficultyAnomalies = computed(() => {
 const paperDiagnosticInsights = computed(() => {
   if (!profileData.value || !profileData.value.cohort) return []
   const insights = []
-  const cohortPct = profileData.value.cohort.masteryPct ?? 0
-  const studentsCount = profileData.value.students.length
+  const cohort = profileData.value.cohort
+  const cohortPct = cohort.masteryPct ?? 0
+  const students = profileData.value.students || []
+  const studentsCount = students.length
 
-  // Insight 1: Overall Paper Verdict & Mastery
+  if (studentsCount === 0) return []
+
+  // 1. Actual Cohort Performance, Pass and Distinction Rates
+  const passStudents = students.filter((s) => (s.masteryPct ?? s.pct ?? 0) >= 50)
+  const passRate = ((passStudents.length / studentsCount) * 100).toFixed(1)
+  const distinctionStudents = students.filter((s) => (s.masteryPct ?? s.pct ?? 0) >= 75)
+  const distinctionRate = ((distinctionStudents.length / studentsCount) * 100).toFixed(1)
+
+  const allMasteryScores = students.map((s) => s.masteryPct ?? s.pct ?? 0).sort((a, b) => a - b)
+  const medianScore = allMasteryScores.length % 2 === 0
+    ? ((allMasteryScores[allMasteryScores.length / 2 - 1] + allMasteryScores[allMasteryScores.length / 2]) / 2).toFixed(1)
+    : allMasteryScores[Math.floor(allMasteryScores.length / 2)].toFixed(1)
+
   insights.push(
-    `Overall Paper Difficulty: Rated as <strong>${paperOverallVerdict.value.text}</strong> with a cohort average mastery of <strong>${cohortPct}%</strong> across ${studentsCount} students.`
+    `<strong>Cohort Performance &amp; Caliber:</strong> Paper difficulty is rated as <strong>${paperOverallVerdict.value.text}</strong> with a cohort mean mastery of <strong>${cohortPct}%</strong> (median <strong>${medianScore}%</strong>) across ${studentsCount} candidates. <strong>${passRate}%</strong> (${passStudents.length}/${studentsCount}) met the passing threshold (&ge;50%), with <strong>${distinctionRate}%</strong> (${distinctionStudents.length}/${studentsCount}) achieving distinction (&ge;75%).`
   )
 
-  // Insight 2: Dimension Bottlenecks (students scoring < 50% or < 60%)
+  // 2. Cognitive Dimension Bottlenecks (<50% scores and count of struggling students)
   const dimensionStruggles = []
   for (const d of profileData.value.dimensions) {
-    const lowCount = profileData.value.students.filter((s) => {
-      const p = s.dimension[d]?.masteryPct ?? 0
+    const strugglingStudents = students.filter((s) => {
+      const p = s.dimension?.[d]?.masteryPct ?? s.dimensions?.[d]?.masteryPct ?? s.dimension?.[d]?.pct ?? 0
       return p < 50
-    }).length
+    })
+    const lowCount = strugglingStudents.length
+    const dimMastery = cohort.dimension?.[d]?.masteryPct ?? cohort.dimensions?.[d]?.masteryPct ?? cohort.dimension?.[d]?.pct ?? 0
     if (lowCount > 0) {
       const lowPct = ((lowCount / studentsCount) * 100).toFixed(1)
-      dimensionStruggles.push({ dim: d, count: lowCount, pct: lowPct })
+      dimensionStruggles.push({ dim: d, count: lowCount, pct: lowPct, dimMastery })
     }
   }
 
   if (dimensionStruggles.length) {
     dimensionStruggles.sort((a, b) => b.count - a.count)
     const topStruggle = dimensionStruggles[0]
-    insights.push(
-      `Dimension Bottleneck: <strong>${topStruggle.dim}</strong> had <strong>${topStruggle.count} of ${studentsCount} students (${topStruggle.pct}%)</strong> scoring below 50% mastery, indicating high paper difficulty in ${topStruggle.dim}.`
-    )
+    let struggleDetail = `<strong>Cognitive Dimension Bottleneck:</strong> <strong>${topStruggle.dim}</strong> represents the primary cognitive barrier, with <strong>${topStruggle.count} of ${studentsCount} students (${topStruggle.pct}%)</strong> scoring under 50% mastery (dimension cohort average: ${topStruggle.dimMastery}%).`
+    if (dimensionStruggles.length > 1) {
+      const secondaryStruggles = dimensionStruggles.slice(1).map((s) => `${s.dim} (${s.count} students, ${s.pct}%)`).join(', ')
+      struggleDetail += ` Secondary bottlenecks observed in ${secondaryStruggles}.`
+    }
+    insights.push(struggleDetail)
   } else {
     insights.push(
-      `Cognitive Strength: Cohort showed strong fundamental mastery across all dimensions, with 0 students scoring below 50% in any individual dimension.`
+      `<strong>Cognitive Dimension Resilience:</strong> Zero students scored below 50% in any individual dimension; the lowest cohort dimension was <strong>${paperHardestDimension.value.name}</strong> at a resilient <strong>${paperHardestDimension.value.pct}%</strong> mastery.`
     )
   }
 
-  // Insight 3: Hardest Tier and Difficulty Inversion or Progression
+  // 3. Progression Staircases / Anomalies
   if (difficultyAnomalies.value.length) {
     insights.push(
-      `⚠️ Progression Anomaly: ${difficultyAnomalies.value[0]}`
+      `<strong>⚠️ Progression Inversion Anomaly:</strong> ${difficultyAnomalies.value.join(' ')} This points to potential rubric ambiguity or non-discriminating distractors in the supposedly easier tier questions.`
     )
-  } else if (paperHardestTier.value.tier !== 'N/A') {
-    insights.push(
-      `Difficulty Gradient: Mastery smoothly descended as cognitive difficulty rose, with <strong>${paperHardestTier.value.tier.toUpperCase()}</strong> tier demanding the highest effort (${paperHardestTier.value.pct}% mastery).`
-    )
+  } else {
+    const activeTiers = difficultySpreadList.value.filter((t) => t.availableMarks > 0)
+    if (activeTiers.length > 1) {
+      const staircase = activeTiers.map((t) => `<strong>${t.label}</strong> (${t.masteryPct}%)`).join(' &rarr; ')
+      insights.push(
+        `<strong>Difficulty Progression Staircase:</strong> Cohort mastery descends smoothly across cognitive difficulty tiers (${staircase}), with <strong>${paperHardestTier.value.tier.toUpperCase()}</strong> tier demanding the highest effort (${paperHardestTier.value.pct}% mastery across ${paperHardestTier.value.qCount} questions).`
+      )
+    } else if (paperHardestTier.value.tier !== 'N/A') {
+      insights.push(
+        `<strong>Difficulty Tier Assessment:</strong> Questions were concentrated in <strong>${paperHardestTier.value.tier.toUpperCase()}</strong> tier with ${paperHardestTier.value.pct}% cohort mastery across ${paperHardestTier.value.qCount} questions.`
+      )
+    }
   }
 
-  // Insight 4: Cognitive Skew
+  // 4. Cognitive Spread Between Dimensions
   insights.push(
-    `Cognitive Dispersion: <strong>${paperEasiestDimension.value.name}</strong> was easiest (${paperEasiestDimension.value.pct}%) versus <strong>${paperHardestDimension.value.name}</strong> (${paperHardestDimension.value.pct}%), producing a <strong>${paperDimensionSkew.value.spread}%</strong> cognitive spread (${paperDimensionSkew.value.label}).`
+    `<strong>Cognitive Dispersion:</strong> <strong>${paperEasiestDimension.value.name}</strong> yielded highest proficiency (${paperEasiestDimension.value.pct}%) versus <strong>${paperHardestDimension.value.name}</strong> (${paperHardestDimension.value.pct}%), generating a <strong>${paperDimensionSkew.value.spread}%</strong> cognitive spread (<strong>${paperDimensionSkew.value.label}</strong>).`
   )
+
+  // 5. Question Solve Rate Surprises (|deviation| >= 20%)
+  if (questionSolveRateData.value) {
+    const qData = questionSolveRateData.value
+    const alerts = qData.highDeviationAlerts || []
+    if (alerts.length > 0) {
+      const topMismatches = [...alerts]
+        .sort((a, b) => Math.abs(b.deviation) - Math.abs(a.deviation))
+        .slice(0, 3)
+        .map((q) => `<strong>${q.id}</strong> (${q.deviation > 0 ? '+' : ''}${q.deviation}% dev, act ${q.actualSolveRate}% vs exp ${q.expectedSolveRate}%)`)
+        .join(', ')
+
+      insights.push(
+        `<strong>Solve Rate Surprise Alerts (|dev| &ge; 20%):</strong> <strong>${alerts.length} question${alerts.length > 1 ? 's' : ''}</strong> significantly diverged from instructor expectations. Key surprises: ${topMismatches}. Targeted review of distractor effectiveness and prerequisite clarity recommended.`
+      )
+    } else {
+      insights.push(
+        `<strong>Instructor Expectation Calibration:</strong> Exceptional calibration with 0 questions exceeding the &plusmn;20% deviation threshold (overall cohort alignment rate: <strong>${qData.alignmentRate}%</strong> with ${qData.avgAbsDeviation}% average absolute deviation).`
+      )
+    }
+  }
+
+  // 6. Topic Disparities
+  if (profileData.value.topics && profileData.value.topics.length > 1) {
+    const topicStats = profileData.value.topics.map((t) => {
+      const tObj = cohort.topics?.[t] || cohort.topic?.[t]
+      return {
+        topic: t,
+        masteryPct: tObj?.masteryPct ?? 0,
+        earned: tObj?.earned ?? 0,
+        available: tObj?.availableExam ?? 0
+      }
+    }).sort((a, b) => b.masteryPct - a.masteryPct)
+
+    const topTopic = topicStats[0]
+    const bottomTopic = topicStats[topicStats.length - 1]
+    const topicSpread = Number((topTopic.masteryPct - bottomTopic.masteryPct).toFixed(1))
+
+    if (topicSpread > 0) {
+      insights.push(
+        `<strong>Curricular Topic Disparities:</strong> Cohort showed highest mastery in <strong>${topTopic.topic}</strong> (<strong>${topTopic.masteryPct}%</strong>) and lowest in <strong>${bottomTopic.topic}</strong> (<strong>${bottomTopic.masteryPct}%</strong>), revealing a <strong>${topicSpread}%</strong> curricular gap across subject domains.`
+      )
+    } else {
+      insights.push(
+        `<strong>Uniform Topic Performance:</strong> Uniform mastery of <strong>${topTopic.masteryPct}%</strong> observed across all assessed topics (${profileData.value.topics.join(', ')}).`
+      )
+    }
+  } else if (profileData.value.topics && profileData.value.topics.length === 1) {
+    const singleTopic = profileData.value.topics[0]
+    const tObj = cohort.topics?.[singleTopic] || cohort.topic?.[singleTopic]
+    const topPct = tObj?.masteryPct ?? cohortPct
+    insights.push(
+      `<strong>Curricular Topic Scope:</strong> Assessment evaluated topic <strong>${singleTopic}</strong> with a cohort mastery level of <strong>${topPct}%</strong>.`
+    )
+  }
 
   return insights
 })
@@ -2256,13 +2779,19 @@ const crossMatrixRows = computed(() => {
         else tintClass = 'cell-tint-high'
       }
 
+      const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
+      const tooltip = cellAvail > 0
+        ? `${dim} × ${diffLabel}: avg ${cohortCellEarned.toFixed(1)} / ${cellAvail} pts (${masteryPct}% mastery) across ${qCount} question${qCount === 1 ? '' : 's'}`
+        : `No questions assessed for ${dim} at ${diffLabel} tier`
+
       return {
         difficulty: diff,
         qCount,
         availMarks: cellAvail,
         cohortEarned: Number(cohortCellEarned.toFixed(1)),
         masteryPct,
-        tintClass
+        tintClass,
+        tooltip
       }
     })
 
@@ -2270,12 +2799,16 @@ const crossMatrixRows = computed(() => {
       ? Number(((dimEarnedSum / dimAvailSum) * 100).toFixed(1))
       : 0
 
+    const rowTooltip = `${dim} Total: avg ${dimEarnedSum.toFixed(1)} / ${dimAvailSum.toFixed(1)} pts (${dimMastery}% mastery) across ${dimQuestionsSet.size} question${dimQuestionsSet.size === 1 ? '' : 's'}`
+
     return {
       dimension: dim,
       cells,
       totalMarks: Number(dimAvailSum.toFixed(1)),
       totalQs: dimQuestionsSet.size,
-      masteryPct: dimMastery
+      cohortEarned: Number(dimEarnedSum.toFixed(1)),
+      masteryPct: dimMastery,
+      tooltip: rowTooltip
     }
   })
 })
@@ -2291,28 +2824,38 @@ const crossMatrixColTotals = computed(() => {
       ? Number(((cohortEarned / availMarks) * 100).toFixed(1))
       : null
 
+    const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
+    const tooltip = availMarks > 0
+      ? `${diffLabel} Tier Total: avg ${Number(cohortEarned.toFixed(1))} / ${Number(availMarks.toFixed(1))} pts (${masteryPct}% mastery) across ${qCount} question${qCount === 1 ? '' : 's'}`
+      : `No questions assessed in the ${diffLabel} tier`
+
     return {
       difficulty: diff,
       qCount,
       availMarks: Number(availMarks.toFixed(1)),
       cohortEarned: Number(cohortEarned.toFixed(1)),
-      masteryPct
+      masteryPct,
+      tooltip
     }
   })
 })
 
 const crossMatrixGrandTotal = computed(() => {
   if (!profileData.value || !profileData.value.cohort) {
-    return { totalMarks: 0, totalQs: 0, masteryPct: 0 }
+    return { totalMarks: 0, totalQs: 0, cohortEarned: 0, masteryPct: 0, tooltip: 'No examination loaded' }
   }
   const totalMarks = profileData.value.cohort.totalExam || profileData.value.cohort.total || 0
   const totalQs = currentQuestions.value.length
+  const cohortEarned = Number((profileData.value.cohort.earned ?? 0).toFixed(1))
   const masteryPct = profileData.value.cohort.masteryPct ?? 0
+  const tooltip = `Exam Grand Total: avg ${cohortEarned} / ${Number(totalMarks.toFixed(1))} pts (${masteryPct}% mastery) across ${totalQs} questions`
 
   return {
     totalMarks: Number(totalMarks.toFixed(1)),
     totalQs,
-    masteryPct
+    cohortEarned,
+    masteryPct,
+    tooltip
   }
 })
 
@@ -2390,6 +2933,107 @@ function getActualBarColorClass(dev) {
   return 'act-bar-aligned'
 }
 
+// ============================================================
+// Expectations vs. Reality Simulation State & Computed Properties
+// ============================================================
+const simulationBinMode = ref('percentage') // 'percentage' or 'raw'
+const simulationSeed = ref(20261015)
+
+function rerunSimulation() {
+  simulationSeed.value += 1
+}
+
+function getGapBadgeClass(gap) {
+  if (gap === null || gap === undefined) return 'badge-gap-aligned'
+  if (gap < -15) return 'badge-deficit-severe'
+  if (gap < -5) return 'badge-deficit-moderate'
+  if (gap > 5) return 'badge-surplus'
+  return 'badge-gap-aligned'
+}
+
+const simulationData = computed(() => {
+  if (!profileData.value) return null
+  const questions = currentQuestions.value || []
+  const scores = currentScores.value || {}
+  const students = profileData.value.students || []
+  const cohort = profileData.value.cohort
+  const paperAnalysis = profileData.value.paperAnalysis
+
+  if (simulationSeed.value === 20261015 && paperAnalysis?.expectedSimulation) {
+    return paperAnalysis.expectedSimulation
+  }
+
+  const cohortInfo = cohort
+    ? {
+        meanPct: cohort.meanPct ?? cohort.masteryPct ?? 0,
+        medianPct: cohort.medianPct ?? 0,
+        dimensions: paperAnalysis?.dimensions || cohort.dimensions || cohort.dimension || {},
+        decileBins: paperAnalysis?.decileBins || [],
+      }
+    : null
+
+  return simulateExpectedCohort(questions, scores, students, cohortInfo, {
+    seed: simulationSeed.value,
+    cohortSize: students.length || 300,
+  })
+})
+
+const simulationComparisonBins = computed(() => {
+  if (!simulationData.value) return []
+  if (simulationBinMode.value === 'percentage') {
+    return simulationData.value.comparisonBins || []
+  }
+
+  // Raw mark bins comparison
+  const expRaw = simulationData.value.expectedRawMarkBins || []
+  const actRaw = profileData.value?.paperAnalysis?.rawMarkBins || overallContestDistribution.value?.rawMarkBins || []
+  return expRaw.map((eb) => {
+    const ab = actRaw.find((b) => b.label === eb.label)
+    const actualCount = ab?.count ?? 0
+    const actualPct = ab?.cohortPct ?? ab?.percentage ?? 0
+    const deltaPct = Math.round((actualPct - eb.percentage) * 100) / 100
+    return {
+      label: eb.label,
+      minMark: eb.minMark,
+      maxMark: eb.maxMark,
+      expectedCount: eb.count,
+      expectedPct: eb.percentage,
+      actualCount,
+      actualPct,
+      deltaPct,
+    }
+  })
+})
+
+const RCSBE_ORDER = ['Recall', 'Comprehend', 'Solve', 'Build', 'Evaluate']
+const simulationDimensionGaps = computed(() => {
+  if (!simulationData.value?.dimensionGaps) return []
+  const gaps = simulationData.value.dimensionGaps
+  return RCSBE_ORDER.filter((d) => gaps[d]).map((d) => gaps[d])
+})
+
+const simulationTopicGaps = computed(() => {
+  if (!simulationData.value?.topicGaps) return []
+  return Object.values(simulationData.value.topicGaps).sort((a, b) => {
+    const gapA = a.gap ?? 0
+    const gapB = b.gap ?? 0
+    return gapA - gapB
+  })
+})
+
+const primaryDeficitDimension = computed(() => {
+  const gaps = simulationDimensionGaps.value
+  if (!gaps.length) return null
+  const sorted = [...gaps].sort((a, b) => (a.gap ?? 0) - (b.gap ?? 0))
+  return sorted[0]
+})
+
+const calibrationScore = computed(() => {
+  if (!simulationData.value?.overallGap) return 0
+  const divergence = simulationData.value.overallGap.divergenceScore ?? 0
+  return Math.max(0, Math.round((100 - divergence) * 10) / 10)
+})
+
 // Student Deep Dive computed properties
 const selectedStudent = computed(() => {
   if (!profileData.value || !selectedStudentId.value) return null
@@ -2428,20 +3072,44 @@ function getStudentCohortComparison(dim) {
   }
 }
 
-// Longitudinal history computed options
+function getStudentDimensionMastery(dim) {
+  if (!selectedStudent.value) return 0
+  return selectedStudent.value.dimension?.[dim]?.masteryPct ?? selectedStudent.value.dimensions?.[dim]?.masteryPct ?? selectedStudent.value.dimension?.[dim]?.pct ?? 0
+}
+
+function getStudentDimensionHighlightTooltip(dim, type) {
+  if (!selectedStudent.value || !profileData.value?.cohort) return ''
+  const sPct = getStudentDimensionMastery(dim)
+  const cPct = profileData.value.cohort.dimension?.[dim]?.masteryPct ?? profileData.value.cohort.dimensions?.[dim]?.masteryPct ?? profileData.value.cohort.dimension?.[dim]?.pct ?? 0
+  const delta = Number((sPct - cPct).toFixed(1))
+  const sign = delta > 0 ? '+' : ''
+  if (type === 'strong') {
+    return `${dim}: ${sPct}% mastery meets strong criteria (≥80% mastery threshold and ${sign}${delta} pp above cohort benchmark of ${cPct}%)`
+  }
+  if (type === 'weak') {
+    return `${dim}: ${sPct}% mastery meets weak criteria (<50% mastery threshold and ${delta} pp below cohort benchmark of ${cPct}%)`
+  }
+  if (type === 'average') {
+    return `${dim}: ${sPct}% mastery is classified as average (within ±15% of cohort benchmark ${cPct}%: ${sign}${delta} pp)`
+  }
+  if (type === 'strongest') {
+    return `Strongest dimension: ${dim} (${sPct}% mastery, cohort benchmark: ${cPct}%)`
+  }
+  if (type === 'weakest') {
+    return `Weakest dimension: ${dim} (${sPct}% mastery, cohort benchmark: ${cPct}%)`
+  }
+  return `${dim}: ${sPct}% mastery vs cohort ${cPct}%`
+}
+
 const historyStudentOptions = computed(() => {
   if (profileData.value && profileData.value.students.length) {
     return profileData.value.students.map((s) => ({ id: s.id, name: s.name }))
   }
-  return [
-    { id: 'S101', name: 'Ada Lovelace' },
-    { id: 'S102', name: 'Alan Turing' },
-    { id: 'S103', name: 'Grace Hopper' },
-    { id: 'S104', name: 'Claude Shannon' }
-  ]
+  return []
 })
 
 const currentHistoryStudentName = computed(() => {
+  if (!historyStudentId.value) return 'Student'
   const found = historyStudentOptions.value.find((s) => s.id === historyStudentId.value)
   return found ? `${found.name} (${found.id})` : historyStudentId.value
 })
@@ -2822,7 +3490,7 @@ async function fetchSavedExams() {
         examDate: activeExamInfo.value.examDate,
         questionCount: currentQuestions.value.length,
         studentCount: profileData.value ? profileData.value.students.length : 0,
-        avgMastery: profileData.value?.cohort?.masteryPct ?? 88.5,
+        avgMastery: profileData.value?.cohort?.masteryPct ?? 0,
         questions: currentQuestions.value,
         scores: currentScores.value,
         attempts: currentAttempts.value,

@@ -157,6 +157,84 @@
           "diffFromCohort": -41.4
         }
       }
+    },
+    {
+      "examId": "exam-1790838326900",
+      "courseName": "CS201 - Advanced Data Structures & Algorithms",
+      "examTitle": "Grand Semester Coding Contest 2026",
+      "examDate": "2026-10-15",
+      "earned": 44,
+      "totalExam": 100,
+      "totalAttempted": 90,
+      "masteryPct": 44,
+      "accuracyPct": 48.9,
+      "dimensions": {
+        "Recall": {
+          "earned": 16,
+          "availableExam": 28,
+          "availableAttempted": 28,
+          "available": 28,
+          "attempted": 28,
+          "masteryPct": 57.1,
+          "pct": 57.1,
+          "accuracyPct": 57.1,
+          "accuracy": 57.1,
+          "status": "average",
+          "diffFromCohort": -14.3
+        },
+        "Comprehend": {
+          "earned": 12,
+          "availableExam": 20,
+          "availableAttempted": 20,
+          "available": 20,
+          "attempted": 20,
+          "masteryPct": 60,
+          "pct": 60,
+          "accuracyPct": 60,
+          "accuracy": 60,
+          "status": "average",
+          "diffFromCohort": -7.2
+        },
+        "Solve": {
+          "earned": 11,
+          "availableExam": 31,
+          "availableAttempted": 26,
+          "available": 31,
+          "attempted": 26,
+          "masteryPct": 35.5,
+          "pct": 35.5,
+          "accuracyPct": 42.3,
+          "accuracy": 42.3,
+          "status": "weak",
+          "diffFromCohort": -30
+        },
+        "Build": {
+          "earned": 3.5,
+          "availableExam": 8,
+          "availableAttempted": 8,
+          "available": 8,
+          "attempted": 8,
+          "masteryPct": 43.8,
+          "pct": 43.8,
+          "accuracyPct": 43.8,
+          "accuracy": 43.8,
+          "status": "weak",
+          "diffFromCohort": -30.6
+        },
+        "Evaluate": {
+          "earned": 1.5,
+          "availableExam": 13,
+          "availableAttempted": 8,
+          "available": 13,
+          "attempted": 8,
+          "masteryPct": 11.5,
+          "pct": 11.5,
+          "accuracyPct": 18.8,
+          "accuracy": 18.8,
+          "status": "weak",
+          "diffFromCohort": -41.4
+        }
+      }
     }
   ]
 }

@@ -31,6 +31,8 @@ import {
   computeQuestionSolveRates,
   getDefaultExpectedRate,
   DEFAULT_EXPECTED_SOLVE_RATES,
+  resolveExpectedSolveRate,
+  DEFAULT_DIMENSION_SOLVE_RATES,
 } from '../src/profile.js'
 
 import {
@@ -71,6 +73,30 @@ describe('Dimension Normalization', () => {
 
   it('deduplicates dimensions', () => {
     assert.deepStrictEqual(normalizeDimensions('Recall, R, recall'), ['Recall'])
+  })
+
+  it('normalizes analytics team formats: Bloom synonyms, acronyms, plus/ampersand delimiters', () => {
+    // Bloom's taxonomy terms
+    assert.strictEqual(normalizeDimension('remembering'), 'Recall')
+    assert.strictEqual(normalizeDimension('understanding'), 'Comprehend')
+    assert.strictEqual(normalizeDimension('application'), 'Solve')
+    assert.strictEqual(normalizeDimension('analyzing'), 'Evaluate')
+    assert.strictEqual(normalizeDimension('creation'), 'Build')
+
+    // Cognitive levels
+    assert.strictEqual(normalizeDimension('L1'), 'Recall')
+    assert.strictEqual(normalizeDimension('level_2'), 'Comprehend')
+    assert.strictEqual(normalizeDimension('3'), 'Solve')
+
+    // Delimiters: plus, ampersand, and
+    assert.deepStrictEqual(normalizeDimensions('Recall + Build'), ['Recall', 'Build'])
+    assert.deepStrictEqual(normalizeDimensions('Solve & Evaluate'), ['Solve', 'Evaluate'])
+    assert.deepStrictEqual(normalizeDimensions('Recall and Solve'), ['Recall', 'Solve'])
+
+    // Compact letter acronyms without delimiters
+    assert.deepStrictEqual(normalizeDimensions('RC'), ['Recall', 'Comprehend'])
+    assert.deepStrictEqual(normalizeDimensions('SB'), ['Solve', 'Build'])
+    assert.deepStrictEqual(normalizeDimensions('RCSBE'), ['Recall', 'Comprehend', 'Solve', 'Build', 'Evaluate'])
   })
 })
 
@@ -1526,6 +1552,147 @@ describe('Question Solve Rates and Alignment Analysis', () => {
     })
   })
 })
+
+describe('Accommodating Exams Without Expected Solve Rates', () => {
+    it('resolveExpectedSolveRate preserves explicit instructor expectation', () => {
+      const q = { id: 'Q1', marks: 10, difficulty: 'hard', dimensions: ['Build'], expectedSolveRate: 42.5 }
+      const res = resolveExpectedSolveRate(q)
+      assert.strictEqual(res.rate, 42.5)
+      assert.strictEqual(res.source, 'instructor')
+      assert.strictEqual(res.hasExplicit, true)
+      assert.ok(res.tooltip.includes('42.5%'))
+    })
+
+    it('resolveExpectedSolveRate falls back to difficulty tier when expectedSolveRate is missing', () => {
+      const tiers = [
+        { diff: 'beginner', exp: 85 },
+        { diff: 'easy', exp: 75 },
+        { diff: 'medium', exp: 55 },
+        { diff: 'hard', exp: 35 },
+        { diff: 'challenge', exp: 20 },
+      ]
+      for (const { diff, exp } of tiers) {
+        const res = resolveExpectedSolveRate({ id: 'Q', difficulty: diff })
+        assert.strictEqual(res.rate, exp)
+        assert.strictEqual(res.source, 'difficulty_baseline')
+        assert.strictEqual(res.hasExplicit, false)
+      }
+    })
+
+    it('resolveExpectedSolveRate falls back to Blooms dimension baseline when difficulty is unspecified', () => {
+      const dimTests = [
+        { dim: 'Recall', exp: 80 },
+        { dim: 'Comprehend', exp: 70 },
+        { dim: 'Solve', exp: 55 },
+        { dim: 'Evaluate', exp: 45 },
+        { dim: 'Build', exp: 35 },
+      ]
+      for (const { dim, exp } of dimTests) {
+        const res = resolveExpectedSolveRate({ id: 'Q', dimensions: [dim] })
+        assert.strictEqual(res.rate, exp)
+        assert.strictEqual(res.source, 'blooms_baseline')
+        assert.strictEqual(res.hasExplicit, false)
+      }
+    })
+
+    it('resolveExpectedSolveRate averages multi-dimensions when difficulty is unspecified', () => {
+      // Recall (80) + Build (35) = 115 / 2 = 57.5
+      const res = resolveExpectedSolveRate({ id: 'Q', dimensions: ['Recall', 'Build'] })
+      assert.strictEqual(res.rate, 57.5)
+      assert.strictEqual(res.source, 'blooms_baseline')
+    })
+
+    it('resolveExpectedSolveRate supports custom baseline models (blooms, difficulty, balanced, rigorous, lenient)', () => {
+      const q = { id: 'Q', difficulty: 'easy', dimensions: ['Build'] }
+      // In difficulty model: uses easy (75)
+      assert.strictEqual(resolveExpectedSolveRate(q, 'difficulty').rate, 75)
+      // In blooms model: uses Build (35)
+      assert.strictEqual(resolveExpectedSolveRate(q, 'blooms').rate, 35)
+      // In rigorous model: benchmark is 10% lower
+      const rig = resolveExpectedSolveRate(q, 'rigorous')
+      assert.strictEqual(rig.source, 'rigorous_baseline')
+      assert.ok(rig.rate < 75)
+      // In lenient model: benchmark is 10% higher
+      const len = resolveExpectedSolveRate(q, 'lenient')
+      assert.strictEqual(len.source, 'lenient_baseline')
+      assert.ok(len.rate > 35)
+    })
+
+    it('computeQuestionSolveRates identifies pure baseline exams and populates metadata', () => {
+      const questionsWithoutRates = [
+        { id: 'Q1', marks: 10, difficulty: 'easy', dimensions: ['Recall'] },
+        { id: 'Q2', marks: 15, difficulty: 'medium', dimensions: ['Solve'] },
+        { id: 'Q3', marks: 20, difficulty: 'hard', dimensions: ['Build'] },
+      ]
+      const scores = { S1: { Q1: 10, Q2: 15, Q3: 0 } }
+      const res = computeQuestionSolveRates(questionsWithoutRates, scores, ['S1'])
+
+      assert.strictEqual(res.expectedRateSource, 'baseline')
+      assert.strictEqual(res.hasAnyExplicitExpectedRate, false)
+      assert.strictEqual(res.hasAllExplicitExpectedRates, false)
+      assert.strictEqual(res.explicitExpectedCount, 0)
+      assert.strictEqual(res.baselineExpectedCount, 3)
+      assert.ok(res.expectedRateSourceLabel.includes('Curriculum Standards Baseline'))
+
+      // Every question has a valid auto-calibrated rate and tooltip
+      for (const q of res.questions) {
+        assert.strictEqual(q.hasExplicitExpectedRate, false)
+        assert.ok(typeof q.expectedSolveRate === 'number' && q.expectedSolveRate > 0)
+        assert.ok(q.expectedRateTooltip.length > 0)
+      }
+    })
+
+    it('computeQuestionSolveRates identifies hybrid exams accurately', () => {
+      const hybridQuestions = [
+        { id: 'Q1', marks: 10, difficulty: 'easy', dimensions: ['Recall'], expectedSolveRate: 80 },
+        { id: 'Q2', marks: 15, difficulty: 'hard', dimensions: ['Build'] }, // missing rate
+      ]
+      const scores = { S1: { Q1: 10, Q2: 10 } }
+      const res = computeQuestionSolveRates(hybridQuestions, scores, ['S1'])
+
+      assert.strictEqual(res.expectedRateSource, 'hybrid')
+      assert.strictEqual(res.hasAnyExplicitExpectedRate, true)
+      assert.strictEqual(res.hasAllExplicitExpectedRates, false)
+      assert.strictEqual(res.explicitExpectedCount, 1)
+      assert.strictEqual(res.baselineExpectedCount, 1)
+      assert.ok(res.expectedRateSourceLabel.includes('Hybrid'))
+      assert.strictEqual(res.questions[0].hasExplicitExpectedRate, true)
+      assert.strictEqual(res.questions[1].hasExplicitExpectedRate, false)
+    })
+
+    it('simulateExpectedCohort works seamlessly when exam has ZERO expected solve rates', () => {
+      const pureBaselineQuestions = [
+        { id: 'Q1', marks: 5, type: 'MCQ', dimensions: ['Recall'], difficulty: 'easy', topic: 'Basics' },
+        { id: 'Q2', marks: 10, type: 'MCQ', dimensions: ['Comprehend'], difficulty: 'medium', topic: 'Core' },
+        { id: 'Q3', marks: 15, type: 'Coding', dimensions: ['Build'], difficulty: 'hard', topic: 'Advanced' },
+      ]
+      const mockCohort = { meanPct: 58, medianPct: 60, dimensions: {}, decileBins: [] }
+      const sim = simulateExpectedCohort(pureBaselineQuestions, {}, [], mockCohort, { cohortSize: 100 })
+
+      assert.ok(sim !== null)
+      assert.strictEqual(sim.expectedRateSource, 'baseline')
+      assert.strictEqual(sim.explicitRateCount, 0)
+      assert.strictEqual(sim.baselineRateCount, 3)
+      assert.ok(sim.expectedCohort.meanPct > 0 && sim.expectedCohort.meanPct <= 100)
+      assert.strictEqual(sim.expectedDecileBins.length, 10)
+      assert.strictEqual(sim.expectedDecileBins[0].label, '90-100%')
+
+      // Check that Recall (easy) has higher expected mastery than Build (hard)
+      assert.ok(sim.expectedDimensions['Recall'])
+      assert.ok(sim.expectedDimensions['Build'])
+      assert.ok(sim.expectedDimensions['Recall'].expectedMasteryPct > sim.expectedDimensions['Build'].expectedMasteryPct)
+
+      // Insights should use curriculum baseline framing
+      assert.ok(Array.isArray(sim.insights))
+      assert.ok(sim.insights.length > 0)
+      const allInsightsText = sim.insights.join(' ')
+      assert.ok(
+        allInsightsText.includes('curriculum difficulty benchmarks') ||
+        allInsightsText.includes('curriculum baseline') ||
+        allInsightsText.includes('aligned')
+      )
+    })
+  })
 
 
 

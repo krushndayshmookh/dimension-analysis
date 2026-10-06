@@ -1088,7 +1088,224 @@ export function computePaperAnalysis(questions = [], scores = {}, students = [],
     rawStats,
     questionSolveRates,
     questionAnalysis: questionSolveRates,
+    expectedSimulation: simulateExpectedCohort(
+      questions,
+      scores,
+      students,
+      cohort
+        ? {
+            meanPct: cohort.meanPct ?? cohort.masteryPct ?? 0,
+            medianPct: cohort.medianPct ?? 0,
+            dimensions: dimensionAnalysis,
+            decileBins: overallDecileBins,
+          }
+        : null,
+      options
+    ),
   }
+}
+
+export function simulateExpectedCohort(questions = [], scores = {}, students = [], cohort = null, options = {}) {
+  let _s = options.seed ?? 20261015
+  function _rand() {
+    _s |= 0; _s = _s + 0x6D2B79F5 | 0
+    let z = Math.imul(_s ^ _s >>> 15, 1 | _s)
+    z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z
+    return ((z ^ z >>> 14) >>> 0) / 4294967296
+  }
+  function _normal(mu, sigma) {
+    const u1 = Math.max(_rand(), 1e-10)
+    const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * _rand())
+    return mu + z * sigma
+  }
+  function _clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)) }
+  function _r2(v) { return Math.round(v * 100) / 100 }
+
+  if (!questions || questions.length === 0) return null
+  const totalExam = questions.reduce((s, q) => s + (q.marks || 0), 0)
+  if (totalExam === 0) return null
+
+  const cohortSize = options.cohortSize ?? Math.max((students || []).length, 1)
+  const IRT_A = 1.4, C_MCQ = 0.20
+
+  const pqs = questions.map(q => {
+    const pq = _clamp((q.expectedSolveRate ?? 55) / 100, 0.05, 0.95)
+    return { ...q, pq, b_q: -Math.log(pq / (1 - pq)) / IRT_A }
+  })
+
+  const synth = []
+  for (let i = 0; i < cohortSize; i++) {
+    const theta = _normal(0, 0.85)
+    let totalEarned = 0
+    const dimE = {}, qScores = {}
+    for (const q of pqs) {
+      const logit = Math.exp(-IRT_A * (theta - q.b_q))
+      const p3pl = C_MCQ + (1 - C_MCQ) / (1 + logit)
+      const isCoding = (q.type || '').toLowerCase() === 'coding'
+      let earned = 0
+      if (isCoding) {
+        const pFull = _clamp(q.pq + theta * 0.15, 0, 1)
+        if (_rand() < pFull) {
+          earned = q.marks
+        } else {
+          const tcProb = Math.sqrt(pFull)
+          let passed = 0
+          for (let t = 0; t < 5; t++) if (_rand() < tcProb) passed++
+          earned = _r2((passed / 5) * q.marks)
+        }
+      } else {
+        earned = _rand() < p3pl ? q.marks : 0
+      }
+      qScores[q.id] = earned
+      totalEarned += earned
+      const dims = Array.isArray(q.dimensions) ? q.dimensions : [q.dimensions || 'Recall']
+      const mPD = q.marks / dims.length, ePD = earned / dims.length
+      for (const d of dims) {
+        if (!dimE[d]) dimE[d] = { earned: 0, available: 0 }
+        dimE[d].earned += ePD; dimE[d].available += mPD
+      }
+    }
+    synth.push({ id: `syn_${i}`, theta: _r2(theta), scores: qScores, totalEarned: _r2(totalEarned), pct: _r2((totalEarned / totalExam) * 100), dimE })
+  }
+
+  const pcts = synth.map(s => s.pct).sort((a, b) => a - b)
+  const meanPct = _r2(pcts.reduce((s, v) => s + v, 0) / cohortSize)
+  const medianPct = cohortSize % 2 === 0
+    ? _r2((pcts[cohortSize / 2 - 1] + pcts[cohortSize / 2]) / 2)
+    : pcts[Math.floor(cohortSize / 2)]
+  const stdDevPct = _r2(Math.sqrt(pcts.reduce((s, v) => s + (v - meanPct) ** 2, 0) / cohortSize))
+  const verdict = meanPct >= 70 ? 'Strong' : meanPct >= 50 ? 'Balanced' : 'Struggling'
+  const expectedCohort = { totalExam, meanPct, medianPct, minPct: pcts[0], maxPct: pcts[pcts.length - 1], stdDevPct, verdict, verdictTone: meanPct >= 70 ? 'positive' : meanPct >= 50 ? 'neutral' : 'negative', cohortSize }
+
+  // Decile bins (descending: 90-100% first)
+  const rawDecile = Array.from({ length: 10 }, (_, i) => ({
+    binIndex: i, label: `${i * 10}-${(i + 1) * 10}%`, minPct: i * 10, maxPct: (i + 1) * 10, count: 0, percentage: 0
+  }))
+  for (const s of synth) rawDecile[Math.min(9, Math.floor(s.pct / 10))].count++
+  for (const b of rawDecile) b.percentage = _r2((b.count / cohortSize) * 100)
+  const expectedDecileBins = [...rawDecile].reverse()
+
+  // Raw mark bins (descending)
+  const mStep = Math.max(5, Math.floor(totalExam / 10))
+  const nBins = Math.ceil(totalExam / mStep)
+  const rawMark = Array.from({ length: nBins }, (_, i) => ({
+    binIndex: i, label: `${i * mStep}-${Math.min((i + 1) * mStep, totalExam)}`,
+    minMark: i * mStep, maxMark: Math.min((i + 1) * mStep, totalExam), count: 0, percentage: 0
+  }))
+  for (const s of synth) rawMark[Math.min(nBins - 1, Math.floor(s.totalEarned / mStep))].count++
+  for (const b of rawMark) b.percentage = _r2((b.count / cohortSize) * 100)
+  const expectedRawMarkBins = [...rawMark].reverse()
+
+  // Dimension expected mastery
+  const DIMS = ['Recall', 'Comprehend', 'Solve', 'Build', 'Evaluate']
+  const dimAvail = {}, dimSum = {}
+  for (const q of pqs) {
+    const dims = Array.isArray(q.dimensions) ? q.dimensions : [q.dimensions || 'Recall']
+    const mPD = q.marks / dims.length
+    for (const d of dims) dimAvail[d] = (dimAvail[d] || 0) + mPD
+  }
+  for (const s of synth) {
+    for (const [d, info] of Object.entries(s.dimE)) dimSum[d] = (dimSum[d] || 0) + info.earned
+  }
+  const expectedDimensions = {}
+  for (const d of DIMS) {
+    if (!dimAvail[d]) continue
+    const avg = (dimSum[d] || 0) / cohortSize
+    expectedDimensions[d] = { dimension: d, availableMarks: _r2(dimAvail[d]), expectedEarned: _r2(avg), expectedMasteryPct: _r2((avg / dimAvail[d]) * 100) }
+  }
+
+  // Dimension gaps vs actual cohort
+  const dimensionGaps = {}
+  if (cohort && cohort.dimensions) {
+    for (const d of DIMS) {
+      const exp = expectedDimensions[d]; if (!exp) continue
+      const actDim = cohort.dimensions[d]
+      const actualMasteryPct = actDim?.meanPct ?? actDim?.masteryPct ?? null
+      const gap = actualMasteryPct !== null ? _r2(actualMasteryPct - exp.expectedMasteryPct) : null
+      let status = 'aligned', statusLabel = 'On Target'
+      if (gap !== null) {
+        if (gap < -15) { status = 'critical-deficit'; statusLabel = 'Severe Cohort Deficit' }
+        else if (gap < -5) { status = 'moderate-deficit'; statusLabel = 'Moderate Deficit' }
+        else if (gap > 5) { status = 'exceeded'; statusLabel = 'Cohort Exceeded Expectations' }
+      }
+      dimensionGaps[d] = {
+        dimension: d, availableMarks: exp.availableMarks,
+        expectedMasteryPct: exp.expectedMasteryPct, actualMasteryPct, gap, status, statusLabel,
+        recommendation: status === 'critical-deficit'
+          ? `Course Blindspot: Reinforce ${d} fundamentals — student mastery was ${Math.abs(gap)}pp below expectations. Review instructional delivery and practice problems.`
+          : status === 'moderate-deficit'
+          ? `Moderate gap in ${d}. Consider targeted review sessions or supplementary materials.`
+          : status === 'exceeded'
+          ? `Students outperformed in ${d}. Consider increasing difficulty or enrichment activities.`
+          : `${d} is well-aligned with instructor expectations.`
+      }
+    }
+  }
+
+  // Topic gaps
+  const topicGaps = {}
+  const tAvail = {}, tExpSum = {}, tActInfo = {}
+  for (const q of pqs) {
+    const t = q.topic || (Array.isArray(q.topics) ? q.topics[0] : null) || 'General'
+    tAvail[t] = (tAvail[t] || 0) + q.marks
+  }
+  for (const s of synth) {
+    for (const q of pqs) {
+      const t = q.topic || (Array.isArray(q.topics) ? q.topics[0] : null) || 'General'
+      tExpSum[t] = (tExpSum[t] || 0) + (s.scores[q.id] || 0)
+    }
+  }
+  if (students && students.length > 0 && scores) {
+    for (const q of pqs) {
+      const t = q.topic || (Array.isArray(q.topics) ? q.topics[0] : null) || 'General'
+      if (!tActInfo[t]) tActInfo[t] = { earned: 0, available: 0 }
+      for (const st of students) {
+        tActInfo[t].earned += Number(scores[st.id]?.[q.id] ?? 0) || 0
+        tActInfo[t].available += q.marks
+      }
+    }
+  }
+  for (const [topic, avail] of Object.entries(tAvail)) {
+    const expM = _r2(((tExpSum[topic] || 0) / cohortSize / avail) * 100)
+    const ai = tActInfo[topic]
+    const actM = ai && ai.available > 0 ? _r2((ai.earned / ai.available) * 100) : null
+    const gap = actM !== null ? _r2(actM - expM) : null
+    let status = 'aligned', statusLabel = 'On Target'
+    if (gap !== null) {
+      if (gap < -15) { status = 'critical-deficit'; statusLabel = 'Severe Deficit' }
+      else if (gap < -5) { status = 'moderate-deficit'; statusLabel = 'Moderate Deficit' }
+      else if (gap > 5) { status = 'exceeded'; statusLabel = 'Exceeded' }
+    }
+    topicGaps[topic] = { topic, availableMarks: avail, expectedMasteryPct: expM, actualMasteryPct: actM, gap, status, statusLabel }
+  }
+
+  // Comparison bins
+  const comparisonBins = expectedDecileBins.map(eb => {
+    const ab = cohort?.decileBins ? cohort.decileBins.find(b => b.label === eb.label) : null
+    const aC = ab?.count ?? 0, aP = ab?.percentage ?? 0
+    return { label: eb.label, minPct: eb.minPct, maxPct: eb.maxPct, expectedCount: eb.count, expectedPct: eb.percentage, actualCount: aC, actualPct: aP, deltaPct: _r2(aP - eb.percentage) }
+  })
+
+  const divergenceScore = _r2(comparisonBins.reduce((s, b) => s + Math.abs(b.deltaPct), 0) / 2)
+  const overallGap = {
+    meanGap: cohort?.meanPct != null ? _r2(cohort.meanPct - meanPct) : null,
+    medianGap: cohort?.medianPct != null ? _r2(cohort.medianPct - medianPct) : null,
+    divergenceScore
+  }
+
+  const insights = []
+  if (overallGap.meanGap != null) {
+    if (overallGap.meanGap < -5) insights.push(`The cohort underperformed vs. instructor expectations by ${Math.abs(overallGap.meanGap)}pp on average mean score — course content may be harder than anticipated.`)
+    else if (overallGap.meanGap > 5) insights.push(`The cohort outperformed instructor expectations by ${overallGap.meanGap}pp on average — instructors may be underestimating student readiness.`)
+    else insights.push(`Overall cohort performance was closely aligned with instructor expectations (${Math.abs(overallGap.meanGap)}pp gap).`)
+  }
+  for (const [d, g] of Object.entries(dimensionGaps)) {
+    if (g.status === 'critical-deficit') insights.push(`Critical deficit in ${d}: cohort scored ${Math.abs(g.gap)}pp below expectations. Likely a course coverage or teaching gap.`)
+    else if (g.status === 'exceeded') insights.push(`Students exceeded expectations in ${d} by ${g.gap}pp — content in this dimension may be too straightforward.`)
+  }
+  if (divergenceScore > 15) insights.push(`High distribution divergence detected (${divergenceScore}pp) — the shape of the score curve differed significantly from instructor expectations.`)
+
+  return { expectedCohort, expectedDecileBins, expectedRawMarkBins, expectedDimensions, dimensionGaps, topicGaps, comparisonBins, overallGap, insights, syntheticStudents: synth.map(s => ({ id: s.id, theta: s.theta, pct: s.pct, totalEarned: s.totalEarned })) }
 }
 
 export function buildProfiles(questions, scores = {}, studentInfo = {}, options = {}) {
