@@ -27,10 +27,18 @@ export const DEFAULT_SETTINGS = {
   },
 }
 
+// Deep copy of plain data. Unlike structuredClone it also works on Vue reactive
+// proxies, and it keeps NaN (an emptied number field) as NaN.
+export function cloneSettings(value) {
+  if (Array.isArray(value)) return value.map(cloneSettings)
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, cloneSettings(v)]))
+  return value
+}
+
 export const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj)
 
 export function setPath(obj, path, value) {
-  const copy = structuredClone(obj)
+  const copy = cloneSettings(obj)
   const keys = path.split('.')
   let target = copy
   for (const k of keys.slice(0, -1)) target = target[k]

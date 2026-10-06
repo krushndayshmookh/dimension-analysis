@@ -4,10 +4,12 @@ import {
   DEFAULT_SETTINGS,
   SETTINGS_SCHEMA,
   mergeSettings,
+  cloneSettings,
   validateSettings,
   getPath,
   setPath,
 } from '../src/lib/settings.js'
+import { reactive } from 'vue'
 import { DIMENSIONS, DIFFICULTIES } from '../src/lib/constants.js'
 
 const leafPaths = (obj, prefix = '') =>
@@ -150,5 +152,21 @@ describe('validateSettings', () => {
     let s = setPath(DEFAULT_SETTINGS, 'mastery.weakBelow', -5)
     s = setPath(s, 'attainment.passMark', 200)
     assert.ok(validateSettings(s).length >= 2)
+  })
+})
+
+describe('cloneSettings', () => {
+  it('deep-copies plain data, including NaN and null', () => {
+    const copy = cloneSettings({ a: { b: [1, { c: NaN }] }, d: null })
+    assert.ok(Number.isNaN(copy.a.b[1].c))
+    assert.equal(copy.d, null)
+  })
+
+  it('copies Vue reactive objects (which structuredClone cannot)', () => {
+    const state = reactive(cloneSettings(DEFAULT_SETTINGS))
+    assert.throws(() => structuredClone(state))
+    assert.deepEqual(cloneSettings(state), DEFAULT_SETTINGS)
+    assert.equal(getPath(setPath(state, 'mastery.weakBelow', 30), 'mastery.weakBelow'), 30)
+    assert.equal(state.mastery.weakBelow, 50)
   })
 })
