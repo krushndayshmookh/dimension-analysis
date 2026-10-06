@@ -21,6 +21,7 @@ export const DEFAULT_SETTINGS = {
   reliability: { acceptableFrom: 0.7 },
   trend: { notableChangePp: 10 },
   review: { alphaGainFrom: 0.02, flagReuse: true },
+  sections: { minSize: 5, significance: 0.05 },
   blueprint: {
     tolerancePp: 5,
     dimensions: nullTargets(DIMENSIONS),
@@ -171,6 +172,14 @@ export const SETTINGS_SCHEMA = [
     fields: [
       { path: 'review.alphaGainFrom', label: 'Reliability gain to flag', type: 'number', unit: '', min: 0, max: 1, step: 0.01, description: 'A question is flagged "Lowers reliability" when the exam\'s Cronbach\'s alpha would rise by at least this much if the question were removed.' },
       { path: 'review.flagReuse', label: 'Flag reused questions', type: 'boolean', description: 'When on, a question that also appeared in an earlier saved exam (same type and id) is added to the review queue as Reused.' },
+    ],
+  },
+  {
+    title: 'Sections',
+    description: 'Used by the Sections tool, which compares sections (batches) given in the student file.',
+    fields: [
+      { path: 'sections.minSize', label: 'Small section below', type: 'number', unit: 'students', min: 1, max: 1000, step: 1, integer: true, description: 'A section with fewer students than this is tagged Small section, because its averages are unreliable.' },
+      { path: 'sections.significance', label: 'Significance level', type: 'number', unit: '', min: 0.001, max: 0.5, step: 0.01, description: 'The difference between sections is tagged Significant when the ANOVA p-value is below this. A small p-value means the difference is unlikely to be chance alone; it does not say the difference matters.' },
     ],
   },
   {

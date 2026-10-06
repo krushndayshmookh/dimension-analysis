@@ -126,7 +126,7 @@ function generateStudents(count = 300) {
 }
 
 const SECTIONS = ['A', 'B', 'C', 'D']
-const SECTION_ABILITY_OFFSET = { A: 0.15, B: 0.0, C: -0.1, D: -0.2 }
+const SECTION_ABILITY_OFFSET = { A: 0.35, B: 0.1, C: -0.1, D: -0.35 }
 
 // 3. Monte Carlo Simulation Engine
 function simulateContestScores(students, questions) {

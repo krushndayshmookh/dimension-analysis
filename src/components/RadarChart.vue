@@ -12,10 +12,12 @@ import { dimensionColor } from '../lib/colors.js'
 
 // values / referenceValues: { [dimension]: percentage | null }
 const props = defineProps({
-  values: { type: Object, required: true },
+  values: { type: Object, default: () => ({}) },
   label: { type: String, default: 'Value' },
   referenceValues: { type: Object, default: null },
   referenceLabel: { type: String, default: 'Cohort' },
+  // Several series instead of values/referenceValues: [{ label, values, color }].
+  series: { type: Array, default: null },
 })
 
 const canvasRef = ref(null)
@@ -24,6 +26,18 @@ let chart = null
 const series = (values) => DIMENSIONS.map((d) => values?.[d] ?? null)
 
 function datasets() {
+  if (props.series) {
+    return props.series.map((s) => ({
+      label: s.label,
+      data: series(s.values),
+      backgroundColor: `${s.color}22`,
+      borderColor: s.color,
+      pointBackgroundColor: s.color,
+      borderWidth: 2,
+      borderDash: s.dashed ? [5, 5] : [],
+      spanGaps: false,
+    }))
+  }
   const list = [
     {
       label: props.label,
@@ -76,5 +90,5 @@ function render() {
 
 onMounted(render)
 onBeforeUnmount(() => chart?.destroy())
-watch(() => [props.values, props.referenceValues, props.label, props.referenceLabel], render, { deep: true })
+watch(() => [props.values, props.referenceValues, props.label, props.referenceLabel, props.series], render, { deep: true })
 </script>

@@ -35,6 +35,7 @@ describe('default settings', () => {
     assert.equal(d.reliability.acceptableFrom, 0.7)
     assert.equal(d.trend.notableChangePp, 10)
     assert.deepEqual(d.review, { alphaGainFrom: 0.02, flagReuse: true })
+    assert.deepEqual(d.sections, { minSize: 5, significance: 0.05 })
   })
 
   it('has no blueprint targets until the instructor sets them', () => {
@@ -126,6 +127,9 @@ describe('validateSettings', () => {
     assert.ok(errorsFor('attention.weakDimensionCount', 0).some((e) => e.includes('attention.weakDimensionCount')))
     assert.ok(errorsFor('reliability.acceptableFrom', 1.5).some((e) => e.includes('reliability.acceptableFrom')))
     assert.ok(errorsFor('review.alphaGainFrom', 2).some((e) => e.includes('review.alphaGainFrom')))
+    assert.ok(errorsFor('sections.minSize', 0).some((e) => e.includes('sections.minSize')))
+    assert.ok(errorsFor('sections.minSize', 2.5).some((e) => e.includes('sections.minSize')))
+    assert.ok(errorsFor('sections.significance', 0.9).some((e) => e.includes('sections.significance')))
   })
 
   it('rejects non-numeric values', () => {

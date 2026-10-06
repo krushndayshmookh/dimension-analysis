@@ -16,6 +16,8 @@ import {
   trendVerdict,
   blueprintVerdict,
   attentionReasons,
+  sectionSizeVerdict,
+  differenceVerdict,
 } from '../src/lib/verdicts.js'
 
 const level = (v) => v?.level
@@ -253,5 +255,22 @@ describe('attentionReasons', () => {
     assert.deepEqual(reasons.map((r) => r.id), ['below-pass', 'weak-dimensions'])
     assert.deepEqual(reasons.map((r) => r.tone), ['bad', 'warn'])
     assert.equal(reasons[1].label, 'Weak in 2 dimensions')
+  })
+})
+
+describe('sectionSizeVerdict', () => {
+  it('flags sections smaller than the configured size', () => {
+    assert.deepEqual(sectionSizeVerdict(4, S), { level: 'small', label: 'Small section', tone: 'warn' })
+    assert.equal(sectionSizeVerdict(5, S), null)
+    assert.equal(sectionSizeVerdict(12, setPath(S, 'sections.minSize', 20)).level, 'small')
+  })
+})
+
+describe('differenceVerdict', () => {
+  it('is significant below the configured significance level', () => {
+    assert.deepEqual(differenceVerdict(0.049, S), { level: 'significant', label: 'Significant', tone: 'info' })
+    assert.equal(differenceVerdict(0.05, S).label, 'Not significant')
+    assert.equal(differenceVerdict(0.04, setPath(S, 'sections.significance', 0.01)).level, 'not-significant')
+    assert.equal(differenceVerdict(null, S), null)
   })
 })

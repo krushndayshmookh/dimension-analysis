@@ -146,3 +146,13 @@ export function attentionReasons(student, cohort, s) {
   }
   return reasons
 }
+
+export function sectionSizeVerdict(studentCount, s) {
+  return studentCount < s.sections.minSize ? verdict('small', 'Small section', 'warn') : null
+}
+
+// p: p-value of a test for a difference between groups.
+export function differenceVerdict(p, s) {
+  if (missing(p)) return null
+  return p < s.sections.significance ? verdict('significant', 'Significant', 'info') : verdict('not-significant', 'Not significant', 'neutral')
+}
