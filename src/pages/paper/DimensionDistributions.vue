@@ -3,6 +3,7 @@
     <template #actions>
       <BinModeToggle v-model="mode" />
       <SelectField v-model="selected" :options="choices" aria-label="Dimension" trigger-class="w-40" />
+      <LearnMore topic="dimensions" />
     </template>
     <div v-for="dist in visible" :key="dist.dimension" class="flex flex-col gap-2 rounded-lg border bg-muted/20 p-3">
       <div class="flex items-center gap-2">
@@ -28,6 +29,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import Bar from '@/components/display/Bar.vue'

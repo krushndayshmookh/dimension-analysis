@@ -1,5 +1,6 @@
 <template>
   <SectionCard v-if="paper.topics.length" title="Topics" description="Marks of a multi-topic question are split equally across its topics.">
+    <template #actions><LearnMore topic="topics" /></template>
     <DataTable :columns="columns" :rows="paper.topics" row-key="topic" :default-sort="{ key: 'topic', dir: 'asc' }" export-name="topics">
       <template #cell-bar="{ row }"><Bar :value="row.masteryPct" /></template>
     </DataTable>
@@ -7,6 +8,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import Bar from '@/components/display/Bar.vue'
 import DataTable from '@/components/display/DataTable.vue'

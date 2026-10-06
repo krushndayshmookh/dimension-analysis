@@ -1,5 +1,6 @@
 <template>
   <SectionCard title="Questions: expected and actual solve rate">
+    <template #actions><LearnMore topic="questions" /></template>
     <template #description>
       Solve rate = students who earned full marks ÷ all students. Deviation = actual − expected, in percentage points.
       Expected rates come from <code class="rounded bg-muted px-1">expected_solve_rate</code>; where it is blank the tier
@@ -29,6 +30,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import DataTable from '@/components/display/DataTable.vue'

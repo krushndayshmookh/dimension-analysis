@@ -1,6 +1,9 @@
 <template>
   <SectionCard title="Overall score distribution">
-    <template #actions><BinModeToggle v-model="mode" /></template>
+    <template #actions>
+      <BinModeToggle v-model="mode" />
+      <LearnMore topic="overall" />
+    </template>
     <StatGrid compact>
       <StatCard label="Total marks" :value="num(paper.overall.totalMarks)" />
       <StatCard label="Mean" :value="pct(paper.overall.pct.mean)" :description="`${num(paper.overall.earned.mean)} marks`" />
@@ -17,6 +20,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import Bar from '@/components/display/Bar.vue'

@@ -1,5 +1,6 @@
 <template>
   <SectionCard title="Share of marks by dimension and tier">
+    <template #actions><LearnMore topic="blueprint" /></template>
     <template #description>
       Each row's share of the exam's marks.
       <template v-if="hasTargets">Targets and tolerance are set in Settings.</template>
@@ -15,6 +16,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import DataTable from '@/components/display/DataTable.vue'

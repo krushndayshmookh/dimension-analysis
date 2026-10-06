@@ -1,5 +1,6 @@
 <template>
   <SectionCard v-if="paper.quartiles" title="Top and bottom quarter of students">
+    <template #actions><LearnMore topic="quartiles" /></template>
     <template #description>
       Mean mastery of the {{ paper.quartiles.groupSize }} highest and {{ paper.quartiles.groupSize }} lowest scoring students
       overall. A large separation means that dimension or tier sets the strong students apart.
@@ -16,6 +17,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import DataTable from '@/components/display/DataTable.vue'
 import PairBar from '@/components/display/PairBar.vue'

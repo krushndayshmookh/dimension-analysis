@@ -6,6 +6,7 @@
         <span class="inline-block h-2.5 w-24 rounded border" style="background: linear-gradient(to right, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.58))"></span>
         100% mean mastery
       </span>
+      <LearnMore topic="matrix" />
     </template>
     <div class="rounded-lg border">
       <Table>
@@ -43,6 +44,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed, defineComponent, h } from 'vue'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'

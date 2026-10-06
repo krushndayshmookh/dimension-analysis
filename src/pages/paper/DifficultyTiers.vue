@@ -1,5 +1,6 @@
 <template>
   <SectionCard title="Difficulty tiers">
+    <template #actions><LearnMore topic="tiers" /></template>
     <DataTable :columns="tierColumns" :rows="tierRows" row-key="difficulty" :searchable="false" export-name="difficulty-tiers">
       <template #cell-difficulty="{ value }"><TierBadge :tier="value" /></template>
       <template #cell-bar="{ row }"><Bar :value="row.meanPct" /></template>
@@ -16,6 +17,7 @@
 </template>
 
 <script setup>
+import LearnMore from '@/components/common/LearnMore.vue'
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import Bar from '@/components/display/Bar.vue'
