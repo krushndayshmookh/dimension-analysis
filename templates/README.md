@@ -16,7 +16,7 @@ One row per question.
 | `question_type` | yes | Exactly `assignment` or `assessment` (case-insensitive). |
 | `question_difficulty` | yes | One of `beginner`, `easy`, `medium`, `hard`, `challenge`. |
 | `question_dimension` | yes | One or more of `Recall`, `Comprehend`, `Solve`, `Build`, `Evaluate`, separated by `;`. Full names only. |
-| `question_topics` | yes | One or more topics, separated by `;`. |
+| `question_topics` | no | One or more topics, separated by `;`. Leave blank (or leave out the column) for a question with no topics; topic analysis then only covers the questions that have them. |
 | `marks` | yes | Number greater than 0. |
 | `expected_solve_rate` | no | Percentage from 0 to 100 (`80` means 80%, never `0.8`). Leave blank to use the default for the difficulty tier: beginner 85, easy 75, medium 55, hard 35, challenge 20. |
 | `question_subtype` | no | `mcq` for a multiple-choice question, or blank. Only assessments can be `mcq`. Multiple-choice questions get distractor analysis, and the simulation applies its guessing floor to them. |

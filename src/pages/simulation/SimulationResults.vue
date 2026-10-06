@@ -38,7 +38,7 @@
       </DataTable>
     </SectionCard>
 
-    <SectionCard title="Topics">
+    <SectionCard v-if="comparison.topics.length" title="Topics">
       <DataTable :columns="gapColumns('topic', 'Topic')" :rows="comparison.topics" row-key="topic" export-name="simulation-topics">
         <template #cell-gapPp="{ value }">{{ signed(value, ' pp') }}</template>
         <template #cell-bars="{ row }"><PairBar :first="row.expectedMasteryPct" :second="row.actualMasteryPct" first-label="Expected" second-label="Actual" /></template>

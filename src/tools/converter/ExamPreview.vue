@@ -14,7 +14,7 @@
           <TableHead>Type</TableHead>
           <TableHead>Difficulty</TableHead>
           <TableHead>Dimensions (; between)</TableHead>
-          <TableHead>Topics (; between)</TableHead>
+          <TableHead>Topics (optional, ; between)</TableHead>
           <TableHead class="w-24">Marks</TableHead>
           <TableHead class="w-24">Expected %</TableHead>
           <TableHead class="w-12"><span class="sr-only">Remove</span></TableHead>

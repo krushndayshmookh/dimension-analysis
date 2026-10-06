@@ -72,7 +72,7 @@
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </SectionCard>
-        <SectionCard title="Topics">
+        <SectionCard v-if="profiles.topics.length" title="Topics">
           <DataTable :columns="breakdownColumns('Topic')" :rows="breakdown('topics')" row-key="name" export-name="student-topics">
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>

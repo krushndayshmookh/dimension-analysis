@@ -58,8 +58,8 @@ function parseList(value) {
 
 const ATTENDANCE_VALUES = ['present', 'absent']
 
-const CONFIG_REQUIRED = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'question_topics', 'marks']
-const CONFIG_OPTIONAL = ['expected_solve_rate', 'correct_option', 'question_subtype']
+const CONFIG_REQUIRED = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'marks']
+const CONFIG_OPTIONAL = ['question_topics', 'expected_solve_rate', 'correct_option', 'question_subtype']
 
 export function readExamConfig(parsed) {
   const label = 'Exam config'
@@ -123,9 +123,10 @@ export function readExamConfig(parsed) {
         }
       }
 
-      const topics = parseList(row.question_topics)
-      if (!row.question_topics || topics.some((t) => !t)) {
-        fail(`question_topics must list at least one non-empty topic (separate several with "${LIST_SEPARATOR}")`)
+      // Topics are optional; a blank cell means the question has none.
+      const topics = row.question_topics ? parseList(row.question_topics) : []
+      if (topics.some((t) => !t)) {
+        fail(`question_topics must not contain an empty topic (separate several with "${LIST_SEPARATOR}")`)
       }
 
       const marks = NUMBER_PATTERN.test(row.marks) ? Number(row.marks) : NaN

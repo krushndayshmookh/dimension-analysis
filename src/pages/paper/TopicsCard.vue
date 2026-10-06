@@ -1,5 +1,5 @@
 <template>
-  <SectionCard title="Topics" description="Marks of a multi-topic question are split equally across its topics.">
+  <SectionCard v-if="paper.topics.length" title="Topics" description="Marks of a multi-topic question are split equally across its topics.">
     <DataTable :columns="columns" :rows="paper.topics" row-key="topic" :default-sort="{ key: 'topic', dir: 'asc' }" export-name="topics">
       <template #cell-bar="{ row }"><Bar :value="row.masteryPct" /></template>
     </DataTable>

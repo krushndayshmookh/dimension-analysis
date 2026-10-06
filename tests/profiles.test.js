@@ -168,3 +168,16 @@ describe('absent students in the profiles', () => {
     assert.deepEqual(profiles.students.map((s) => s.absent), [false, false, true])
   })
 })
+
+describe('questions without topics', () => {
+  it('leave the topic breakdown empty and do not disturb anything else', async () => {
+    const config = 'question_id,question_type,question_difficulty,question_dimension,marks\nQ1,assessment,easy,Recall,2\nQ2,assessment,hard,Solve,4\n'
+    const dataset = await loadDataset(config, 'student_id,Q1,Q2\nS1,2,4\nS2,0,2\nS3,2,0\n')
+    const profiles = buildProfiles(dataset)
+    assert.deepEqual(profiles.topics, [])
+    assert.deepEqual(profiles.students[0].topics, {})
+    assert.equal(profiles.students[0].masteryPct, 100)
+    const { analyzePaper } = await import('../src/lib/paper.js')
+    assert.deepEqual(analyzePaper(dataset, profiles).topics, [])
+  })
+})

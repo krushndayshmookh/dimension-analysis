@@ -26,7 +26,7 @@
         <div class="grid gap-4 md:grid-cols-3">
           <Field label="Exam config *" html-for="configFile">
             <FileInput id="configFile" aria-label="Exam config file" @change="(f) => pick('config', f)" />
-            <template #hint>question_id, question_type, question_difficulty, question_dimension, question_topics, marks[, expected_solve_rate][, question_subtype][, correct_option]</template>
+            <template #hint>question_id, question_type, question_difficulty, question_dimension, marks[, question_topics][, expected_solve_rate][, question_subtype][, correct_option]</template>
           </Field>
           <Field label="Student scores *" html-for="scoresFile">
             <FileInput id="scoresFile" aria-label="Student scores file" @change="(f) => pick('scores', f)" />

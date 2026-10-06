@@ -45,9 +45,22 @@ describe('readExamConfig', () => {
   })
 
   it('rejects a file missing a required column', async () => {
-    const text = 'question_id,question_type,question_difficulty,question_dimension,marks\nQ1,assessment,easy,Recall,2\n'
+    const text = 'question_id,question_type,question_difficulty,question_dimension,question_topics\nQ1,assessment,easy,Recall,Arrays\n'
     const result = await readConfig(text)
-    assert.ok(hasError(result, 'question_topics'))
+    assert.ok(hasError(result, 'marks'))
+  })
+
+  it('treats topics as optional: no column, or a blank cell, means no topics', async () => {
+    const noColumn = await readConfig('question_id,question_type,question_difficulty,question_dimension,marks\nQ1,assessment,easy,Recall,2\n')
+    assert.deepEqual(noColumn.errors, [])
+    assert.deepEqual(noColumn.questions[0].topics, [])
+    const blank = await readConfig(configWith('Q1,assessment,easy,Recall,,2,,\nQ2,assessment,easy,Recall, Arrays ,2,,'))
+    assert.deepEqual(blank.errors, [])
+    assert.deepEqual(blank.questions.map((q) => q.topics), [[], ['Arrays']])
+  })
+
+  it('still rejects an empty entry inside a topic list', async () => {
+    assert.ok(hasError(await readConfig(configWith('Q1,assessment,easy,Recall,Arrays;;Sorting,2,,')), 'question_topics'))
   })
 
   it('rejects abbreviated or unknown dimensions', async () => {
@@ -94,8 +107,7 @@ describe('readExamConfig', () => {
     }
   })
 
-  it('rejects empty topics and duplicate question ids', async () => {
-    assert.ok(hasError(await readConfig(configWith('Q1,assessment,easy,Recall,,2,')), 'question_topics'))
+  it('rejects duplicate question ids', async () => {
     assert.ok(hasError(await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,\nq1,assessment,easy,Recall,Arrays,2,')), 'duplicate'))
   })
 

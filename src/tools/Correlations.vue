@@ -97,11 +97,11 @@ const { settings } = storeToRefs(settingsStore)
 
 
 const group = ref('dimensions')
-const groupOptions = [
+const groupOptions = computed(() => [
   { value: 'dimensions', label: 'Dimensions' },
   { value: 'difficulties', label: 'Difficulty tiers' },
-  { value: 'topics', label: 'Topics' },
-]
+  ...(exam.value.profiles.topics.length ? [{ value: 'topics', label: 'Topics' }] : []),
+])
 const unit = computed(() => ({ dimensions: 'dimension', difficulties: 'tier', topics: 'topic' })[group.value])
 const result = computed(() => correlationMatrix(exam.value.profiles, group.value))
 

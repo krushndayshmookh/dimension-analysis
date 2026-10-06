@@ -49,7 +49,6 @@ export function readListing(parsed) {
     if (!dimensions.length && !problems.some((p) => p.startsWith('dimension'))) problems.push('no dimension')
 
     const topics = splitList(row.topics ?? '').map(stripTopicId).filter(Boolean)
-    if (!topics.length) problems.push('no topic')
 
     const expectedSolveRate = solveRateOf(row)
     if (expectedSolveRate !== '' && !(Number(expectedSolveRate) >= 0 && Number(expectedSolveRate) <= 100)) {
@@ -65,7 +64,6 @@ export function readListing(parsed) {
   for (const q of questions) {
     if (q.topics.length || !topicsByPassage.has(q.passage)) continue
     q.topics = topicsByPassage.get(q.passage)
-    q.problems = q.problems.filter((p) => p !== 'no topic')
   }
   return { questions }
 }

@@ -50,7 +50,7 @@ describe('readListing topics of comprehension questions', () => {
     const { questions } = readListing(await parse('Question ID,Type,Set,Difficulty,Dimensions,Topics,ComprehensionID\n1,Assessment,A,EASY,Comprehension,SQL Joins 2171,7\n2,Assessment,A,EASY,Comprehension,,7\n3,Assessment,A,EASY,Comprehension,,8\n'))
     assert.deepEqual(questions[1].topics, ['SQL Joins'])
     assert.deepEqual(questions[1].problems, [])
-    assert.ok(questions[2].problems.includes('no topic'), 'nothing to borrow from another passage')
+    assert.deepEqual([questions[2].topics, questions[2].problems], [[], []], 'nothing to borrow from another passage, and topics are optional')
   })
 })
 
@@ -76,7 +76,7 @@ describe('readListing', () => {
     assert.equal(questions.length, 6)
     assert.deepEqual(q('178705').problems, [])
     assert.ok(q('19921').problems.some((p) => /dimension/i.test(p)))
-    assert.ok(q('19921').problems.some((p) => /topic/i.test(p)))
+    assert.ok(!q('19921').problems.some((p) => /topic/i.test(p)), 'topics are optional')
     assert.ok(q('19921').problems.some((p) => /set/i.test(p)))
     assert.ok(q('99').problems.some((p) => /type/i.test(p)))
     assert.ok(q('98').problems.some((p) => /difficulty/i.test(p) && p.includes('TOUGH')))
