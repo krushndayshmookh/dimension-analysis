@@ -14,7 +14,7 @@ import { DIMENSIONS, DIFFICULTIES } from '../src/lib/constants.js'
 
 const leafPaths = (obj, prefix = '') =>
   Object.entries(obj).flatMap(([k, v]) =>
-    v && typeof v === 'object' ? leafPaths(v, `${prefix}${k}.`) : [`${prefix}${k}`]
+    v && typeof v === 'object' && !Array.isArray(v) ? leafPaths(v, `${prefix}${k}.`) : [`${prefix}${k}`]
   )
 
 describe('default settings', () => {
@@ -37,6 +37,7 @@ describe('default settings', () => {
     assert.deepEqual(d.review, { alphaGainFrom: 0.02, flagReuse: true })
     assert.deepEqual(d.sections, { minSize: 5, significance: 0.05 })
     assert.deepEqual(d.correlation, { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 })
+    assert.deepEqual(d.bands, [{ label: 'A', from: 80 }, { label: 'B', from: 65 }, { label: 'C', from: 50 }, { label: 'D', from: 40 }, { label: 'F', from: 0 }])
     assert.deepEqual(d.feedback, { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true })
   })
 
@@ -68,7 +69,7 @@ describe('settings schema (drives the Settings page)', () => {
       for (const f of group.fields) {
         assert.ok(f.label, f.path)
         assert.ok(f.description && f.description.length > 20, `description for ${f.path}`)
-        assert.ok(['number', 'boolean', 'target'].includes(f.type), `type for ${f.path}`)
+        assert.ok(['number', 'boolean', 'target', 'bands'].includes(f.type), `type for ${f.path}`)
       }
     }
   })
@@ -179,5 +180,41 @@ describe('cloneSettings', () => {
     assert.deepEqual(cloneSettings(state), DEFAULT_SETTINGS)
     assert.equal(getPath(setPath(state, 'mastery.weakBelow', 30), 'mastery.weakBelow'), 30)
     assert.equal(state.mastery.weakBelow, 50)
+  })
+})
+
+describe('grade bands setting', () => {
+  const withBands = (bands) => setPath(DEFAULT_SETTINGS, 'bands', bands)
+  const errors = (bands) => validateSettings(withBands(bands))
+
+  it('is valid by default and accepts custom bands', () => {
+    assert.deepEqual(errors(DEFAULT_SETTINGS.bands), [])
+    assert.deepEqual(errors([{ label: 'Pass', from: 50 }, { label: 'Fail', from: 0 }]), [])
+  })
+
+  it('needs at least two bands, the lowest starting at 0', () => {
+    assert.ok(errors([{ label: 'All', from: 0 }]).some((e) => e.includes('bands')))
+    assert.ok(errors([{ label: 'A', from: 80 }, { label: 'B', from: 10 }]).some((e) => /start at 0|lowest/i.test(e)))
+  })
+
+  it('needs unique non-empty labels and strictly decreasing limits from 0 to 100', () => {
+    assert.ok(errors([{ label: '', from: 50 }, { label: 'F', from: 0 }]).length > 0)
+    assert.ok(errors([{ label: 'A', from: 50 }, { label: 'A', from: 0 }]).length > 0)
+    assert.ok(errors([{ label: 'A', from: 50 }, { label: 'B', from: 50 }, { label: 'F', from: 0 }]).length > 0)
+    assert.ok(errors([{ label: 'A', from: 120 }, { label: 'F', from: 0 }]).length > 0)
+  })
+
+  it('merges only well-formed saved bands, otherwise keeps the defaults', () => {
+    const good = mergeSettings({ bands: [{ label: 'Pass', from: 50 }, { label: 'Fail', from: 0 }] })
+    assert.deepEqual(good.bands, [{ label: 'Pass', from: 50 }, { label: 'Fail', from: 0 }])
+    for (const bad of ['x', [], [{ label: 'A' }], [{ label: 'A', from: 'x' }, { label: 'B', from: 0 }]]) {
+      assert.deepEqual(mergeSettings({ bands: bad }).bands, DEFAULT_SETTINGS.bands)
+    }
+  })
+
+  it('never shares the list with the defaults', () => {
+    const merged = mergeSettings()
+    merged.bands[0].from = 99
+    assert.equal(DEFAULT_SETTINGS.bands[0].from, 80)
   })
 })

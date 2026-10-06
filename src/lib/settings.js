@@ -12,6 +12,13 @@ export const DEFAULT_SETTINGS = {
   deviation: { lowBelow: 10, highFrom: 20 },
   difficulty: { veryDifficultBelow: 40, difficultBelow: 55, balancedBelow: 70, easyBelow: 85 },
   attainment: { passMark: 50, distinctionMark: 75 },
+  bands: [
+    { label: 'A', from: 80 },
+    { label: 'B', from: 65 },
+    { label: 'C', from: 50 },
+    { label: 'D', from: 40 },
+    { label: 'F', from: 0 },
+  ],
   attention: { nearPassMarginPp: 5, weakDimensionCount: 2 },
   tiers: { inversionTolerancePp: 2 },
   simulationGap: { alignedBelow: 5, largeFrom: 15 },
@@ -50,6 +57,11 @@ export function setPath(obj, path, value) {
   return copy
 }
 
+const validBands = (value) =>
+  Array.isArray(value) &&
+  value.length >= 2 &&
+  value.every((b) => b && typeof b.label === 'string' && typeof b.from === 'number' && Number.isFinite(b.from))
+
 // Overlays saved settings on the defaults. Unknown keys and values of the
 // wrong type are dropped, so a stale or hand-edited file can never break the app.
 export function mergeSettings(saved) {
@@ -57,7 +69,8 @@ export function mergeSettings(saved) {
     const out = {}
     for (const [key, def] of Object.entries(template)) {
       const value = source && typeof source === 'object' ? source[key] : undefined
-      if (def === null) out[key] = typeof value === 'number' && Number.isFinite(value) ? value : null
+      if (Array.isArray(def)) out[key] = validBands(value) ? cloneSettings(value).map(({ label, from }) => ({ label, from })) : cloneSettings(def)
+      else if (def === null) out[key] = typeof value === 'number' && Number.isFinite(value) ? value : null
       else if (typeof def === 'object') out[key] = merge(def, value)
       else if (typeof def === 'number') out[key] = typeof value === 'number' && Number.isFinite(value) ? value : def
       else out[key] = typeof value === 'boolean' ? value : def
@@ -109,6 +122,13 @@ export const SETTINGS_SCHEMA = [
       pctField('difficulty.difficultBelow', 'Difficult below', 'Cohort mean from the previous limit up to this is Difficult.'),
       pctField('difficulty.balancedBelow', 'Balanced below', 'Cohort mean from the previous limit up to this is Balanced.'),
       pctField('difficulty.easyBelow', 'Easy below', 'Cohort mean from the previous limit up to this is Easy; at or above it is Very easy.'),
+    ],
+  },
+  {
+    title: 'Grade bands',
+    description: 'Defines the grade bands (A, B, C ...) used by the Grade bands tool to count students per band.',
+    fields: [
+      { path: 'bands', label: 'Bands', type: 'bands', description: 'Each band starts at the percentage given and runs up to the next band. The lowest band must start at 0 so every student has a band; labels must be unique.' },
     ],
   },
   {
@@ -238,11 +258,33 @@ const ORDERINGS = [
   [['questionFlags.tooHardBelow', 'questionFlags.tooEasyFrom'], 'The too-hard limit (questionFlags.tooHardBelow) must be below the too-easy limit (questionFlags.tooEasyFrom)'],
 ]
 
+function bandErrors(bands, field) {
+  const where = `${field.label} (${field.path})`
+  if (!Array.isArray(bands) || bands.length < 2) return [`${where} needs at least two bands`]
+  const errors = []
+  const labels = bands.map((b) => String(b?.label ?? '').trim())
+  if (labels.some((l) => !l)) errors.push(`${where}: every band needs a label`)
+  if (new Set(labels.map((l) => l.toLowerCase())).size !== labels.length) errors.push(`${where}: band labels must be unique`)
+  const limits = bands.map((b) => b?.from)
+  if (limits.some((v) => typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 100)) {
+    errors.push(`${where}: every band limit must be a number from 0 to 100`)
+    return errors
+  }
+  const sorted = [...limits].sort((a, b) => b - a)
+  if (new Set(limits).size !== limits.length) errors.push(`${where}: band limits must all be different`)
+  if (sorted.at(-1) !== 0) errors.push(`${where}: the lowest band must start at 0`)
+  return errors
+}
+
 // Returns a list of problems; empty means the settings are valid.
 export function validateSettings(settings) {
   const errors = []
   for (const f of fields) {
     const value = getPath(settings, f.path)
+    if (f.type === 'bands') {
+      errors.push(...bandErrors(value, f))
+      continue
+    }
     if (f.type === 'boolean') {
       if (typeof value !== 'boolean') errors.push(`${f.label} (${f.path}) must be on or off`)
       continue

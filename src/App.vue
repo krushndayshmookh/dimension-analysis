@@ -797,9 +797,19 @@
           <h3>{{ group.title }}</h3>
           <p class="hint">{{ group.description }}</p>
         </div>
-        <div v-for="f in group.fields" :key="f.path" class="settings-field">
+        <div v-for="f in group.fields" :key="f.path" class="settings-field" :class="{ 'bands-field': f.type === 'bands' }">
           <label :for="`set-${f.path}`">{{ f.label }}</label>
-          <div>
+          <div v-if="f.type === 'bands'" class="bands-editor">
+            <div v-for="(b, i) in draftValue(f.path)" :key="i" class="band-row">
+              <input type="text" :value="b.label" aria-label="Band label" @input="setBand(f, i, 'label', $event.target.value)" />
+              <span class="unit">from</span>
+              <input type="number" min="0" max="100" step="1" :value="b.from" aria-label="Band lower limit" @input="setBand(f, i, 'from', $event.target.value)" />
+              <span class="unit">%</span>
+              <button type="button" class="btn-sm btn-secondary" :disabled="draftValue(f.path).length <= 2" @click="removeBand(f, i)">Remove</button>
+            </div>
+            <button type="button" class="btn-sm btn-secondary" @click="addBand(f)">Add band</button>
+          </div>
+          <div v-else>
             <input
               v-if="f.type === 'boolean'"
               :id="`set-${f.path}`"
@@ -1071,10 +1081,25 @@ const draftValue = (path) => getPath(draft.value, path)
 
 function setDraft(field, raw) {
   let value
-  if (field.type === 'boolean') value = raw
+  if (field.type === 'boolean' || field.type === 'bands') value = raw
   else if (raw === '') value = field.type === 'target' ? null : NaN
   else value = Number(raw)
   draft.value = setPath(draft.value, field.path, value)
+}
+
+function setBand(field, index, key, raw) {
+  const bands = cloneSettings(draftValue(field.path))
+  bands[index][key] = key === 'from' ? (raw === '' ? NaN : Number(raw)) : raw
+  setDraft(field, bands)
+}
+function removeBand(field, index) {
+  setDraft(field, draftValue(field.path).filter((_, i) => i !== index))
+}
+function addBand(field) {
+  const bands = cloneSettings(draftValue(field.path))
+  const used = new Set(bands.map((b) => b.from))
+  const from = [...Array(99).keys()].map((i) => i + 1).find((v) => !used.has(v)) ?? 1
+  setDraft(field, [...bands, { label: `Band ${bands.length + 1}`, from }])
 }
 
 async function loadSettings() {

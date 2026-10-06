@@ -258,3 +258,11 @@ tr.clickable:hover td { background: var(--accent-soft); }
 
 .check { display: flex; gap: 6px; align-items: center; font-size: 0.9rem; }
 textarea { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font: inherit; resize: vertical; }
+
+.settings-field.bands-field .bands-editor, .settings-field.bands-field > .hint { grid-column: 2 / -1; }
+.bands-editor { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.band-row { display: flex; gap: 8px; align-items: center; }
+.band-row input[type="text"] { width: 120px; }
+.band-row input[type="number"] { width: 80px; }
+.range-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.range-row input[type="range"] { flex: 1; min-width: 220px; }
