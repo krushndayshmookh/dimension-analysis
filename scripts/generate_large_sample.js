@@ -211,15 +211,15 @@ function simulateContestScores(students, questions) {
 function generateExamConfigCsv(questions) {
   const header = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate'
   const rows = questions.map((q) => {
-    const dimStr = q.dimension.includes(',') ? `"${q.dimension}"` : q.dimension
-    return `${q.id},${q.type},${q.difficulty},${dimStr},${q.topic},${q.marks},${q.expectedSolveRate ?? 50}`
+    const dimensions = q.dimension.split(',').map((d) => d.trim()).join(';')
+    return `${q.id},${q.type},${q.difficulty},${dimensions},${q.topic},${q.marks},${q.expectedSolveRate ?? 50}`
   })
   return [header, ...rows].join('\n')
 }
 
 function generateStudentsCsv(students) {
-  const header = 'student_id,student_name,email'
-  const rows = students.map((s) => `${s.id},${s.name},${s.email}`)
+  const header = 'student_id,student_name'
+  const rows = students.map((s) => `${s.id},${s.name}`)
   return [header, ...rows].join('\n')
 }
 
@@ -259,39 +259,15 @@ export function generateContestDataset() {
 // CLI Execution: write files to disk
 const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === __filename
 if (isDirectRun) {
-  console.log('Generating 300-student Monte Carlo contest dataset...')
+  console.log('Generating the 300-student sample (seeded Monte Carlo)...')
   const data = generateContestDataset()
 
-  const samplesDir = path.join(ROOT_DIR, 'samples')
-  fs.mkdirSync(samplesDir, { recursive: true })
+  const outDir = path.join(ROOT_DIR, 'samples', 'large')
+  fs.mkdirSync(outDir, { recursive: true })
 
-  fs.writeFileSync(path.join(samplesDir, 'contest_exam_config.csv'), data.examConfigCsv, 'utf8')
-  fs.writeFileSync(path.join(samplesDir, 'contest_students.csv'), data.studentsCsv, 'utf8')
-  fs.writeFileSync(path.join(samplesDir, 'contest_student_scores.csv'), data.scoresCsv, 'utf8')
+  fs.writeFileSync(path.join(outDir, 'exam_config.csv'), data.examConfigCsv + '\n', 'utf8')
+  fs.writeFileSync(path.join(outDir, 'students.csv'), data.studentsCsv + '\n', 'utf8')
+  fs.writeFileSync(path.join(outDir, 'student_scores.csv'), data.scoresCsv + '\n', 'utf8')
 
-  console.log(`Saved contest_exam_config.csv (${data.questions.length} questions, total 135 marks)`)
-  console.log(`Saved contest_students.csv (${data.students.length} students)`)
-  console.log(`Saved contest_student_scores.csv (${data.students.length} rows)`)
-
-  // Update src/samples.js
-  const samplesJsPath = path.join(ROOT_DIR, 'src', 'samples.js')
-  let samplesJsContent = fs.readFileSync(samplesJsPath, 'utf8')
-  const marker = '// --- 300-Student Contest Dataset (Generated via Monte Carlo Simulation) ---'
-  const markerIdx = samplesJsContent.indexOf(marker)
-  if (markerIdx !== -1) {
-    samplesJsContent = samplesJsContent.slice(0, markerIdx).trimEnd() + '\n\n'
-  } else {
-    samplesJsContent = samplesJsContent.trimEnd() + '\n\n'
-  }
-
-  const contestExportStr = `${marker}
-export const CONTEST_QUESTIONS_CSV = \`${data.examConfigCsv}\`
-
-export const CONTEST_STUDENTS_CSV = \`${data.studentsCsv}\`
-
-export const CONTEST_SCORES_CSV = \`${data.scoresCsv}\`
-`
-  fs.writeFileSync(samplesJsPath, samplesJsContent + contestExportStr, 'utf8')
-  console.log(`Updated src/samples.js with CONTEST_QUESTIONS_CSV, CONTEST_STUDENTS_CSV, CONTEST_SCORES_CSV`)
+  console.log(`Wrote ${data.questions.length} questions and ${data.students.length} students to ${outDir}`)
 }
-
