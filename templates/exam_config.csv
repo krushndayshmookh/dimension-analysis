@@ -1,3 +1,3 @@
-question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option
-Q1,assessment,easy,Recall,Arrays,2,80,B
-Q2,assignment,hard,Solve;Build,Sorting;Recursion,10,,
+question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,question_subtype,correct_option
+Q1,assessment,easy,Recall,Arrays,2,80,mcq,B
+Q2,assignment,hard,Solve;Build,Sorting;Recursion,10,,,

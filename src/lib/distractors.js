@@ -4,11 +4,11 @@ const GROUP_FRACTION = 0.27
 const natural = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
 const share = (count, of) => (of ? round((count / of) * 100) : null)
 
-// How often each option of a multiple-choice question (one with a correct_option)
-// was chosen, overall and among the top and bottom 27% of students by total
-// score. Needs students' `answers` (the optional answers file).
+// How often each option of a multiple-choice (mcq) question was chosen, overall
+// and among the top and bottom 27% of students by total score. Needs students'
+// `answers`, which come from the option cells of the scores file.
 export function analyzeDistractors(dataset) {
-  const keyed = dataset.questions.filter((q) => q.correctOption)
+  const keyed = dataset.questions.filter((q) => q.subtype === 'mcq')
   const students = dataset.students
   if (!keyed.length || !students.some((s) => s.answers)) return { available: false, questions: [] }
 

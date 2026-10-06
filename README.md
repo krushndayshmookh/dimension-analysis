@@ -3,7 +3,7 @@
 Exam analytics for a single instructor, running offline. Upload an exam's questions and scores and see how
 students and the cohort perform across the cognitive dimensions **Recall, Comprehend, Solve, Build, Evaluate**.
 
-```
+```bash
 npm install
 npm run dev        # storage server (port 3001) + Vite (port 5173)
 npm test           # unit tests
@@ -15,14 +15,13 @@ app from the storage server alone.
 ## Input files
 
 Strict CSV formats, documented in [templates/README.md](templates/README.md) with header-plus-example files in
-`templates/` and valid sample uploads in `samples/` (`small` and `large`, which also has a student answers file).
+`templates/` and valid sample uploads in `samples/` (`small` and `large`; the large one has multiple-choice questions).
 
 | file | required | notes |
 | --- | --- | --- |
-| `exam_config.csv` | yes | question type (`assignment` / `assessment`), difficulty, dimensions, topics, marks; optional `expected_solve_rate`, `correct_option` |
-| `student_scores.csv` | yes | one column per question; blank = unattempted |
+| `exam_config.csv` | yes | question type (`assignment` / `assessment`), difficulty, dimensions, topics, marks; optional `expected_solve_rate`, `question_subtype` (`mcq`) with its `correct_option` |
+| `student_scores.csv` | yes | one column per question: marks, or the chosen option for `mcq` questions; blank = unattempted |
 | `students.csv` | no | names; optional `section` |
-| `student_answers.csv` | no | chosen option per multiple-choice question, for distractor analysis |
 
 Files that do not follow the format are rejected with the rows that need fixing.
 

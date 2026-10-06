@@ -14,7 +14,7 @@ import { loadAnalysis, loadDataset, closeTo } from './fixtures.js'
 const singleQuestionDataset = ({ rate, marks = 10, correctOption = null, observed = [marks] }) => ({
   questions: [{
     id: 'Q1', type: 'assessment', difficulty: 'medium', dimensions: ['Solve'], topics: ['T'],
-    marks, expectedSolveRate: rate, correctOption,
+    marks, expectedSolveRate: rate, subtype: correctOption ? 'mcq' : null, correctOption,
   }],
   students: observed.map((score, i) => ({ id: `S${i}`, name: `S${i}`, section: null, scores: { Q1: score } })),
 })
@@ -95,7 +95,7 @@ describe('simulateCohort', () => {
     }
   })
 
-  it('applies the guessing floor only to questions with an answer key', () => {
+  it('applies the guessing floor only to mcq questions', () => {
     const options = { cohortSize: 20000, abilitySd: 3, guessing: 0.5, seed: 3 }
     const open = simulateCohort(singleQuestionDataset({ rate: 60 }), options)
     const multipleChoice = simulateCohort(singleQuestionDataset({ rate: 60, correctOption: 'A' }), options)

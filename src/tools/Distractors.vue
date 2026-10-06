@@ -12,8 +12,9 @@
 
     <div v-if="!analysis.available" class="empty-state">
       <p>
-        Distractor analysis needs an answer key (a <code>correct_option</code> column in the exam config) and the
-        optional student answers file. Upload the exam again with both.
+        Distractor analysis applies to multiple-choice questions: assessments with <code>question_subtype</code>
+        <code>mcq</code> and a <code>correct_option</code> in the exam config, where the scores file holds the option each
+        student chose. This exam has none.
       </p>
     </div>
 

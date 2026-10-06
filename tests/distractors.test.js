@@ -7,7 +7,7 @@ import { closeTo } from './fixtures.js'
 
 const makeDataset = (keys, answersByStudent) => {
   const questions = Object.entries(keys).map(([id, correctOption]) => ({
-    id, type: 'assessment', difficulty: 'easy', dimensions: ['Recall'], topics: ['T'], marks: 1, expectedSolveRate: null, correctOption,
+    id, type: 'assessment', difficulty: 'easy', dimensions: ['Recall'], topics: ['T'], marks: 1, expectedSolveRate: null, subtype: 'mcq', correctOption,
   }))
   const students = Object.entries(answersByStudent).map(([id, answers]) => ({
     id, name: id, section: null,
@@ -29,10 +29,10 @@ describe('analyzeDistractors', () => {
   const q1 = result.questions.find((q) => q.id === 'Q1')
   const option = (q, o) => q.options.find((x) => x.option === o)
 
-  it('analyses only questions that have an answer key', () => {
+  it('analyses only mcq questions', () => {
     assert.equal(result.available, true)
     assert.deepEqual(result.questions.map((q) => q.id), ['Q1', 'Q2'])
-    const noKeys = analyzeDistractors({ ...dataset, questions: dataset.questions.map((q) => ({ ...q, correctOption: null })) })
+    const noKeys = analyzeDistractors({ ...dataset, questions: dataset.questions.map((q) => ({ ...q, subtype: null, correctOption: null })) })
     assert.deepEqual([noKeys.available, noKeys.questions], [false, []])
   })
 

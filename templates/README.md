@@ -19,7 +19,8 @@ One row per question.
 | `question_topics` | yes | One or more topics, separated by `;`. |
 | `marks` | yes | Number greater than 0. |
 | `expected_solve_rate` | no | Percentage from 0 to 100 (`80` means 80%, never `0.8`). Leave blank to use the default for the difficulty tier: beginner 85, easy 75, medium 55, hard 35, challenge 20. |
-| `correct_option` | no | For multiple-choice questions, the correct option (for example `B`; compared ignoring case). Questions with an answer key are treated as multiple choice by the simulation, and it is needed for distractor analysis. Leave blank for other questions. |
+| `question_subtype` | no | `mcq` for a multiple-choice question, or blank. Only assessments can be `mcq`. Multiple-choice questions get distractor analysis, and the simulation applies its guessing floor to them. |
+| `correct_option` | for `mcq` | The correct option, for example `B` (compared ignoring case). Required for an `mcq` question and not allowed for any other. |
 
 Marks of a question with several dimensions (or topics) are split equally
 across them.
@@ -31,7 +32,8 @@ One row per student, one column per question.
 - The first column is `student_id` (unique, case-sensitive).
 - Every other column is a `question_id` from the exam config, and every
   question in the exam config must have a column.
-- A cell is a number from 0 up to the question's `marks` (decimals allowed for
+- For an `mcq` question the cell is the **option the student chose** (a short label such as `A`; case is ignored). The marks are worked out from the answer key: full marks for the correct option, 0 for any other. (Negative marking and partial marks for multiple choice are not supported.)
+- For every other question a cell is a number from 0 up to the question's `marks` (decimals allowed for
   partial credit), or **blank for unattempted**. `0` means attempted and
   scored zero. No other placeholders (`NA`, `-`, ...) are accepted.
 
@@ -44,16 +46,3 @@ One row per student, one column per question.
 | `section` | Optional. The student's section or batch, used to compare sections. Blank means no section. |
 
 Without this file, student ids are used as names and there are no sections. Extra columns are ignored.
-
-## `student_answers.csv` (optional)
-
-Needed only for distractor analysis. One row per student, one column per
-question that has a `correct_option` in the exam config.
-
-- The first column is `student_id`; every student must be in the scores file.
-- Every question with a `correct_option` must have a column, and no other
-  question may.
-- A cell is the option the student chose (a short label such as `A`; case is
-  ignored), or blank for no answer.
-- Answers that disagree with the scores (the correct option chosen without full
-  marks, or another option with full marks) are reported as a warning.

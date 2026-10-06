@@ -15,7 +15,7 @@ import { round, describe, decileBins, markBins } from './stats.js'
 //    some student's actual score is strictly between 0 and the question's marks.
 //  * All other questions: a logistic item model
 //      p = g + (1 - g) / (1 + exp(-discrimination * (theta - b)))
-//    where g = guessing for questions with an answer key (correct_option) and
+//    where g = guessing for multiple-choice (mcq) questions and
 //    0 otherwise. The item location b is solved so that a student of mean
 //    ability succeeds with probability exactly equal to the question's expected
 //    solve rate. Full marks or none.
@@ -104,7 +104,7 @@ function prepareQuestion(q, params, partialIds) {
   const partial = params.partialCredit === 'all' || (params.partialCredit === 'auto' && partialIds.has(q.id))
   if (partial) return { q, mode: 'partial', rate }
 
-  const g = q.correctOption ? params.guessing : 0
+  const g = q.subtype === 'mcq' ? params.guessing : 0
   const s = clamp((rate - g) / (1 - g), 0.01, 0.99)
   const location = params.abilityMean - Math.log(s / (1 - s)) / params.discrimination
   return { q, mode: 'full', g, location }

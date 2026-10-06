@@ -1,4 +1,4 @@
-import { DIMENSIONS, DIFFICULTIES, QUESTION_TYPES, LIST_SEPARATOR } from './constants.js'
+import { DIMENSIONS, DIFFICULTIES, QUESTION_TYPES, QUESTION_SUBTYPES, LIST_SEPARATOR } from './constants.js'
 
 // Strict readers for the three input files. Anything that does not follow the
 // documented format is reported in `errors`; callers must reject the upload
@@ -8,6 +8,7 @@ import { DIMENSIONS, DIFFICULTIES, QUESTION_TYPES, LIST_SEPARATOR } from './cons
 
 const MAX_ERRORS = 100
 const NUMBER_PATTERN = /^-?\d+(\.\d+)?$/
+const OPTION_PATTERN = /^[A-Za-z0-9_-]{1,20}$/
 const EPSILON = 1e-9
 
 function collector() {
@@ -56,7 +57,7 @@ function parseList(value) {
 }
 
 const CONFIG_REQUIRED = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'question_topics', 'marks']
-const CONFIG_OPTIONAL = ['expected_solve_rate', 'correct_option']
+const CONFIG_OPTIONAL = ['expected_solve_rate', 'correct_option', 'question_subtype']
 
 export function readExamConfig(parsed) {
   const label = 'Exam config'
@@ -85,6 +86,22 @@ export function readExamConfig(parsed) {
       const type = row.question_type.toLowerCase()
       if (!QUESTION_TYPES.includes(type)) {
         fail(`question_type "${row.question_type}" must be one of: ${QUESTION_TYPES.join(', ')}`)
+      }
+
+      const rawSubtype = (row.question_subtype ?? '').toLowerCase()
+      let subtype = null
+      if (rawSubtype) {
+        if (QUESTION_SUBTYPES.includes(rawSubtype)) subtype = rawSubtype
+        else fail(`question_subtype "${row.question_subtype}" must be one of: ${QUESTION_SUBTYPES.join(', ')} (or blank)`)
+      }
+      let correctOption = null
+      if (subtype === 'mcq') {
+        if (type !== 'assessment') fail('an mcq question must be an assessment')
+        if (!row.correct_option) fail('an mcq question needs a correct_option')
+        else if (!OPTION_PATTERN.test(row.correct_option)) fail(`correct_option "${row.correct_option}" must be a short option label such as A or B`)
+        else correctOption = row.correct_option.toUpperCase()
+      } else if (row.correct_option) {
+        fail('correct_option is only for mcq questions (set question_subtype to mcq)')
       }
 
       const difficulty = row.question_difficulty.toLowerCase()
@@ -120,7 +137,7 @@ export function readExamConfig(parsed) {
       }
 
       if (valid) {
-        questions.push({ id, type, difficulty, dimensions, topics, marks, expectedSolveRate, correctOption: row.correct_option ? row.correct_option.toUpperCase() : null })
+        questions.push({ id, type, difficulty, dimensions, topics, marks, expectedSolveRate, subtype, correctOption })
       }
     })
     if (!(parsed.data ?? []).length) out.add(`${label}: the file has no question rows`)
@@ -141,6 +158,7 @@ export function readScores(parsed, questions) {
   } else {
     const idField = fields[0]
     const byId = new Map(questions.map((q) => [q.id, q]))
+    const hasMcq = questions.some((q) => q.subtype === 'mcq')
     const questionFields = fields.slice(1)
     const seenFields = new Set()
     for (const field of questionFields) {
@@ -166,11 +184,22 @@ export function readScores(parsed, questions) {
       seenStudents.add(id)
 
       const scores = {}
+      const answers = {}
       for (const field of questionFields) {
         const q = byId.get(field)
         if (!q) continue
         const raw = String(row[field] ?? '').trim()
         if (raw === '') continue // blank means unattempted
+        if (q.subtype === 'mcq') {
+          // The cell is the chosen option; marks follow from the answer key.
+          if (!OPTION_PATTERN.test(raw)) {
+            out.add(`${where}, ${field}: "${raw}" is not an option label such as A or B (leave the cell blank if unattempted)`)
+            continue
+          }
+          answers[field] = raw.toUpperCase()
+          scores[field] = answers[field] === q.correctOption ? q.marks : 0
+          continue
+        }
         if (!NUMBER_PATTERN.test(raw)) {
           out.add(`${where}, ${field}: "${raw}" is not a number (leave the cell blank if unattempted)`)
           continue
@@ -180,7 +209,7 @@ export function readScores(parsed, questions) {
         else if (value > q.marks + EPSILON) out.add(`${where}, ${field}: score ${value} exceeds the maximum of ${q.marks}`)
         else scores[field] = value
       }
-      students.push({ id, scores })
+      students.push({ id, scores, ...(hasMcq ? { answers } : {}) })
     })
     if (!(parsed.data ?? []).length) out.add(`${label}: the file has no student rows`)
   }
@@ -214,80 +243,8 @@ export function readStudentNames(parsed) {
   return { names, sections, errors: out.finish(), warnings }
 }
 
-const OPTION_PATTERN = /^[A-Za-z0-9_-]{1,20}$/
-
-// Optional answers file: student_id, then one column per question that has a
-// correct_option. A cell is the option the student chose (compared ignoring
-// case) or blank for no answer. scoredStudents ([{ id, scores }]) lets it warn
-// about answers that disagree with the scores.
-export function readAnswers(parsed, questions, studentIds, scoredStudents = null) {
-  const label = 'Student answers'
-  const out = collector()
-  const warnings = []
-  const answers = {}
-  const fields = parsed?.meta?.fields ?? []
-
-  if (normalizeName(fields[0]) !== 'student_id') {
-    out.add(`${label}: the first column must be student_id`)
-  } else {
-    const idField = fields[0]
-    const keyed = new Map(questions.filter((q) => q.correctOption).map((q) => [q.id, q]))
-    const known = new Set(questions.map((q) => q.id))
-    const questionFields = fields.slice(1)
-    const seenFields = new Set()
-    for (const field of questionFields) {
-      if (seenFields.has(field)) out.add(`${label}: column "${field}" appears more than once`)
-      seenFields.add(field)
-      if (!known.has(field)) out.add(`${label}: column "${field}" is not a question_id in the exam config`)
-      else if (!keyed.has(field)) out.add(`${label}: question ${field} has no correct_option in the exam config`)
-    }
-    const absent = [...keyed.keys()].filter((id) => !seenFields.has(id))
-    if (absent.length) out.add(`${label}: no column for question(s) with a correct_option: ${absent.join(', ')}`)
-    for (const e of parsed.errors ?? []) {
-      if (e.type === 'FieldMismatch') out.add(`${label}: data row ${(e.row ?? 0) + 1}: ${e.message}`)
-    }
-
-    const scored = new Set(studentIds)
-    const scoresById = new Map((scoredStudents ?? []).map((s) => [s.id, s.scores]))
-    let clashes = 0
-    let firstClash = null
-    ;(parsed.data ?? []).forEach((row, i) => {
-      const id = String(row[idField] ?? '').trim()
-      const where = `${label}: row ${i + 1}${id ? ` (${id})` : ''}`
-      if (!id) return out.add(`${where}: student_id is empty`)
-      if (id in answers) out.add(`${where}: duplicate student_id "${id}"`)
-      if (!scored.has(id)) out.add(`${where}: "${id}" is not a student in the scores file`)
-
-      const chosen = {}
-      for (const field of questionFields) {
-        const q = keyed.get(field)
-        if (!q) continue
-        const raw = String(row[field] ?? '').trim()
-        if (raw === '') continue
-        if (!OPTION_PATTERN.test(raw)) {
-          out.add(`${where}, ${field}: option "${raw}" must be a short label such as A or B (letters, digits, - or _)`)
-          continue
-        }
-        chosen[field] = raw.toUpperCase()
-        const score = scoresById.get(id)?.[field]
-        if (scoredStudents && (score === undefined || (chosen[field] === q.correctOption) !== (score >= q.marks - EPSILON))) {
-          clashes++
-          firstClash ??= `${id} ${field}`
-        }
-      }
-      answers[id] = chosen
-    })
-    if (!(parsed.data ?? []).length) out.add(`${label}: the file has no student rows`)
-    const missingRows = studentIds.filter((id) => !(id in answers))
-    if (missingRows.length) warnings.push(`${label}: no row for ${missingRows.length} scored student(s), treated as no answers: ${missingRows.slice(0, 10).join(', ')}${missingRows.length > 10 ? ', ...' : ''}`)
-    if (clashes) warnings.push(`${label}: ${clashes} answer(s) disagree with the scores (the key chosen without full marks, another option with full marks, or an answer where the score is blank); first: ${firstClash}`)
-  }
-
-  return { answers, errors: out.finish(), warnings }
-}
-
-// config and scores are required; students (names) and answers are optional.
-export function readDataset({ config, scores, students, answers = null }) {
+// config and scores are required; students (names) is optional.
+export function readDataset({ config, scores, students }) {
   const configResult = readExamConfig(config)
   const errors = [...configResult.errors]
   const warnings = [...configResult.warnings]
@@ -298,17 +255,6 @@ export function readDataset({ config, scores, students, answers = null }) {
     : readScores(scores, configResult.questions)
   errors.push(...scoresResult.errors)
   warnings.push(...scoresResult.warnings)
-
-  let answersResult = null
-  if (answers && !errors.length) {
-    if (!configResult.questions.some((q) => q.correctOption)) {
-      errors.push('Student answers: the exam config has no correct_option for any question, so the answers cannot be used')
-    } else {
-      answersResult = readAnswers(answers, configResult.questions, scoresResult.students.map((s) => s.id), scoresResult.students)
-      errors.push(...answersResult.errors)
-      warnings.push(...answersResult.warnings)
-    }
-  }
 
   let names = null
   let sections = {}
@@ -338,7 +284,7 @@ export function readDataset({ config, scores, students, answers = null }) {
         name: names?.[s.id] ?? s.id,
         section: sections[s.id] ?? null,
         scores: s.scores,
-        ...(answersResult ? { answers: answersResult.answers[s.id] ?? {} } : {}),
+        ...(s.answers ? { answers: s.answers } : {}),
       })),
     },
     errors: [],

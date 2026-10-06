@@ -23,6 +23,7 @@ describe('readExamConfig', () => {
       topics: ['Arrays', 'Sorting'],
       marks: 4,
       expectedSolveRate: null,
+      subtype: null,
       correctOption: null,
     })
     assert.equal(questions[0].expectedSolveRate, 80)
@@ -91,12 +92,6 @@ describe('readExamConfig', () => {
     for (const type of ['MCQ', 'Coding', 'quiz', '']) {
       assert.ok(hasError(await readConfig(configWith(`Q1,${type},easy,Recall,Arrays,2,,`)), 'question_type'), `rejects "${type}"`)
     }
-  })
-
-  it('reads the optional correct_option answer key, normalised to upper case', async () => {
-    const { questions, errors } = await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,,b\nQ2,assessment,easy,Recall,Arrays,2,,'))
-    assert.deepEqual(errors, [])
-    assert.deepEqual(questions.map((q) => q.correctOption), ['B', null])
   })
 
   it('rejects empty topics and duplicate question ids', async () => {
@@ -271,90 +266,93 @@ describe('readDataset', () => {
   })
 })
 
-describe('readAnswers (optional student_answers.csv)', () => {
-  const keyed = `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option
-Q1,assessment,easy,Recall,Arrays,1,,B
-Q2,assignment,easy,Recall,Arrays,5,,
-Q3,assessment,easy,Recall,Arrays,1,,A
-`
-  const scores = 'student_id,Q1,Q2,Q3\nS1,1,5,0\nS2,0,3,1\nS3,,2,\n'
-  const setup = async () => {
-    const config = await parse(keyed)
-    const { questions } = readExamConfig(config)
-    const { students } = readScores(await parse(scores), questions)
-    return { questions, studentIds: students.map((s) => s.id) }
-  }
+// ---- multiple-choice questions ---------------------------------------------------------
 
-  it('reads one chosen option per student and question, upper-cased, blank meaning no answer', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    const { answers, errors } = readAnswers(await parse('student_id,Q1,Q3\nS1,b,C\nS2,A,\nS3,,\n'), questions, studentIds)
+const mcqConfig = (rows) =>
+  `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,question_subtype,correct_option\n${rows}\n`
+
+describe('readExamConfig: question_subtype and correct_option', () => {
+  it('reads an mcq question with its answer key, upper-cased', async () => {
+    const { questions, errors } = await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,b\nQ2,assignment,easy,Recall,Arrays,5,,'))
     assert.deepEqual(errors, [])
-    assert.deepEqual(answers, { S1: { Q1: 'B', Q3: 'C' }, S2: { Q1: 'A' }, S3: {} })
+    assert.deepEqual(questions.map((q) => [q.subtype, q.correctOption]), [['mcq', 'B'], [null, null]])
   })
 
-  it('rejects columns for questions that have no answer key, or that do not exist', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q2,Q3\nS1,B,A,A\n'), questions, studentIds), 'Q2'))
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3,Q9\nS1,B,A,A\n'), questions, studentIds), 'Q9'))
+  it('accepts the subtype in any case', async () => {
+    const { questions, errors } = await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,MCQ,A'))
+    assert.deepEqual(errors, [])
+    assert.equal(questions[0].subtype, 'mcq')
   })
 
-  it('rejects a file that lacks a column for a question with an answer key', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1\nS1,B\n'), questions, studentIds), 'Q3'))
+  it('rejects unknown subtypes', async () => {
+    assert.ok(hasError(await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,quiz,')), 'question_subtype'))
   })
 
-  it('rejects an unknown or duplicate student, and a first column that is not student_id', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS9,B,A\n'), questions, studentIds), 'S9'))
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS1,B,A\nS1,B,A\n'), questions, studentIds), 'duplicate'))
-    assert.ok(hasError(readAnswers(await parse('id,Q1,Q3\nS1,B,A\n'), questions, studentIds), 'student_id'))
+  it('only allows mcq for assessments', async () => {
+    assert.ok(hasError(await readConfig(mcqConfig('Q1,assignment,easy,Recall,Arrays,2,mcq,A')), 'assessment'))
   })
 
-  it('rejects options that are not a short word', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    assert.ok(hasError(readAnswers(await parse('student_id,Q1,Q3\nS1,"B, C",A\n'), questions, studentIds), 'option'))
+  it('requires a correct_option for an mcq question, and only for an mcq question', async () => {
+    assert.ok(hasError(await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,')), 'correct_option'))
+    assert.ok(hasError(await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,,B')), 'correct_option'))
+    assert.ok(hasError(await readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,B C')), 'correct_option'))
   })
 
-  it('warns about students with no row, and answers that disagree with the scores', async () => {
-    const { readAnswers } = await import('../src/lib/input.js')
-    const { questions, studentIds } = await setup()
-    // S1 chose the key (B) on Q1 and scored 1: fine. S2 chose the key (A) on Q3 and scored 1: fine.
-    const consistent = readAnswers(await parse('student_id,Q1,Q3\nS1,B,C\nS2,C,A\n'), questions, studentIds, readScores(await parse(scores), questions).students)
-    assert.deepEqual(consistent.errors, [])
-    assert.ok(consistent.warnings.some((w) => w.includes('S3')), 'S3 has no row')
-    assert.ok(!consistent.warnings.some((w) => /disagree/i.test(w)))
-    const clash = readAnswers(await parse('student_id,Q1,Q3\nS1,A,C\nS2,C,A\nS3,,\n'), questions, studentIds, readScores(await parse(scores), questions).students)
-    assert.ok(clash.warnings.some((w) => /disagree/i.test(w) && w.includes('S1')))
+  it('does not need either column', async () => {
+    const { questions, errors } = await readConfig(CONFIG_CSV)
+    assert.deepEqual(errors, [])
+    assert.ok(questions.every((q) => q.subtype === null && q.correctOption === null))
+  })
+})
+
+describe('readScores: multiple-choice cells hold the chosen option', () => {
+  const configPromise = readConfig(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,B\nQ2,assignment,hard,Solve,Sorting,10,,')).then((r) => r.questions)
+  const read = async (text) => readScores(await parse(text), await configPromise)
+
+  it('scores an mcq cell as full marks for the key and zero for any other option', async () => {
+    const { students, errors } = await read('student_id,Q1,Q2\nS1,B,7\nS2,c,\nS3,,3.5\n')
+    assert.deepEqual(errors, [])
+    assert.deepEqual(students.map((s) => s.scores), [{ Q1: 2, Q2: 7 }, { Q1: 0 }, { Q2: 3.5 }])
   })
 
-  it('is attached to the dataset by readDataset', async () => {
-    const { readDataset } = await import('../src/lib/input.js')
+  it('keeps the chosen options, upper-cased, for the mcq questions only', async () => {
+    const { students } = await read('student_id,Q1,Q2\nS1,B,7\nS2,c,\nS3,,3.5\n')
+    assert.deepEqual(students.map((s) => s.answers), [{ Q1: 'B' }, { Q1: 'C' }, {}])
+  })
+
+  it('treats a blank mcq cell as unattempted', async () => {
+    const { students } = await read('student_id,Q1,Q2\nS3,,3.5\n')
+    assert.ok(!('Q1' in students[0].scores))
+  })
+
+  it('rejects an mcq cell that is not a short option label', async () => {
+    assert.ok(hasError(await read('student_id,Q1,Q2\nS1,"B, C",7\n'), 'option'))
+    assert.ok(hasError(await read('student_id,Q1,Q2\nS1,B or C,7\n'), 'option'))
+  })
+
+  it('still validates numeric cells for the other questions', async () => {
+    assert.ok(hasError(await read('student_id,Q1,Q2\nS1,B,abc\n'), 'not a number'))
+    assert.ok(hasError(await read('student_id,Q1,Q2\nS1,B,11\n'), 'exceeds'))
+  })
+
+  it('leaves out answers when there are no mcq questions', async () => {
+    const { students } = readScores(await parse(SCORES_CSV), (await readConfig(CONFIG_CSV)).questions)
+    assert.ok(students.every((s) => !('answers' in s)))
+  })
+
+  it('carries the chosen options into the dataset', async () => {
     const result = readDataset({
-      config: await parse(keyed),
-      scores: await parse(scores),
+      config: await parse(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,B\nQ2,assignment,hard,Solve,Sorting,10,,')),
+      scores: await parse('student_id,Q1,Q2\nS1,B,7\nS2,C,\n'),
       students: null,
-      answers: await parse('student_id,Q1,Q3\nS1,B,C\nS2,A,A\nS3,,\n'),
     })
     assert.deepEqual(result.errors, [])
-    assert.deepEqual(result.dataset.students[0].answers, { Q1: 'B', Q3: 'C' })
-    assert.deepEqual(result.dataset.students[2].answers, {})
+    assert.deepEqual(result.dataset.students.map((s) => s.answers), [{ Q1: 'B' }, { Q1: 'C' }])
+    assert.deepEqual(result.dataset.students[0].scores, { Q1: 2, Q2: 7 })
   })
 
-  it('reports answer-file errors with the other files’ errors, and needs an answer key', async () => {
-    const { readDataset } = await import('../src/lib/input.js')
-    const noKeys = await readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null, answers: await parse('student_id,Q1\nS1,B\n') })
-    assert.ok(noKeys.errors.some((e) => /correct_option/.test(e)), 'an answers file needs questions with a correct_option')
-    assert.equal(noKeys.dataset, null)
-  })
-
-  it('leaves students without an answers property when no file is given', async () => {
-    const { readDataset } = await import('../src/lib/input.js')
-    const result = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
-    assert.ok(result.dataset.students.every((s) => !('answers' in s)))
+  it('has no separate answers file any more', async () => {
+    const module = await import('../src/lib/input.js')
+    assert.ok(!('readAnswers' in module))
   })
 })

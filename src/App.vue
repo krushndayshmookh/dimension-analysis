@@ -78,23 +78,19 @@
             <div class="form-group">
               <label for="configFile">Exam config *</label>
               <input id="configFile" type="file" accept=".csv" @change="onFile('config', $event)" />
-              <small class="hint">question_id, question_type, question_difficulty, question_dimension, question_topics, marks[, expected_solve_rate][, correct_option]</small>
+              <small class="hint">question_id, question_type, question_difficulty, question_dimension, question_topics, marks[, expected_solve_rate][, question_subtype][, correct_option]</small>
             </div>
             <div class="form-group">
               <label for="scoresFile">Student scores *</label>
               <input id="scoresFile" type="file" accept=".csv" @change="onFile('scores', $event)" />
-              <small class="hint">student_id, then one column per question_id. Blank = unattempted.</small>
+              <small class="hint">student_id, then one column per question_id: marks, or for mcq questions the option chosen. Blank = unattempted.</small>
             </div>
             <div class="form-group">
               <label for="studentsFile">Student details (optional)</label>
               <input id="studentsFile" type="file" accept=".csv" @change="onFile('students', $event)" />
               <small class="hint">student_id, student_name[, section]</small>
             </div>
-            <div class="form-group">
-              <label for="answersFile">Student answers (optional)</label>
-              <input id="answersFile" type="file" accept=".csv" @change="onFile('answers', $event)" />
-              <small class="hint">student_id, then the option each student chose for every question with a correct_option. For distractor analysis.</small>
-            </div>
+
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary" :disabled="analyzing">
@@ -492,8 +488,8 @@
             </select>
             <small class="hint">
               Partial-credit questions are scored by test cases passed instead of all-or-nothing. Detection looks for
-              students whose actual score is between 0 and full marks. The guessing floor applies to questions with a
-              <code>correct_option</code> ({{ answerKeyCount }} here).
+              students whose actual score is between 0 and full marks. The guessing floor applies to mcq questions
+              ({{ mcqCount }} here).
             </small>
           </div>
         </div>
@@ -914,7 +910,7 @@ const draft = ref(cloneSettings(settings.value))
 const analyzing = ref(false)
 
 const meta = reactive({ courseName: '', examTitle: '', examDate: new Date().toISOString().slice(0, 10) })
-const files = reactive({ config: null, scores: null, students: null, answers: null })
+const files = reactive({ config: null, scores: null, students: null })
 const inputIssues = reactive({ errors: [], warnings: [] })
 
 // { id, courseName, examTitle, examDate, dataset, profiles, paper }
@@ -1010,7 +1006,6 @@ async function analyze() {
       config: await parseCsv(files.config),
       scores: await parseCsv(files.scores),
       students: files.students ? await parseCsv(files.students) : null,
-      answers: files.answers ? await parseCsv(files.answers) : null,
     })
     inputIssues.warnings = result.warnings
     if (result.errors.length) {
@@ -1454,7 +1449,7 @@ const comparison = shallowRef(null)
 const simErrors = ref([])
 const simDirty = ref(false)
 
-const answerKeyCount = computed(() => dataset.value.questions.filter((q) => q.correctOption).length)
+const mcqCount = computed(() => dataset.value.questions.filter((q) => q.subtype === 'mcq').length)
 
 function runSimulation(newSeed) {
   if (!exam.value) return
