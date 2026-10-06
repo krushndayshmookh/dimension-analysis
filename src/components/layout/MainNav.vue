@@ -5,7 +5,7 @@
         <TabsTrigger v-for="g in groups" :key="g.id" :value="g.id" class="flex-none px-3 text-sm font-semibold">{{ g.label }}</TabsTrigger>
       </TabsList>
     </Tabs>
-    <div class="overflow-x-auto">
+    <div v-if="activeGroup.pages.length > 1" class="overflow-x-auto">
       <Tabs v-model="tab">
         <TabsList>
           <TabsTrigger v-for="p in activeGroup.pages" :key="p.id" :value="p.id" :disabled="p.needsExam && !exam" class="flex-none px-3">{{ p.label }}</TabsTrigger>

@@ -1,5 +1,6 @@
 import CohortPage from './CohortPage.vue'
 import ComparePage from './ComparePage.vue'
+import DashboardPage from './DashboardPage.vue'
 import HistoryPage from './HistoryPage.vue'
 import PaperPage from './PaperPage.vue'
 import SavedExamsPage from './SavedExamsPage.vue'
@@ -7,25 +8,38 @@ import SettingsPage from './SettingsPage.vue'
 import SimulationPage from './SimulationPage.vue'
 import StudentPage from './StudentPage.vue'
 import UploadPage from './UploadPage.vue'
-import { TOOLS } from '@/tools/index.js'
+import Correlations from '@/tools/Correlations.vue'
+import Distractors from '@/tools/Distractors.vue'
+import FeedbackSheets from '@/tools/FeedbackSheets.vue'
+import GradeBands from '@/tools/GradeBands.vue'
+import QuestionReview from '@/tools/QuestionReview.vue'
+import Sections from '@/tools/Sections.vue'
+import SheetConverter from '@/tools/SheetConverter.vue'
+import WhatIf from '@/tools/WhatIf.vue'
+import { GROUPS, PAGE_META } from './registry.js'
 
-export const GROUPS = [
-  { id: 'analysis', label: 'Analysis' },
-  { id: 'tools', label: 'Tools' },
-  { id: 'library', label: 'Library' },
-]
+export { GROUPS }
 
-// Every page: { id, label, group, needsExam, component }. Tool pages come from
-// the tools registry.
-export const PAGES = [
-  { id: 'cohort', label: 'Cohort', group: 'analysis', needsExam: true, component: CohortPage },
-  { id: 'paper', label: 'Paper analysis', group: 'analysis', needsExam: true, component: PaperPage },
-  { id: 'simulation', label: 'Simulation', group: 'analysis', needsExam: true, component: SimulationPage },
-  { id: 'student', label: 'Student profile', group: 'analysis', needsExam: true, component: StudentPage },
-  ...TOOLS.map((t) => ({ id: t.id, label: t.label, group: 'tools', needsExam: t.needsExam ?? true, component: t.component })),
-  { id: 'upload', label: 'Upload', group: 'library', needsExam: false, component: UploadPage },
-  { id: 'history', label: 'History', group: 'library', needsExam: false, component: HistoryPage },
-  { id: 'compare', label: 'Compare exams', group: 'library', needsExam: false, component: ComparePage },
-  { id: 'saved', label: 'Saved exams', group: 'library', needsExam: false, component: SavedExamsPage },
-  { id: 'settings', label: 'Settings', group: 'library', needsExam: false, component: SettingsPage },
-]
+const COMPONENTS = {
+  cohort: CohortPage,
+  student: StudentPage,
+  sections: Sections,
+  bands: GradeBands,
+  correlations: Correlations,
+  feedback: FeedbackSheets,
+  paper: PaperPage,
+  review: QuestionReview,
+  distractors: Distractors,
+  simulation: SimulationPage,
+  whatif: WhatIf,
+  history: HistoryPage,
+  compare: ComparePage,
+  dashboard: DashboardPage,
+  upload: UploadPage,
+  convert: SheetConverter,
+  saved: SavedExamsPage,
+  settings: SettingsPage,
+}
+
+// Every page: { id, label, group, needsExam, component }.
+export const PAGES = PAGE_META.map((page) => ({ ...page, component: COMPONENTS[page.id] }))

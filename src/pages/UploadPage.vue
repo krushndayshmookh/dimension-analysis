@@ -67,6 +67,7 @@ import FileInput from '@/components/common/FileInput.vue'
 import NoticeAlert from '@/components/common/NoticeAlert.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
+import { EXAM_LANDING_PAGE } from '@/pages/registry.js'
 import { parseCsv } from '@/lib/csv.js'
 import { readDataset } from '@/lib/input.js'
 import { checkDataQuality } from '@/lib/quality.js'
@@ -130,7 +131,7 @@ async function analyze() {
       notify('error', `Analyzed, but not saved: ${err.message}`)
     }
     await Promise.all([refreshSaved(), refreshHistoryStudents()])
-    tab.value = 'cohort'
+    tab.value = EXAM_LANDING_PAGE
   } catch (err) {
     issues.errors = [err.message ?? String(err)]
   } finally {

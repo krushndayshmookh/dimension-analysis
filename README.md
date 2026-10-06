@@ -27,12 +27,17 @@ Files that do not follow the format are rejected with the rows that need fixing.
 
 ## Pages
 
-- **Analysis:** Cohort, Paper analysis, Simulation (expected vs actual, with tunable parameters and a 90% range over
-  repeated runs), Student profile.
-- **Tools:** Question review (review queue, reuse across exams, attempt behaviour), Sections, Correlations, Feedback
-  sheets (print or download per student), What-if (rescoring), Grade bands, Distractors.
-- **Library:** Upload, History, Compare exams, Saved exams, Settings (every threshold behind a tag, with a description of
-  what it affects, plus backup and restore).
+- **Students:** Cohort, Student profile, Sections, Grade bands, Correlations, Feedback sheets (print or download per
+  student).
+- **Paper:** Paper analysis, Question review (review queue, reuse across exams, attempt behaviour), Distractors.
+- **Scenarios:** Simulation (expected vs actual, with tunable parameters and a 90% range over repeated runs), What-if
+  (rescoring).
+- **Over time:** History, Compare exams.
+- **Data:** Dashboard (shown when no exam is open), Upload, Sheet converter, Saved exams.
+- **Settings** (its own top-level tab): every threshold behind a tag, with a description of what it affects, plus backup
+  and restore.
+
+An open exam can be closed from the header; the app then returns to the dashboard.
 
 Colored verdict tags (Weak / Strong, Low / Medium / High deviation, ...) come from the thresholds in Settings and can
 be switched off. Every table has search, per-column filters, sorting and CSV export.
@@ -46,7 +51,8 @@ The UI is Vue 3 with [shadcn-vue](https://www.shadcn-vue.com/) (Tailwind CSS v4,
 - `src/stores/` Pinia stores: `session` (open exam, saved exams, current page), `settings`, `notice`, `simulation`.
 - `src/pages/` one component per page (`CohortPage`, `PaperPage`, `SimulationPage`, ...), with sub-components in
   `pages/paper/`, `pages/simulation/` and `pages/settings/`; `pages/index.js` is the page registry used by the navigation.
-- `src/tools/` one component per tool page, registered in `tools/index.js`.
+- `src/tools/` the larger page components (question review, sections, correlations, ...); `pages/registry.js` lists
+  every page and its navigation group, and `pages/index.js` attaches the components.
 - `src/components/`
   - `ui/` shadcn-vue components as generated (default styles);
   - `common/` page header, section and stat cards, field, alert, select, confirm dialog, badges;

@@ -204,11 +204,22 @@ export const PAGES = {
     ] }],
   },
 
+  'page.dashboard': {
+    title: 'Dashboard',
+    about: 'The page shown when no exam is open. It shows what is saved and where to go next.',
+    parts: [{ heading: 'On the page', entries: [
+      entry('Open exam', 'Shown while an exam is open: go to its cohort page, or close it to come back here. Closing does not delete anything; the exam stays in Saved exams.'),
+      entry('Cards', 'The number of saved exams, the number of student results (a student in three exams counts three times), the number of distinct student ids, and the most recently saved exam.'),
+      entry('Start', 'Upload a new exam, convert the analytics team’s sheets, or open Settings.'),
+      entry('Recent exams', 'The latest saved exams with their size and mean mastery. Open makes one the current exam; all of them and deleting are under Saved exams.'),
+    ] }],
+  },
+
   'page.upload': {
     title: 'Upload exam data',
     about: 'Imports an exam from three CSV files, checks them and saves the analysis. A file that does not follow the format is rejected with the rows to fix.',
     parts: [{ heading: 'Steps', entries: [
-      entry('Convert first, if needed', 'The Sheet converter under Tools turns the analytics team’s sheets into these three files.'),
+      entry('Convert first, if needed', 'The Sheet converter under Data turns the analytics team’s sheets into these three files.'),
       entry('Exam details', 'Course name, exam title and date identify the exam in saved exams, history and comparisons.'),
       entry('Format', 'The columns of each file are described in templates/README.md; samples are in the samples folder.'),
       entry('Notes', 'After a successful upload, notes mention data that is valid but worth a second look, such as students who attempted nothing. They never block an upload (Settings → Upload checks).'),

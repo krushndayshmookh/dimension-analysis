@@ -1,14 +1,15 @@
 import { computed, ref, shallowRef } from 'vue'
 import { defineStore } from 'pinia'
-import { analyzeDataset } from '@/lib/analysis.js'
-import * as api from '@/api.js'
+import { analyzeDataset } from '../lib/analysis.js'
+import * as api from '../api.js'
+import { DEFAULT_PAGE, EXAM_LANDING_PAGE } from '../pages/registry.js'
 import { useNoticeStore } from './notice.js'
 
 // State shared by every page: the open exam, the saved exams and the current page.
 export const useSessionStore = defineStore('session', () => {
   const notices = useNoticeStore()
 
-  const tab = ref('upload')
+  const tab = ref(DEFAULT_PAGE)
   // { id, courseName, examTitle, examDate, dataset, profiles, paper }. Shallow: the
   // analysis is large and never mutated, so it is not made deeply reactive.
   const exam = shallowRef(null)
@@ -28,6 +29,14 @@ export const useSessionStore = defineStore('session', () => {
     exam.value = { id, courseName, examTitle, examDate, dataset: data, profiles: p, paper: pa }
     examKey.value++
     selectedStudentId.value = p.students[0]?.id ?? ''
+  }
+
+  // Closes the open exam and returns to the dashboard.
+  function closeExam() {
+    exam.value = null
+    examKey.value++
+    selectedStudentId.value = ''
+    tab.value = DEFAULT_PAGE
   }
 
   async function refreshSaved() {
@@ -53,7 +62,7 @@ export const useSessionStore = defineStore('session', () => {
         throw new Error('This exam was saved in an older, incompatible format. Upload its CSV files again.')
       }
       openExam(saved)
-      tab.value = 'cohort'
+      tab.value = EXAM_LANDING_PAGE
     } catch (err) {
       notices.fail(err)
     }
@@ -93,6 +102,7 @@ export const useSessionStore = defineStore('session', () => {
     historyStudents,
     historyStudentId,
     openExam,
+    closeExam,
     refreshSaved,
     refreshHistoryStudents,
     loadSaved,
