@@ -20,7 +20,7 @@
         :searchable="false"
         :export-name="`distribution-${dist.dimension.toLowerCase()}`"
       >
-        <template #cell-bar="{ row }"><Bar :value="row.barPct" :color="dimensionColor(dist.dimension)" /></template>
+        <template #cell-bar="{ row }"><Bar :value="row.percentage" :color="dimensionColor(dist.dimension)" /></template>
         <template #cell-students="{ row }"><StudentChips :students="row.students" @select="openStudent" /></template>
       </DataTable>
     </div>

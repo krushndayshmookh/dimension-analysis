@@ -10,7 +10,7 @@
       <StatCard label="Std deviation" :value="`${num(paper.overall.pct.stdDev)} pp`" />
     </StatGrid>
     <DataTable :columns="distributionColumns(mode)" :rows="rows" row-key="label" :searchable="false" export-name="overall-distribution">
-      <template #cell-bar="{ row }"><Bar :value="row.barPct" /></template>
+      <template #cell-bar="{ row }"><Bar :value="row.percentage" /></template>
       <template #cell-students="{ row }"><StudentChips :students="row.students" @select="openStudent" /></template>
     </DataTable>
   </SectionCard>

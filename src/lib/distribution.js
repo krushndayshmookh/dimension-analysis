@@ -6,13 +6,10 @@ import { formatPct as pct } from './format.js'
 // next to a student's name.
 export function distributionRows(dist, mode, studentById, valueOf) {
   const bins = highestFirst(mode === 'percentage' ? dist.decileBins : dist.markBins)
-  const largest = Math.max(0, ...bins.map((b) => b.percentage))
   return bins.map((b) => ({
     label: b.label,
     count: b.count,
     percentage: b.percentage,
-    // Bar length: the largest bin fills the bar, so the shape of the distribution is readable.
-    barPct: largest > 0 ? (b.percentage / largest) * 100 : 0,
     students: b.studentIds.map((id) => {
       const s = studentById.get(id)
       return { id, label: `${s.name} (${valueOf(s)})` }
