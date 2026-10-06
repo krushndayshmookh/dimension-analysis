@@ -34,6 +34,7 @@ describe('default settings', () => {
     assert.deepEqual(d.discrimination, { poorBelow: 0.2, goodFrom: 0.3 })
     assert.equal(d.reliability.acceptableFrom, 0.7)
     assert.equal(d.trend.notableChangePp, 10)
+    assert.deepEqual(d.review, { alphaGainFrom: 0.02, flagReuse: true })
   })
 
   it('has no blueprint targets until the instructor sets them', () => {
@@ -124,6 +125,7 @@ describe('validateSettings', () => {
     assert.ok(errorsFor('attainment.passMark', 101).some((e) => e.includes('attainment.passMark')))
     assert.ok(errorsFor('attention.weakDimensionCount', 0).some((e) => e.includes('attention.weakDimensionCount')))
     assert.ok(errorsFor('reliability.acceptableFrom', 1.5).some((e) => e.includes('reliability.acceptableFrom')))
+    assert.ok(errorsFor('review.alphaGainFrom', 2).some((e) => e.includes('review.alphaGainFrom')))
   })
 
   it('rejects non-numeric values', () => {

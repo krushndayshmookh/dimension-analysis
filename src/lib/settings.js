@@ -20,6 +20,7 @@ export const DEFAULT_SETTINGS = {
   discrimination: { poorBelow: 0.2, goodFrom: 0.3 },
   reliability: { acceptableFrom: 0.7 },
   trend: { notableChangePp: 10 },
+  review: { alphaGainFrom: 0.02, flagReuse: true },
   blueprint: {
     tolerancePp: 5,
     dimensions: nullTargets(DIMENSIONS),
@@ -162,6 +163,14 @@ export const SETTINGS_SCHEMA = [
       { path: 'discrimination.poorBelow', label: 'Poor below', type: 'number', unit: '', min: 0, max: 1, step: 0.05, description: 'A discrimination index below this is Poor (red). A negative index is always tagged Negative.' },
       { path: 'discrimination.goodFrom', label: 'Good from', type: 'number', unit: '', min: 0, max: 1, step: 0.05, description: 'An index at or above this is Good (green). Values between the two limits are Fair (yellow).' },
       { path: 'reliability.acceptableFrom', label: 'Reliability acceptable from', type: 'number', unit: '', min: 0, max: 1, step: 0.05, description: 'Cronbach\'s alpha at or above this is tagged Acceptable; below it is Low. Alpha measures how consistently the questions measure the same thing.' },
+    ],
+  },
+  {
+    title: 'Question review',
+    description: 'Decides which questions land in the ranked review queue on the Question review tool, in addition to the question flags and deviation levels above.',
+    fields: [
+      { path: 'review.alphaGainFrom', label: 'Reliability gain to flag', type: 'number', unit: '', min: 0, max: 1, step: 0.01, description: 'A question is flagged "Lowers reliability" when the exam\'s Cronbach\'s alpha would rise by at least this much if the question were removed.' },
+      { path: 'review.flagReuse', label: 'Flag reused questions', type: 'boolean', description: 'When on, a question that also appeared in an earlier saved exam (same type and id) is added to the review queue as Reused.' },
     ],
   },
   {
