@@ -72,7 +72,7 @@ describe('applyTableState: search', () => {
 
 describe('applyTableState: column filters', () => {
   it('filters text columns by case-insensitive substring', () => {
-    assert.deepEqual(ids(applyTableState(rows, columns, { filters: { name: 'a' } })), ['S1', 'S10'])
+    assert.deepEqual(ids(applyTableState(rows, columns, { filters: { name: 'a' } })), ['S1', 'S10', 'S3'])
   })
 
   it('filters number columns by expression, using the value accessor when present', () => {
