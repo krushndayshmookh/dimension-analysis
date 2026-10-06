@@ -137,6 +137,20 @@ export function buildProfiles(dataset) {
     weakestDimension: weakestOf(cohortDimensions),
   }
 
+  // Ranking: 1 = highest; tied students share a rank. Percentile is the mid-rank
+  // percentile. The z-score uses the population standard deviation of mastery.
+  const masteries = students.map((s) => s.masteryPct ?? 0)
+  const meanMastery = count ? masteries.reduce((a, b) => a + b, 0) / count : 0
+  const sd = count ? Math.sqrt(masteries.reduce((a, b) => a + (b - meanMastery) ** 2, 0) / count) : 0
+  students.forEach((s, i) => {
+    const own = masteries[i]
+    const higher = masteries.filter((m) => m > own).length
+    const equal = masteries.filter((m) => m === own).length
+    s.rank = higher + 1
+    s.percentile = round(((count - higher - equal + 0.5 * equal) / count) * 100)
+    s.zScore = sd > 0 ? round((own - meanMastery) / sd) : null
+  })
+
   for (const s of students) {
     s.dimensionVsCohort = Object.fromEntries(
       dimensions.map((d) => {

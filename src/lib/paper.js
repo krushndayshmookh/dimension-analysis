@@ -1,5 +1,6 @@
 import { round, describe, decileBins, markBins } from './stats.js'
 import { resolveExpectedSolveRate } from './expected.js'
+import { analyzeItems } from './items.js'
 
 const EPSILON = 1e-9
 
@@ -10,9 +11,10 @@ const distribution = (items, totalMarks) => ({
   markBins: markBins(items, totalMarks),
 })
 
-function analyzeQuestions(dataset) {
+function analyzeQuestions(dataset, itemStats) {
   const { questions, students } = dataset
   const n = students.length
+  const itemsById = new Map(itemStats.items.map((i) => [i.id, i]))
 
   const rows = questions.map((q) => {
     let attemptedCount = 0
@@ -36,6 +38,7 @@ function analyzeQuestions(dataset) {
       marks: q.marks,
       studentCount: n,
       attemptedCount,
+      attemptRatePct: n ? round((attemptedCount / n) * 100) : null,
       solvedCount,
       solveRatePct: solveRatePct == null ? null : round(solveRatePct),
       attemptedSolveRatePct: attemptedCount ? round((solvedCount / attemptedCount) * 100) : null,
@@ -44,6 +47,9 @@ function analyzeQuestions(dataset) {
       expectedSolveRatePct: ratePct,
       expectedSource: source,
       deviationPct: solveRatePct == null ? null : round(solveRatePct - ratePct),
+      discriminationIndex: itemsById.get(q.id).discriminationIndex,
+      itemRestCorrelation: itemsById.get(q.id).itemRestCorrelation,
+      alphaIfRemoved: itemsById.get(q.id).alphaIfRemoved,
     }
   })
 
@@ -117,9 +123,41 @@ function analyzeMatrix(dataset, profiles) {
   }
 }
 
+// Top and bottom quarter of students (at least one each) by overall mastery,
+// compared on mean mastery per dimension and tier.
+function analyzeQuartiles(profiles) {
+  const { students } = profiles
+  if (students.length < 2) return null
+  const groupSize = Math.max(1, Math.round(students.length * 0.25))
+  const ranked = students.map((s, index) => ({ s, index })).sort((a, b) => b.s.masteryPct - a.s.masteryPct || a.index - b.index).map((x) => x.s)
+  const top = ranked.slice(0, groupSize)
+  const bottom = ranked.slice(-groupSize)
+  const meanOf = (group, key, name) => {
+    const values = group.map((s) => s[key][name].masteryPct).filter((v) => v != null)
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
+  }
+  const rows = (key, label, names) =>
+    names.map((name) => {
+      const topMeanPct = meanOf(top, key, name)
+      const bottomMeanPct = meanOf(bottom, key, name)
+      return {
+        [label]: name,
+        topMeanPct: topMeanPct == null ? null : round(topMeanPct),
+        bottomMeanPct: bottomMeanPct == null ? null : round(bottomMeanPct),
+        separationPp: topMeanPct == null || bottomMeanPct == null ? null : round(topMeanPct - bottomMeanPct),
+      }
+    })
+  return {
+    groupSize,
+    dimensions: rows('dimensions', 'dimension', profiles.dimensions),
+    difficulties: rows('difficulties', 'difficulty', profiles.difficulties),
+  }
+}
+
 // dataset and profiles come from the same upload (profiles = buildProfiles(dataset)).
 export function analyzePaper(dataset, profiles) {
   const { questions } = dataset
+  const itemStats = analyzeItems(dataset)
   const { students, totalMarks } = profiles
   const itemsFor = (pick) => students.map((s) => ({ id: s.id, ...pick(s) }))
 
@@ -136,6 +174,7 @@ export function analyzePaper(dataset, profiles) {
       dimension,
       questionCount: matching.length,
       availableMarks,
+      shareOfExamPct: totalMarks > 0 ? round((availableMarks / totalMarks) * 100) : null,
       ...distribution(
         itemsFor((s) => ({ pct: s.dimensions[dimension].masteryPct, earned: s.dimensions[dimension].earned })),
         availableMarks
@@ -181,7 +220,9 @@ export function analyzePaper(dataset, profiles) {
     difficulties,
     topics,
     matrix: analyzeMatrix(dataset, profiles),
-    questions: analyzeQuestions(dataset),
+    questions: analyzeQuestions(dataset, itemStats),
+    reliability: itemStats.reliability,
+    quartiles: analyzeQuartiles(profiles),
     summary: {
       lowestDimension: named(lowest),
       highestDimension: named(highest),

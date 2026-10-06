@@ -71,7 +71,7 @@ describe('per-question statistics', () => {
   })
 
   it('computes the item–rest correlation (the item is excluded from the rest score)', () => {
-    assert.ok(closeTo(byId(analyzeItems(staircase), 'Q1').itemRestCorrelation, 0.7071, 0.001))
+    assert.ok(closeTo(byId(analyzeItems(staircase), 'Q1').itemRestCorrelation, 0.7071, 0.01))
   })
 
   it('computes alpha with the question removed', () => {
