@@ -14,6 +14,8 @@ import {
   getStudentHistory,
   getSettings,
   saveSettings,
+  exportBackup,
+  restoreBackup,
 } from './storage.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -59,6 +61,9 @@ export function createApp({ dataDir = DEFAULT_DATA_DIR } = {}) {
 
   app.get('/api/settings', handle((req, res) => res.json(getSettings(dataDir))))
   app.put('/api/settings', handle((req, res) => res.json(saveSettings(req.body, dataDir))))
+
+  app.get('/api/backup', handle((req, res) => res.json(exportBackup(dataDir))))
+  app.post('/api/restore', handle((req, res) => res.json(restoreBackup(req.body, dataDir))))
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }))
 

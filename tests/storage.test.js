@@ -251,3 +251,72 @@ describe('settings storage', () => {
     }
   })
 })
+
+describe('backup and restore', () => {
+  it('exports settings and every exam, and restores them into an empty data folder', async () => {
+    saveSettings({ trend: { notableChangePp: 7 } }, dataDir)
+    saveExam(payload({ id: 'e1', examTitle: 'One' }), dataDir)
+    saveExam(payload({ id: 'e2', examTitle: 'Two', examDate: '2026-05-01' }), dataDir)
+    const { exportBackup, restoreBackup } = await import('../server/storage.js')
+    const backup = exportBackup(dataDir)
+    assert.equal(backup.version, 1)
+    assert.deepEqual(backup.exams.map((e) => e.id).sort(), ['e1', 'e2'])
+    assert.deepEqual(backup.settings, { trend: { notableChangePp: 7 } })
+
+    const other = fs.mkdtempSync(path.join(os.tmpdir(), 'dimension-analysis-restore-'))
+    try {
+      const result = restoreBackup(JSON.parse(JSON.stringify(backup)), other)
+      assert.deepEqual(result, { success: true, exams: 2 })
+      assert.deepEqual(getIndex(other).map((e) => e.id).sort(), ['e1', 'e2'])
+      assert.deepEqual(getSettings(other), { trend: { notableChangePp: 7 } })
+      assert.equal(getStudentHistory('S1', other).exams.length, 2, 'student histories are rebuilt')
+      assert.equal(getExam('e1', other).examTitle, 'One')
+    } finally {
+      fs.rmSync(other, { recursive: true, force: true })
+    }
+  })
+
+  it('keeps each exam’s original creation time', async () => {
+    const { exportBackup, restoreBackup } = await import('../server/storage.js')
+    saveExam(payload({ id: 'e1' }), dataDir)
+    const backup = exportBackup(dataDir)
+    backup.exams[0].createdAt = '2025-01-02T03:04:05.000Z'
+    restoreBackup(backup, dataDir)
+    assert.equal(getExam('e1', dataDir).createdAt, '2025-01-02T03:04:05.000Z')
+  })
+
+  it('merges into existing data, replacing exams with the same id', async () => {
+    const { exportBackup, restoreBackup } = await import('../server/storage.js')
+    saveExam(payload({ id: 'e1', examTitle: 'Old title' }), dataDir)
+    const backup = exportBackup(dataDir)
+    saveExam(payload({ id: 'e1', examTitle: 'Changed' }), dataDir)
+    saveExam(payload({ id: 'e3' }), dataDir)
+    restoreBackup(backup, dataDir)
+    assert.equal(getExam('e1', dataDir).examTitle, 'Old title')
+    assert.ok(getExam('e3', dataDir), 'exams not in the backup are kept')
+  })
+
+  it('rejects anything that is not a backup', async () => {
+    const { restoreBackup } = await import('../server/storage.js')
+    for (const bad of [null, 'x', {}, { version: 2, exams: [] }, { version: 1, exams: 'x' }]) {
+      assert.throws(() => restoreBackup(bad, dataDir), /backup/i)
+    }
+  })
+
+  it('is served over http', async () => {
+    saveExam(payload({ id: 'e1' }), dataDir)
+    const server = createApp({ dataDir }).listen(0)
+    await new Promise((r) => server.once('listening', r))
+    const base = `http://127.0.0.1:${server.address().port}`
+    try {
+      const backup = await (await fetch(`${base}/api/backup`)).json()
+      assert.equal(backup.exams.length, 1)
+      const restored = await fetch(`${base}/api/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(backup) })
+      assert.equal(restored.status, 200)
+      const bad = await fetch(`${base}/api/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"version":9}' })
+      assert.equal(bad.status, 400)
+    } finally {
+      await new Promise((r) => server.close(r))
+    }
+  })
+})

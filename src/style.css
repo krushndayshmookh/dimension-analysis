@@ -266,3 +266,5 @@ textarea { width: 100%; padding: 7px 9px; border: 1px solid var(--border); borde
 .band-row input[type="number"] { width: 80px; }
 .range-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .range-row input[type="range"] { flex: 1; min-width: 220px; }
+
+.file-button { display: inline-block; cursor: pointer; }

@@ -31,6 +31,7 @@ export const DEFAULT_SETTINGS = {
   sections: { minSize: 5, significance: 0.05 },
   correlation: { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 },
   distractors: { nonFunctioningBelow: 5 },
+  quality: { heavySkipFrom: 50 },
   feedback: { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true },
   blueprint: {
     tolerancePp: 5,
@@ -219,6 +220,13 @@ export const SETTINGS_SCHEMA = [
     description: 'Used by the Distractors tool, which shows how often each answer option of a multiple-choice question was chosen.',
     fields: [
       pctField('distractors.nonFunctioningBelow', 'Rarely chosen below', 'A wrong option chosen by less than this percentage of the students who answered is flagged as rarely chosen, which means it is not working as a distractor.', { max: 50 }),
+    ],
+  },
+  {
+    title: 'Upload checks',
+    description: 'After an upload the app lists notes about the data that may mean a mistake (students who attempted nothing or scored zero throughout, questions nobody attempted). The notes never block an upload.',
+    fields: [
+      pctField('quality.heavySkipFrom', 'Mostly blank from', 'A student who left at least this percentage of the questions blank (but attempted some) is mentioned in the upload notes.'),
     ],
   },
   {

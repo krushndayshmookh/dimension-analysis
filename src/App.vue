@@ -688,6 +688,7 @@
         </div>
         <div v-if="history" class="card-box">
           <h3>{{ history.name }} ({{ history.id }})</h3>
+          <LineChart v-if="historyRows.length > 1" :labels="historyRows.map((r) => `${r.examTitle} (${r.examDate})`)" :series="historySeries" y-label="mastery %" />
           <DataTable :columns="historyColumns" :rows="historyRows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" export-name="student-history" />
         </div>
         <div v-else class="empty-state">
@@ -754,6 +755,7 @@
           <h3>Dimensions</h3>
           <DataTable :columns="compareDimensionColumns" :rows="comparison2.dimensions" row-key="dimension" :searchable="false" export-name="compare-dimensions">
             <template #cell-dimension="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
+            <template #cell-bars="{ row }"><PairBar :first="row.basePct" :second="row.laterPct" first-label="Earlier" second-label="Later" :color="dimensionColor(row.dimension)" /></template>
           </DataTable>
         </div>
         <div class="card-box">
@@ -840,6 +842,21 @@
         </div>
       </div>
 
+      <div class="card-box">
+        <h3>Backup</h3>
+        <p class="hint">
+          One file with your settings and every saved exam (with its scores). Restoring merges it into the saved data:
+          exams with the same id are replaced and other exams are kept.
+        </p>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" @click="downloadBackup">Download backup</button>
+          <label class="btn-secondary file-button">
+            Restore from backup…
+            <input type="file" accept=".json,application/json" hidden @change="restoreFromFile" />
+          </label>
+        </div>
+      </div>
+
       <div v-if="settingsErrors.length" class="notice notice-error">
         <ul><li v-for="(e, i) in settingsErrors" :key="i">{{ e }}</li></ul>
       </div>
@@ -867,6 +884,9 @@ import StudentChips from './components/StudentChips.vue'
 import StudentSidebar from './components/StudentSidebar.vue'
 import { TOOLS } from './tools/index.js'
 import { questionSummaries } from './lib/reuse.js'
+import { checkDataQuality } from './lib/quality.js'
+import { downloadText } from './lib/download.js'
+import LineChart from './components/LineChart.vue'
 import { parseCsv } from './lib/csv.js'
 import { readDataset } from './lib/input.js'
 import { analyzeDataset } from './lib/analysis.js'
@@ -997,6 +1017,7 @@ async function analyze() {
       inputIssues.errors = result.errors
       return
     }
+    inputIssues.warnings = [...result.warnings, ...checkDataQuality(result.dataset, settings.value)]
     openExam({ ...meta, dataset: result.dataset })
     try {
       const { id } = await api.saveExam({
@@ -1124,6 +1145,31 @@ async function saveSettingsNow() {
     notice.value = { kind: 'info', text: 'Settings saved.' }
   } catch (err) {
     fail(err)
+  }
+}
+
+async function downloadBackup() {
+  try {
+    const backup = await api.getBackup()
+    downloadText(`dimension-analysis-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(backup), 'application/json')
+  } catch (err) {
+    fail(err)
+  }
+}
+
+async function restoreFromFile(event) {
+  const file = event.target.files[0]
+  event.target.value = ''
+  if (!file) return
+  try {
+    const backup = JSON.parse(await file.text())
+    const count = Array.isArray(backup.exams) ? backup.exams.length : 0
+    if (!confirm(`Restore ${count} exam(s) and the settings from this backup? Exams with the same id will be replaced.`)) return
+    const { exams } = await api.restoreBackup(backup)
+    await Promise.all([loadSettings(), refreshSaved(), refreshHistoryStudents()])
+    notice.value = { kind: 'info', text: `Restored ${exams} exam(s) and the settings.` }
+  } catch (err) {
+    fail(err instanceof SyntaxError ? new Error('That file is not valid JSON.') : err)
   }
 }
 
@@ -1560,6 +1606,7 @@ const compareDimensionColumns = [
   { key: 'laterPct', label: 'Later', type: 'number', format: (v) => pct(v) },
   { key: 'deltaPp', label: 'Change', type: 'number', format: (v) => signed(v, ' pp') },
   trendColumn(),
+  { key: 'bars', label: 'Earlier / later', type: 'number', value: (r) => r.laterPct, filterable: false, sortable: false, exportable: false },
 ]
 const compareStudentColumns = computed(() => [
   { key: 'id', label: 'ID', type: 'text' },
@@ -1585,6 +1632,11 @@ const historyRows = computed(() =>
     ...Object.fromEntries(DIMENSIONS.map((d) => [`dim-${d}`, e.dimensions?.[d]?.masteryPct ?? null])),
   }))
 )
+const historySeries = computed(() => [
+  { label: 'Overall mastery', data: historyRows.value.map((r) => r.masteryPct), color: '#111827' },
+  ...DIMENSIONS.map((d) => ({ label: d, data: historyRows.value.map((r) => r[`dim-${d}`]), color: dimensionColor(d) })),
+])
+
 const historyColumns = [
   { key: 'examDate', label: 'Date', type: 'text' },
   { key: 'courseName', label: 'Course', type: 'text' },

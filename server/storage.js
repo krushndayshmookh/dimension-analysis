@@ -107,7 +107,7 @@ export function saveExam(payload, dataDir = DEFAULT_DATA_DIR) {
     questionCount: dataset.questions.length,
     avgMasteryPct: analysis.cohort?.masteryPct ?? null,
     questionSummaries: payload.questionSummaries ?? [],
-    createdAt: new Date().toISOString(),
+    createdAt: payload.createdAt ?? new Date().toISOString(),
     dataset,
     analysis,
   }
@@ -174,4 +174,32 @@ export function saveSettings(settings, dataDir = DEFAULT_DATA_DIR) {
   ensureDirs(dataDir)
   writeJson(paths(dataDir).settingsFile, settings)
   return { success: true }
+}
+
+// Everything needed to rebuild the data folder: settings and every full exam
+// (the index and student histories are derived from the exams).
+export function exportBackup(dataDir = DEFAULT_DATA_DIR) {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    settings: getSettings(dataDir),
+    exams: getIndex(dataDir).map((entry) => getExam(entry.id, dataDir)).filter(Boolean),
+  }
+}
+
+// Merges a backup into the data folder: exams with the same id are replaced,
+// other exams are kept, and settings are replaced.
+export function restoreBackup(backup, dataDir = DEFAULT_DATA_DIR) {
+  if (!backup || typeof backup !== 'object' || backup.version !== 1 || !Array.isArray(backup.exams)) {
+    throw new ValidationError('This is not a backup file made by this app (version 1)')
+  }
+  for (const exam of backup.exams) {
+    try {
+      saveExam(exam, dataDir)
+    } catch (err) {
+      throw new ValidationError(`The backup contains an invalid exam (${exam?.id ?? 'no id'}): ${err.message}`)
+    }
+  }
+  if (backup.settings && typeof backup.settings === 'object' && !Array.isArray(backup.settings)) saveSettings(backup.settings, dataDir)
+  return { success: true, exams: backup.exams.length }
 }

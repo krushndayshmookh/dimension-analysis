@@ -39,6 +39,7 @@ describe('default settings', () => {
     assert.deepEqual(d.correlation, { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 })
     assert.deepEqual(d.bands, [{ label: 'A', from: 80 }, { label: 'B', from: 65 }, { label: 'C', from: 50 }, { label: 'D', from: 40 }, { label: 'F', from: 0 }])
     assert.deepEqual(d.distractors, { nonFunctioningBelow: 5 })
+    assert.deepEqual(d.quality, { heavySkipFrom: 50 })
     assert.deepEqual(d.feedback, { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true })
   })
 
