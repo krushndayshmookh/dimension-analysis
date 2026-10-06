@@ -10,6 +10,7 @@ export const DEFAULT_DATA_DIR = path.resolve(__dirname, '..', 'data')
 export class ValidationError extends Error {}
 
 const paths = (dataDir) => ({
+  settingsFile: path.join(dataDir, 'settings.json'),
   examsDir: path.join(dataDir, 'exams'),
   studentsDir: path.join(dataDir, 'students'),
   indexFile: path.join(dataDir, 'index.json'),
@@ -154,4 +155,19 @@ export function getStudentHistory(id, dataDir = DEFAULT_DATA_DIR) {
   const history = readJson(file)
   // Array.prototype.sort is stable, so equal dates keep their save order.
   return { ...history, exams: [...history.exams].sort((a, b) => String(a.examDate).localeCompare(String(b.examDate))) }
+}
+
+// Settings are stored as given; the client validates them and merges them with its defaults.
+export function getSettings(dataDir = DEFAULT_DATA_DIR) {
+  const { settingsFile } = paths(dataDir)
+  return fs.existsSync(settingsFile) ? readJson(settingsFile) : {}
+}
+
+export function saveSettings(settings, dataDir = DEFAULT_DATA_DIR) {
+  if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+    throw new ValidationError('settings must be an object')
+  }
+  ensureDirs(dataDir)
+  writeJson(paths(dataDir).settingsFile, settings)
+  return { success: true }
 }

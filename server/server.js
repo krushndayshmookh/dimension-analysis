@@ -12,6 +12,8 @@ import {
   deleteExam,
   listStudents,
   getStudentHistory,
+  getSettings,
+  saveSettings,
 } from './storage.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -54,6 +56,9 @@ export function createApp({ dataDir = DEFAULT_DATA_DIR } = {}) {
     if (!history) return res.status(404).json({ error: 'Student not found' })
     res.json(history)
   }))
+
+  app.get('/api/settings', handle((req, res) => res.json(getSettings(dataDir))))
+  app.put('/api/settings', handle((req, res) => res.json(saveSettings(req.body, dataDir))))
 
   app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }))
 

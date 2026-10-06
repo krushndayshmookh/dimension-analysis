@@ -100,3 +100,17 @@ export function applyTableState(rows, columns, { search = '', filters = {}, sort
   }
   return result
 }
+
+const csvCell = (value) => {
+  const text = value == null ? '' : Array.isArray(value) ? value.join('; ') : String(value)
+  return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+}
+
+// CSV of the given rows: header labels, then raw (unformatted) values. Columns
+// with exportable: false (e.g. bar charts) are skipped.
+export function tableToCsv(rows, columns) {
+  const exported = columns.filter((c) => c.exportable !== false)
+  const lines = [exported.map((c) => csvCell(c.label)).join(',')]
+  for (const row of rows) lines.push(exported.map((c) => csvCell(columnValue(c, row))).join(','))
+  return `${lines.join('\n')}\n`
+}
