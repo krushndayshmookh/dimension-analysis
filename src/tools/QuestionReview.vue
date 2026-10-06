@@ -14,16 +14,17 @@
       />
       <StatCard
         label="Average attempt rate (students)"
-        :value="pct(attempts.totals.meanStudentAttemptRatePct)"
-        :description="`share of questions a student attempted${attempts.totals.absentCount ? ` · ${attempts.totals.absentCount} absent student(s) left out` : ''}`"
+        :value="pct(allAttempts.totals.meanStudentAttemptRatePct)"
+        :description="`share of questions a student attempted${allAttempts.totals.absentCount ? ` · ${allAttempts.totals.absentCount} absent student(s) left out` : ''}`"
       />
-      <StatCard label="Marks left unattempted" :value="pct(attempts.totals.skippedMarksPct)" :description="`${num(attempts.totals.skippedMarks)} marks across all students`" />
+      <StatCard label="Marks left unattempted" :value="pct(allAttempts.totals.skippedMarksPct)" :description="`${num(allAttempts.totals.skippedMarks)} marks across all students`" />
       <StatCard label="Reliability (Cronbach's alpha)" :value="num(paper.reliability.alpha, 2)">
         <template #description><VerdictTag :verdict="V.reliabilityVerdict(paper.reliability.alpha, settings)" /></template>
       </StatCard>
     </StatGrid>
 
     <SectionCard title="Review queue" description="Most severe first. Severity adds up the reasons; negative discrimination and a high deviation weigh most.">
+      <template v-if="hasBothTypes" #actions><TypeToggle v-model="queueType" /></template>
       <DataTable :columns="queueColumns" :rows="queueRows" row-key="id" export-name="question-review-queue" empty-text="No question has a reason to be reviewed.">
         <template #cell-reasons="{ row }"><ReasonTags :reasons="row.reasons" /></template>
       </DataTable>
@@ -33,6 +34,7 @@
       title="Reuse across exams"
       description="A question counts as reused when an earlier saved exam has a question with the same type and id. Keep question ids stable across exams for this to work."
     >
+      <template v-if="hasBothTypes" #actions><TypeToggle v-model="reuseType" /></template>
       <DataTable
         :columns="reuseColumns"
         :rows="reuseRows"
@@ -48,11 +50,12 @@
       title="Attempt behaviour"
       description="A question is unattempted when its score cell is blank. “Skippers vs attempters” compares the overall mastery of students who left the question blank with those who attempted it."
     >
+      <template v-if="hasBothTypes" #actions><TypeToggle v-model="attemptType" /></template>
       <BarChart
-        :labels="rows.map((r) => r.id)"
+        :labels="attempts.questions.map((q) => q.id)"
         :series="[
           { label: 'Attempted by (%)', data: attempts.questions.map((q) => q.attemptRatePct), color: '#2563eb' },
-          { label: 'Solved by (%)', data: rows.map((r) => r.solveRatePct), color: '#16a34a' },
+          { label: 'Solved by (%)', data: attempts.questions.map((q) => rowById.get(q.id)?.solveRatePct ?? null), color: '#16a34a' },
         ]"
         y-label="% of students, by question id"
       />
@@ -70,6 +73,7 @@
     </SectionCard>
 
     <SectionCard title="Charts">
+      <template v-if="hasBothTypes" #actions><TypeToggle v-model="chartType" /></template>
       <div class="grid gap-6 lg:grid-cols-2">
         <div class="flex flex-col gap-1">
           <h4 class="text-sm font-semibold">Expected vs actual solve rate</h4>
@@ -87,8 +91,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import TypeToggle from '@/components/display/TypeToggle.vue'
 import ReasonTags from '@/components/display/ReasonTags.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
@@ -99,7 +104,7 @@ import DataTable from '@/components/display/DataTable.vue'
 import VerdictTag from '@/components/display/VerdictTag.vue'
 import BarChart from '@/components/charts/BarChart.vue'
 import ScatterChart from '@/components/charts/ScatterChart.vue'
-import { analyzeAttempts, buildReviewQueue } from '@/lib/review.js'
+import { analyzeAttempts, buildReviewQueue, onlyType, typesIn } from '@/lib/review.js'
 import { findReuse, reuseSummary } from '@/lib/reuse.js'
 import * as V from '@/lib/verdicts.js'
 import { useSessionStore } from '@/stores/session.js'
@@ -114,7 +119,17 @@ const { settings } = storeToRefs(settingsStore)
 
 const paper = computed(() => exam.value.paper)
 const rows = computed(() => paper.value.questions.rows)
-const attempts = computed(() => analyzeAttempts(exam.value.dataset, exam.value.profiles))
+const hasBothTypes = computed(() => typesIn(exam.value.dataset).length > 1)
+// Each section separates assignments from assessments on its own.
+const queueType = ref('both')
+const reuseType = ref('both')
+const attemptType = ref('both')
+const chartType = ref('both')
+const ofType = (type) => (item) => type === 'both' || item.type === type
+
+// The cards above describe the whole exam.
+const allAttempts = computed(() => analyzeAttempts(exam.value.dataset, exam.value.profiles))
+const attempts = computed(() => analyzeAttempts(onlyType(exam.value.dataset, attemptType.value), exam.value.profiles))
 const reuse = computed(() => findReuse(exam.value.id, exam.value.dataset.questions, savedExams.value))
 const reuseTotals = computed(() => reuseSummary(rows.value.length, reuse.value))
 const otherExamsWithData = computed(() =>
@@ -127,7 +142,7 @@ const queue = computed(() =>
 const rowById = computed(() => new Map(rows.value.map((r) => [r.id, r])))
 
 const queueRows = computed(() =>
-  queue.value.map((entry) => {
+  queue.value.filter(ofType(queueType.value)).map((entry) => {
     const r = rowById.value.get(entry.id)
     return {
       id: entry.id,
@@ -157,6 +172,7 @@ const queueColumns = [
 const reuseRows = computed(() =>
   Object.entries(reuse.value).flatMap(([id, appearances]) => {
     const current = rowById.value.get(id)
+    if (!ofType(reuseType.value)(current)) return []
     return appearances.map((a) => ({
       key: `${id}|${a.examId}`,
       id,
@@ -220,11 +236,13 @@ const colorFor = (verdict) => (settings.value.showVerdicts && verdict ? TONE_COL
 
 const expectedActualPoints = computed(() =>
   rows.value
+    .filter(ofType(chartType.value))
     .filter((r) => r.solveRatePct != null)
     .map((r) => ({ x: r.expectedSolveRatePct, y: r.solveRatePct, label: r.id, color: colorFor(V.deviationVerdict(r.deviationPct, settings.value)) }))
 )
 const discriminationPoints = computed(() =>
   rows.value
+    .filter(ofType(chartType.value))
     .filter((r) => r.solveRatePct != null && r.discriminationIndex != null)
     .map((r) => ({ x: r.solveRatePct, y: r.discriminationIndex, label: r.id, color: colorFor(V.discriminationVerdict(r.discriminationIndex, settings.value)) }))
 )

@@ -1,6 +1,6 @@
 import { describe, it, before } from 'node:test'
 import assert from 'node:assert/strict'
-import { analyzeAttempts, buildReviewQueue } from '../src/lib/review.js'
+import { analyzeAttempts, buildReviewQueue, onlyType, typesIn } from '../src/lib/review.js'
 import { DEFAULT_SETTINGS as S, setPath } from '../src/lib/settings.js'
 import { buildProfiles } from '../src/lib/profiles.js'
 import { loadAnalysis, loadDataset, closeTo } from './fixtures.js'
@@ -138,5 +138,32 @@ describe('what each student did not attempt', () => {
     const rows = analyzeAttempts(dataset, profiles).students
     assert.deepEqual(rows.find((s) => s.id === 'S3').skippedIds, ['Q2'])
     assert.deepEqual(rows.find((s) => s.id === 'S1').skippedIds, [])
+  })
+})
+
+describe('separating assignments and assessments', () => {
+  it('keeps the questions of one type, or all of them for both', async () => {
+    const { dataset } = await loadAnalysis()
+    assert.deepEqual(onlyType(dataset, 'both'), dataset)
+    assert.deepEqual(onlyType(dataset, 'assessment').questions.map((q) => q.id), ['Q1', 'Q2'])
+    assert.deepEqual(onlyType(dataset, 'assignment').questions.map((q) => q.id), ['Q3'])
+    assert.equal(onlyType(dataset, 'assignment').students.length, dataset.students.length, 'every student stays')
+  })
+
+  it('analyses attempts over the questions of that type only', async () => {
+    const { dataset, profiles } = await loadAnalysis()
+    const assessments = analyzeAttempts(onlyType(dataset, 'assessment'), profiles)
+    assert.deepEqual(assessments.questions.map((q) => q.id), ['Q1', 'Q2'])
+    const s3 = assessments.students.find((s) => s.id === 'S3')
+    assert.deepEqual([s3.attemptedCount, s3.skippedCount, s3.skippedIds], [1, 1, ['Q2']])
+    assert.equal(s3.skippedMarks, 4)
+    const assignments = analyzeAttempts(onlyType(dataset, 'assignment'), profiles)
+    assert.equal(assignments.totals.skippedMarks, 0, 'everyone attempted Q3')
+  })
+
+  it('knows which types an exam has', async () => {
+    const { dataset } = await loadAnalysis()
+    assert.deepEqual(typesIn(dataset), ['assignment', 'assessment'])
+    assert.deepEqual(typesIn(onlyType(dataset, 'assessment')), ['assessment'])
   })
 })

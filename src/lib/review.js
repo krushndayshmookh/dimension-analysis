@@ -1,9 +1,20 @@
 import { round } from './stats.js'
+import { QUESTION_TYPES } from './constants.js'
 import * as V from './verdicts.js'
 
 const EPSILON = 1e-9
 const mean = (values) => (values.length ? values.reduce((a, b) => a + b, 0) / values.length : null)
 const rounded = (v) => (v == null ? null : round(v))
+
+export const TYPE_FILTERS = ['both', 'assignment', 'assessment']
+
+// The dataset with only the questions of one type ('both' keeps everything).
+// Every student stays, so rates and totals are over the chosen questions.
+export const onlyType = (dataset, type) =>
+  type === 'both' || !type ? dataset : { ...dataset, questions: dataset.questions.filter((q) => q.type === type) }
+
+// The question types present, assignment first.
+export const typesIn = (dataset) => QUESTION_TYPES.filter((t) => dataset.questions.some((q) => q.type === t))
 
 // How students attempted (or skipped) questions. An unattempted question is a
 // blank score cell. dataset: { questions, students }, profiles from buildProfiles.
