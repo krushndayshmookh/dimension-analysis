@@ -36,6 +36,7 @@ describe('default settings', () => {
     assert.equal(d.trend.notableChangePp, 10)
     assert.deepEqual(d.review, { alphaGainFrom: 0.02, flagReuse: true })
     assert.deepEqual(d.sections, { minSize: 5, significance: 0.05 })
+    assert.deepEqual(d.correlation, { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 })
   })
 
   it('has no blueprint targets until the instructor sets them', () => {
@@ -145,6 +146,7 @@ describe('validateSettings', () => {
     assert.ok(errorsFor('simulationGap.alignedBelow', 20).length > 0)
     assert.ok(errorsFor('dimensionSpread.balancedBelow', 40).length > 0)
     assert.ok(errorsFor('discrimination.poorBelow', 0.5).length > 0)
+    assert.ok(errorsFor('correlation.moderateFrom', 0.9).length > 0)
     assert.ok(errorsFor('questionFlags.tooHardBelow', 95).length > 0)
   })
 

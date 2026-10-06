@@ -22,6 +22,8 @@ const DIRECTIONS = {
   harder: { symbol: '▼', title: 'Actual is below expected (harder than expected)' },
   above: { symbol: '▲', title: 'Actual is above expected' },
   below: { symbol: '▼', title: 'Actual is below expected' },
+  positive: { symbol: '+', title: 'Positive: both rise together' },
+  negative: { symbol: '−', title: 'Negative: one rises as the other falls' },
 }
 
 const visible = computed(() => Boolean(props.verdict) && (settings?.value?.showVerdicts ?? true))

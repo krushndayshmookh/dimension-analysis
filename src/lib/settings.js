@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS = {
   trend: { notableChangePp: 10 },
   review: { alphaGainFrom: 0.02, flagReuse: true },
   sections: { minSize: 5, significance: 0.05 },
+  correlation: { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 },
   blueprint: {
     tolerancePp: 5,
     dimensions: nullTargets(DIMENSIONS),
@@ -183,6 +184,15 @@ export const SETTINGS_SCHEMA = [
     ],
   },
   {
+    title: 'Correlations',
+    description: 'Used by the Correlations tool, which shows how students\' mastery in one dimension relates to their mastery in another.',
+    fields: [
+      { path: 'correlation.moderateFrom', label: 'Moderate from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Moderate; smaller values are Weak.' },
+      { path: 'correlation.strongFrom', label: 'Strong from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Strong.' },
+      { path: 'correlation.minStudents', label: 'Students needed', type: 'number', unit: 'students', min: 3, max: 10000, step: 1, integer: true, description: 'Correlations based on fewer students than this are shown with a caution, because they change a lot with a few students.' },
+    ],
+  },
+  {
     title: 'Trends',
     description: 'Decides the Gain / Steady / Drop tag on changes in mastery between exams in the History and Compare screens.',
     fields: [
@@ -211,6 +221,7 @@ const ORDERINGS = [
   [['simulationGap.alignedBelow', 'simulationGap.largeFrom'], 'The aligned limit (simulationGap.alignedBelow) must be below the large-gap limit (simulationGap.largeFrom)'],
   [['dimensionSpread.balancedBelow', 'dimensionSpread.highFrom'], 'The balanced limit (dimensionSpread.balancedBelow) must be below the high-spread limit (dimensionSpread.highFrom)'],
   [['discrimination.poorBelow', 'discrimination.goodFrom'], 'The poor limit (discrimination.poorBelow) must be below the good limit (discrimination.goodFrom)'],
+  [['correlation.moderateFrom', 'correlation.strongFrom'], 'The moderate limit (correlation.moderateFrom) must be below the strong limit (correlation.strongFrom)'],
   [['questionFlags.tooHardBelow', 'questionFlags.tooEasyFrom'], 'The too-hard limit (questionFlags.tooHardBelow) must be below the too-easy limit (questionFlags.tooEasyFrom)'],
 ]
 

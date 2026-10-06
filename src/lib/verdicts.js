@@ -156,3 +156,13 @@ export function differenceVerdict(p, s) {
   if (missing(p)) return null
   return p < s.sections.significance ? verdict('significant', 'Significant', 'info') : verdict('not-significant', 'Not significant', 'neutral')
 }
+
+// r: a correlation coefficient. Strength by absolute value; the sign is kept as direction.
+export function correlationVerdict(r, s) {
+  if (missing(r)) return null
+  const direction = r > 0 ? 'positive' : r < 0 ? 'negative' : null
+  const size = Math.abs(r)
+  if (size >= s.correlation.strongFrom) return verdict('strong', 'Strong', 'info', { direction })
+  if (size >= s.correlation.moderateFrom) return verdict('moderate', 'Moderate', 'neutral', { direction })
+  return verdict('weak', 'Weak', 'neutral', { direction })
+}

@@ -214,3 +214,5 @@ tr.clickable:hover td { background: var(--accent-soft); }
 .chart-container { position: relative; height: 320px; }
 .charts-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.corr-cell { cursor: pointer; min-width: 90px; }
+.corr-cell.selected { outline: 2px solid var(--text); outline-offset: -2px; }

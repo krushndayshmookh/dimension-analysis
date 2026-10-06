@@ -18,6 +18,7 @@ import {
   attentionReasons,
   sectionSizeVerdict,
   differenceVerdict,
+  correlationVerdict,
 } from '../src/lib/verdicts.js'
 
 const level = (v) => v?.level
@@ -272,5 +273,22 @@ describe('differenceVerdict', () => {
     assert.equal(differenceVerdict(0.05, S).label, 'Not significant')
     assert.equal(differenceVerdict(0.04, setPath(S, 'sections.significance', 0.01)).level, 'not-significant')
     assert.equal(differenceVerdict(null, S), null)
+  })
+})
+
+describe('correlationVerdict', () => {
+  it('bands the strength by absolute value and keeps the direction', () => {
+    assert.deepEqual(correlationVerdict(0.7, S), { level: 'strong', label: 'Strong', tone: 'info', direction: 'positive' })
+    assert.deepEqual([0.69, 0.4, 0.39, 0.05].map((r) => correlationVerdict(r, S).level), ['moderate', 'moderate', 'weak', 'weak'])
+    assert.equal(correlationVerdict(-0.8, S).direction, 'negative')
+    assert.equal(correlationVerdict(-0.8, S).level, 'strong')
+    assert.equal(correlationVerdict(0, S).direction, null)
+    assert.equal(correlationVerdict(null, S), null)
+  })
+
+  it('follows the configured limits', () => {
+    const custom = setPath(setPath(S, 'correlation.moderateFrom', 0.2), 'correlation.strongFrom', 0.5)
+    assert.equal(correlationVerdict(0.5, custom).level, 'strong')
+    assert.equal(correlationVerdict(0.25, custom).level, 'moderate')
   })
 })

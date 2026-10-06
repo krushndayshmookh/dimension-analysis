@@ -1,5 +1,6 @@
 import QuestionReview from './QuestionReview.vue'
 import Sections from './Sections.vue'
+import Correlations from './Correlations.vue'
 
 // Registry of the tool pages shown under "Tools". Each entry is
 // { id, label, component }. A tool reads the open exam, saved exams and settings
@@ -7,4 +8,5 @@ import Sections from './Sections.vue'
 export const TOOLS = [
   { id: 'review', label: 'Question review', component: QuestionReview },
   { id: 'sections', label: 'Sections', component: Sections },
+  { id: 'correlations', label: 'Correlations', component: Correlations },
 ]
