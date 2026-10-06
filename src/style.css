@@ -94,6 +94,7 @@ td .btn-sm + .btn-sm { margin-left: 6px; }
 .stat-value.tier-name { text-transform: capitalize; }
 .stat-value .vs { font-size: 0.8rem; font-weight: 400; color: var(--muted); }
 .stat-desc { font-size: 0.82rem; color: var(--muted); }
+.stat-desc .inline-tag { margin-left: 6px; }
 .highlights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
 .highlight-label { font-size: 0.78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; }
 .highlight-value { font-size: 1.15rem; font-weight: 700; }

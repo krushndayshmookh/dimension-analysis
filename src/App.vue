@@ -127,12 +127,25 @@
         <div class="stat-card">
           <span class="stat-label">Mastery</span>
           <span class="stat-value">{{ pct(profiles.cohort.masteryPct) }}</span>
-          <span class="stat-desc">marks earned ÷ all exam marks</span>
+          <span class="stat-desc">
+            marks earned ÷ all exam marks
+            <span class="inline-tag"><VerdictTag :verdict="V.difficultyVerdict(profiles.cohort.masteryPct, settings)" /></span>
+          </span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Accuracy</span>
           <span class="stat-value">{{ pct(profiles.cohort.accuracyPct) }}</span>
           <span class="stat-desc">marks earned ÷ marks of attempted questions</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">At or above pass mark</span>
+          <span class="stat-value">{{ attainment.pass.count }} / {{ attainment.studentCount }}</span>
+          <span class="stat-desc">{{ pct(attainment.pass.ratePct) }} (pass mark {{ settings.attainment.passMark }}%)</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">At or above distinction mark</span>
+          <span class="stat-value">{{ attainment.distinction.count }} / {{ attainment.studentCount }}</span>
+          <span class="stat-desc">{{ pct(attainment.distinction.ratePct) }} (distinction mark {{ settings.attainment.distinctionMark }}%)</span>
         </div>
       </div>
 
@@ -143,20 +156,35 @@
         </div>
         <div class="card-box">
           <h3>Dimensions</h3>
-          <DataTable :columns="cohortDimensionColumns" :rows="cohortDimensionRows" row-key="dimension" :searchable="false">
+          <DataTable :columns="cohortDimensionColumns" :rows="cohortDimensionRows" row-key="dimension" :searchable="false" export-name="cohort-dimensions">
             <template #cell-dimension="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
+            <template #cell-bar="{ row }"><Bar :value="row.masteryPct" :color="dimensionColor(row.dimension)" /></template>
           </DataTable>
         </div>
       </div>
 
       <div class="card-box">
+        <h3>Students needing attention</h3>
+        <p class="hint">
+          Below the pass mark, within {{ settings.attention.nearPassMarginPp }} points above it, or weak in
+          {{ settings.attention.weakDimensionCount }} or more dimensions. Thresholds are set in Settings.
+        </p>
+        <DataTable :columns="attentionColumns" :rows="attentionRows" row-key="id" clickable export-name="students-needing-attention" empty-text="No students match the attention rules." @row-click="openStudent($event.id)">
+          <template #cell-reasons="{ row }">
+            <span v-for="r in row.reasons" :key="r.id" class="tag" :class="settings.showVerdicts ? `tag-${r.tone}` : 'tag-neutral'">{{ r.label }}</span>
+          </template>
+        </DataTable>
+      </div>
+
+      <div class="card-box">
         <h3>Students</h3>
-        <p class="hint">Select a row to open the student profile.</p>
+        <p class="hint">Select a row to open the student profile. Rank 1 is the highest mastery; percentile is the share of students scoring lower (ties count half).</p>
         <DataTable
           :columns="studentColumns"
           :rows="profiles.students"
           row-key="id"
           clickable
+          export-name="students"
           :default-sort="{ key: 'id', dir: 'asc' }"
           @row-click="openStudent($event.id)"
         />
@@ -939,12 +967,40 @@ const cohortRadar = computed(() =>
 const cohortDimensionRows = computed(() =>
   profiles.value.dimensions.map((d) => ({ dimension: d, ...profiles.value.cohort.dimensions[d] }))
 )
+const masteryLevel = (row) => V.masteryVerdict(row.masteryPct, settings.value)
 const cohortDimensionColumns = [
   { key: 'dimension', label: 'Dimension', type: 'text' },
   { key: 'availableExam', label: 'Marks available', type: 'number', format: (v) => num(v) },
   { key: 'earned', label: 'Avg earned', type: 'number', format: (v) => num(v) },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'level', label: 'Level', type: 'text', verdict: masteryLevel },
   { key: 'accuracyPct', label: 'Accuracy', type: 'number', format: (v) => pct(v) },
+  { key: 'bar', label: '', type: 'number', value: (r) => r.masteryPct, filterable: false, sortable: false, exportable: false },
+]
+
+const attainment = computed(() => V.attainmentRates(profiles.value.students.map((s) => s.masteryPct ?? 0), settings.value))
+
+// A student's level in a dimension, comparing with the cohort when that setting is on.
+const dimensionLevel = (student, dimension) =>
+  V.studentLevel(student.dimensions[dimension].masteryPct, profiles.value.cohort.dimensions[dimension]?.masteryPct, settings.value)
+
+const attentionRows = computed(() =>
+  profiles.value.students
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      masteryPct: s.masteryPct,
+      reasons: V.attentionReasons(s, profiles.value.cohort, settings.value),
+      weakDimensions: profiles.value.dimensions.filter((d) => dimensionLevel(s, d)?.level === 'weak'),
+    }))
+    .filter((r) => r.reasons.length)
+)
+const attentionColumns = [
+  { key: 'id', label: 'ID', type: 'text' },
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'reasons', label: 'Why', type: 'text', value: (r) => r.reasons.map((x) => x.label) },
+  { key: 'weakDimensions', label: 'Weak dimensions', type: 'text' },
 ]
 
 const studentColumns = computed(() => [
@@ -952,13 +1008,18 @@ const studentColumns = computed(() => [
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'earned', label: 'Score', type: 'number', format: (v, r) => `${num(v)} / ${num(r.totalMarks)}` },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'level', label: 'Level', type: 'text', verdict: masteryLevel },
   { key: 'accuracyPct', label: 'Accuracy', type: 'number', format: (v) => pct(v) },
+  { key: 'rank', label: 'Rank', type: 'number' },
+  { key: 'percentile', label: 'Percentile', type: 'number', format: (v) => num(v) },
+  { key: 'zScore', label: 'z-score', type: 'number', format: (v) => num(v, 2) },
   ...profiles.value.dimensions.map((d) => ({
     key: `dim-${d}`,
     label: d,
     type: 'number',
     value: (r) => r.dimensions[d].masteryPct,
     format: (v) => pct(v),
+    dot: (r) => dimensionLevel(r, d),
   })),
   { key: 'weakestDimension', label: 'Lowest dimension', type: 'text' },
   { key: 'strongestDimension', label: 'Highest dimension', type: 'text' },
