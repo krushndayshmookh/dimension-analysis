@@ -517,7 +517,10 @@
           <div v-for="s in comparisonStats" :key="s.label" class="stat-card">
             <span class="stat-label">{{ s.label }}</span>
             <span class="stat-value">{{ pct(s.expectedPct) }} <span class="vs">expected</span></span>
-            <span class="stat-desc">actual {{ pct(s.actualPct) }} · gap {{ signed(s.gapPp, ' pp') }}</span>
+            <span class="stat-desc">
+              actual {{ pct(s.actualPct) }} · gap {{ signed(s.gapPp, ' pp') }}
+              <VerdictTag v-if="s.tagged" :verdict="V.gapVerdict(s.gapPp, settings)" />
+            </span>
           </div>
           <div class="stat-card">
             <span class="stat-label">Distribution distance</span>
@@ -531,7 +534,7 @@
             <h3>Score distribution</h3>
             <BinModeToggle v-model="simBinMode" name="sim-bins" />
           </div>
-          <DataTable :columns="comparisonBinColumns" :rows="simBinMode === 'percentage' ? comparison.decileBins : comparison.markBins" row-key="label" :searchable="false">
+          <DataTable :columns="comparisonBinColumns" :rows="simBinMode === 'percentage' ? comparison.decileBins : comparison.markBins" row-key="label" :searchable="false" export-name="simulation-distribution">
             <template #cell-deltaPp="{ value }">{{ signed(value, ' pp') }}</template>
             <template #cell-bars="{ row }">
               <PairBar :first="row.expectedPct" :second="row.actualPct" first-label="Expected" second-label="Actual" />
@@ -541,18 +544,18 @@
 
         <div class="card-box">
           <h3>Dimensions</h3>
-          <DataTable :columns="gapColumns('dimension', 'Dimension')" :rows="comparison.dimensions" row-key="dimension" :searchable="false">
+          <DataTable :columns="gapColumns('dimension', 'Dimension')" :rows="comparison.dimensions" row-key="dimension" :searchable="false" export-name="simulation-dimensions">
             <template #cell-dimension="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
             <template #cell-gapPp="{ value }">{{ signed(value, ' pp') }}</template>
             <template #cell-bars="{ row }">
-              <PairBar :first="row.expectedMasteryPct" :second="row.actualMasteryPct" first-label="Expected" second-label="Actual" />
+              <PairBar :first="row.expectedMasteryPct" :second="row.actualMasteryPct" first-label="Expected" second-label="Actual" :color="dimensionColor(row.dimension)" />
             </template>
           </DataTable>
         </div>
 
         <div class="card-box">
           <h3>Topics</h3>
-          <DataTable :columns="gapColumns('topic', 'Topic')" :rows="comparison.topics" row-key="topic">
+          <DataTable :columns="gapColumns('topic', 'Topic')" :rows="comparison.topics" row-key="topic" export-name="simulation-topics">
             <template #cell-gapPp="{ value }">{{ signed(value, ' pp') }}</template>
             <template #cell-bars="{ row }">
               <PairBar :first="row.expectedMasteryPct" :second="row.actualMasteryPct" first-label="Expected" second-label="Actual" />
@@ -597,13 +600,30 @@
               <div class="highlight-item"><div class="highlight-label">Attempted marks</div><div class="highlight-value">{{ num(student.attemptedMarks) }}</div></div>
               <div class="highlight-item"><div class="highlight-label">Mastery</div><div class="highlight-value">{{ pct(student.masteryPct) }}</div></div>
               <div class="highlight-item"><div class="highlight-label">Accuracy</div><div class="highlight-value">{{ pct(student.accuracyPct) }}</div></div>
+              <div class="highlight-item"><div class="highlight-label">Rank</div><div class="highlight-value">{{ student.rank }} of {{ profiles.students.length }}</div></div>
+              <div class="highlight-item"><div class="highlight-label">Percentile / z-score</div><div class="highlight-value">{{ num(student.percentile) }} <span class="muted">/ {{ num(student.zScore, 2) }}</span></div></div>
               <div class="highlight-item">
                 <div class="highlight-label">Highest-mastery dimension</div>
-                <div class="highlight-value">{{ student.strongestDimension ?? '—' }} <span class="muted">{{ pct(student.dimensions[student.strongestDimension]?.masteryPct) }}</span></div>
+                <div class="highlight-value">
+                  <span v-if="student.strongestDimension" class="badge" :class="dimClass(student.strongestDimension)">{{ student.strongestDimension }}</span>
+                  <span class="muted">{{ pct(student.dimensions[student.strongestDimension]?.masteryPct) }}</span>
+                  <VerdictTag :verdict="dimensionLevel(student, student.strongestDimension)" />
+                </div>
               </div>
               <div class="highlight-item">
                 <div class="highlight-label">Lowest-mastery dimension</div>
-                <div class="highlight-value">{{ student.weakestDimension ?? '—' }} <span class="muted">{{ pct(student.dimensions[student.weakestDimension]?.masteryPct) }}</span></div>
+                <div class="highlight-value">
+                  <span v-if="student.weakestDimension" class="badge" :class="dimClass(student.weakestDimension)">{{ student.weakestDimension }}</span>
+                  <span class="muted">{{ pct(student.dimensions[student.weakestDimension]?.masteryPct) }}</span>
+                  <VerdictTag :verdict="dimensionLevel(student, student.weakestDimension)" />
+                </div>
+              </div>
+              <div class="highlight-item">
+                <div class="highlight-label">Needs attention</div>
+                <div class="highlight-value">
+                  <VerdictTag v-for="r in studentAttention" :key="r.id" :verdict="r" />
+                  <span v-if="!studentAttention.length" class="muted">No</span>
+                </div>
               </div>
             </div>
             <div class="form-actions">
@@ -614,21 +634,21 @@
 
         <div class="card-box">
           <h3>Dimensions</h3>
-          <DataTable :columns="breakdownColumns('Dimension')" :rows="studentBreakdown('dimensions')" row-key="name" :searchable="false">
+          <DataTable :columns="breakdownColumns('Dimension')" :rows="studentBreakdown('dimensions')" row-key="name" :searchable="false" export-name="student-dimensions">
             <template #cell-name="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </div>
         <div class="card-box">
           <h3>Difficulty tiers</h3>
-          <DataTable :columns="breakdownColumns('Tier')" :rows="studentBreakdown('difficulties')" row-key="name" :searchable="false">
+          <DataTable :columns="breakdownColumns('Tier')" :rows="studentBreakdown('difficulties')" row-key="name" :searchable="false" export-name="student-tiers">
             <template #cell-name="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </div>
         <div class="card-box">
           <h3>Topics</h3>
-          <DataTable :columns="breakdownColumns('Topic')" :rows="studentBreakdown('topics')" row-key="name">
+          <DataTable :columns="breakdownColumns('Topic')" :rows="studentBreakdown('topics')" row-key="name" export-name="student-topics">
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </div>
@@ -652,11 +672,78 @@
       </div>
       <div v-if="history" class="card-box">
         <h3>{{ history.name }} ({{ history.id }})</h3>
-        <DataTable :columns="historyColumns" :rows="historyRows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" />
+        <DataTable :columns="historyColumns" :rows="historyRows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" export-name="student-history" />
       </div>
       <div v-else class="empty-state">
         <p>{{ historyStudents.length ? 'Select a student.' : 'No saved exams yet. Upload an exam to start a history.' }}</p>
       </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section v-if="tab === 'compare'" class="view-panel">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Compare exams</h2>
+          <p class="view-desc">
+            Compare two saved exams: cohort, dimensions, and students matched by student_id. Changes are later minus earlier,
+            in percentage points.
+          </p>
+        </div>
+      </div>
+      <fieldset>
+        <legend>Exams</legend>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="compareBase">Earlier exam</label>
+            <select id="compareBase" v-model="compareBaseId">
+              <option value="" disabled>Select an exam</option>
+              <option v-for="e in savedExams" :key="e.id" :value="e.id">{{ e.courseName }} — {{ e.examTitle }} ({{ e.examDate }})</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="compareLater">Later exam</label>
+            <select id="compareLater" v-model="compareLaterId">
+              <option value="" disabled>Select an exam</option>
+              <option v-for="e in savedExams" :key="e.id" :value="e.id">{{ e.courseName }} — {{ e.examTitle }} ({{ e.examDate }})</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-primary" :disabled="!compareBaseId || !compareLaterId" @click="runCompare">Compare</button>
+        </div>
+      </fieldset>
+
+      <template v-if="comparison2">
+        <div class="stat-cards-grid">
+          <div class="stat-card">
+            <span class="stat-label">Cohort mastery</span>
+            <span class="stat-value">{{ pct(comparison2.cohort.basePct) }} → {{ pct(comparison2.cohort.laterPct) }}</span>
+            <span class="stat-desc">
+              {{ signed(comparison2.cohort.deltaPp, ' pp') }}
+              <VerdictTag :verdict="V.trendVerdict(comparison2.cohort.deltaPp, settings)" />
+            </span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Students</span>
+            <span class="stat-value">{{ comparison2.cohort.baseStudents }} → {{ comparison2.cohort.laterStudents }}</span>
+            <span class="stat-desc">{{ comparison2.students.length }} matched by student_id</span>
+          </div>
+        </div>
+        <p v-if="comparison2.unmatched.onlyInBase.length || comparison2.unmatched.onlyInLater.length" class="hint">
+          Only in the earlier exam: {{ comparison2.unmatched.onlyInBase.length }} student(s). Only in the later exam:
+          {{ comparison2.unmatched.onlyInLater.length }} student(s). They are left out of the student table.
+        </p>
+        <div class="card-box">
+          <h3>Dimensions</h3>
+          <DataTable :columns="compareDimensionColumns" :rows="comparison2.dimensions" row-key="dimension" :searchable="false" export-name="compare-dimensions">
+            <template #cell-dimension="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
+          </DataTable>
+        </div>
+        <div class="card-box">
+          <h3>Students</h3>
+          <DataTable :columns="compareStudentColumns" :rows="comparison2.students" row-key="id" export-name="compare-students" />
+        </div>
+      </template>
     </section>
 
     <!-- SAVED -->
@@ -749,7 +836,7 @@ import { analyzeDataset } from './lib/analysis.js'
 import { DIMENSIONS, DEFAULT_EXPECTED_SOLVE_RATES } from './lib/constants.js'
 import { DEFAULT_SIM_PARAMS, validateSimParams, simulateCohort, compareToActual } from './lib/simulation.js'
 import { formatNumber as num, formatPct as pct, formatSigned as signed, clampPct } from './lib/format.js'
-import { DEFAULT_SETTINGS, SETTINGS_SCHEMA, mergeSettings, validateSettings, getPath, setPath } from './lib/settings.js'
+import { DEFAULT_SETTINGS, SETTINGS_SCHEMA, mergeSettings, validateSettings, getPath, setPath, cloneSettings } from './lib/settings.js'
 import * as V from './lib/verdicts.js'
 import { compareExams, historyDeltas } from './lib/compare.js'
 import { dimensionColor } from './lib/colors.js'
@@ -830,7 +917,7 @@ const notice = ref(null)
 // Thresholds behind every tag; provided to VerdictTag. Defaults until loaded.
 const settings = ref(mergeSettings())
 provide('settings', settings)
-const draft = ref(structuredClone(settings.value))
+const draft = ref(cloneSettings(settings.value))
 const analyzing = ref(false)
 
 const meta = reactive({ courseName: '', examTitle: '', examDate: new Date().toISOString().slice(0, 10) })
@@ -989,7 +1076,7 @@ function setDraft(field, raw) {
 async function loadSettings() {
   try {
     settings.value = mergeSettings(await api.getSettings())
-    draft.value = structuredClone(settings.value)
+    draft.value = cloneSettings(settings.value)
   } catch (err) {
     fail(err)
   }
@@ -998,7 +1085,7 @@ async function loadSettings() {
 async function saveSettingsNow() {
   try {
     await api.saveSettings(draft.value)
-    settings.value = structuredClone(draft.value)
+    settings.value = cloneSettings(draft.value)
     notice.value = { kind: 'info', text: 'Settings saved.' }
   } catch (err) {
     fail(err)
@@ -1006,10 +1093,10 @@ async function saveSettingsNow() {
 }
 
 const resetSettingsDraft = () => {
-  draft.value = structuredClone(DEFAULT_SETTINGS)
+  draft.value = cloneSettings(DEFAULT_SETTINGS)
 }
 const discardSettingsDraft = () => {
-  draft.value = structuredClone(settings.value)
+  draft.value = cloneSettings(settings.value)
 }
 
 onMounted(() => {
@@ -1052,7 +1139,7 @@ const attainment = computed(() => V.attainmentRates(profiles.value.students.map(
 
 // A student's level in a dimension, comparing with the cohort when that setting is on.
 const dimensionLevel = (student, dimension) =>
-  V.studentLevel(student.dimensions[dimension].masteryPct, profiles.value.cohort.dimensions[dimension]?.masteryPct, settings.value)
+  V.studentLevel(student.dimensions[dimension]?.masteryPct, profiles.value.cohort.dimensions[dimension]?.masteryPct, settings.value)
 
 const attentionRows = computed(() =>
   profiles.value.students
@@ -1317,9 +1404,9 @@ watch(simForm, () => {
 }, { flush: 'sync' })
 
 const comparisonStats = computed(() => [
-  { label: 'Mean', ...comparison.value.mean },
-  { label: 'Median', ...comparison.value.median },
-  { label: 'Standard deviation (pp)', ...comparison.value.stdDev },
+  { label: 'Mean', tagged: true, ...comparison.value.mean },
+  { label: 'Median', tagged: true, ...comparison.value.median },
+  { label: 'Standard deviation (pp)', tagged: false, ...comparison.value.stdDev },
 ])
 
 const comparisonBinColumns = [
@@ -1329,7 +1416,8 @@ const comparisonBinColumns = [
   { key: 'actualCount', label: 'Actual students', type: 'number' },
   { key: 'actualPct', label: 'Actual %', type: 'number', format: (v) => pct(v) },
   { key: 'deltaPp', label: 'Actual − expected', type: 'number' },
-  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualPct, filterable: false, sortable: false },
+  { key: 'gapLevel', label: 'Level', type: 'text', verdict: (r) => V.gapVerdict(r.deltaPp, settings.value) },
+  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualPct, filterable: false, sortable: false, exportable: false },
 ]
 
 const gapColumns = (key, label) => [
@@ -1338,7 +1426,8 @@ const gapColumns = (key, label) => [
   { key: 'expectedMasteryPct', label: 'Expected mastery', type: 'number', format: (v) => pct(v) },
   { key: 'actualMasteryPct', label: 'Actual mastery', type: 'number', format: (v) => pct(v) },
   { key: 'gapPp', label: 'Actual − expected', type: 'number' },
-  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualMasteryPct, filterable: false, sortable: false },
+  { key: 'gapLevel', label: 'Level', type: 'text', verdict: (r) => V.gapVerdict(r.gapPp, settings.value) },
+  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.actualMasteryPct, filterable: false, sortable: false, exportable: false },
 ]
 
 // ---- student tab ------------------------------------------------------------------
@@ -1367,21 +1456,78 @@ const studentBreakdown = (group) =>
     }
   })
 
+const studentAttention = computed(() => V.attentionReasons(student.value, profiles.value.cohort, settings.value))
+
 const breakdownColumns = (label) => [
   { key: 'name', label, type: 'text' },
   { key: 'earned', label: 'Earned', type: 'number', format: (v) => num(v) },
   { key: 'availableExam', label: 'Exam marks', type: 'number', format: (v) => num(v) },
   { key: 'availableAttempted', label: 'Attempted marks', type: 'number', format: (v) => num(v) },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'level', label: 'Level', type: 'text', verdict: (r) => V.studentLevel(r.masteryPct, r.cohortPct, settings.value) },
   { key: 'accuracyPct', label: 'Accuracy', type: 'number', format: (v) => pct(v) },
   { key: 'cohortPct', label: 'Cohort mastery', type: 'number', format: (v) => pct(v) },
   { key: 'vsCohort', label: 'vs cohort', type: 'number' },
 ]
 
+// ---- compare tab ------------------------------------------------------------------
+
+const compareBaseId = ref('')
+const compareLaterId = ref('')
+const comparison2 = shallowRef(null)
+
+async function runCompare() {
+  comparison2.value = null
+  if (compareBaseId.value === compareLaterId.value) {
+    notice.value = { kind: 'error', text: 'Choose two different exams to compare.' }
+    return
+  }
+  try {
+    const [a, b] = await Promise.all([api.getExam(compareBaseId.value), api.getExam(compareLaterId.value)])
+    for (const saved of [a, b]) {
+      if (!saved.dataset?.questions || !saved.dataset?.students) {
+        throw new Error(`"${saved.examTitle}" was saved in an older, incompatible format. Upload its CSV files again.`)
+      }
+    }
+    comparison2.value = compareExams(analyzeDataset(a.dataset).profiles, analyzeDataset(b.dataset).profiles)
+  } catch (err) {
+    fail(err)
+  }
+}
+
+const trendColumn = (key = 'deltaPp') => ({
+  key: 'trend',
+  label: 'Trend',
+  type: 'text',
+  verdict: (r) => V.trendVerdict(r[key], settings.value),
+})
+const compareDimensionColumns = [
+  { key: 'dimension', label: 'Dimension', type: 'text' },
+  { key: 'basePct', label: 'Earlier', type: 'number', format: (v) => pct(v) },
+  { key: 'laterPct', label: 'Later', type: 'number', format: (v) => pct(v) },
+  { key: 'deltaPp', label: 'Change', type: 'number', format: (v) => signed(v, ' pp') },
+  trendColumn(),
+]
+const compareStudentColumns = computed(() => [
+  { key: 'id', label: 'ID', type: 'text' },
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'baseMasteryPct', label: 'Earlier mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'laterMasteryPct', label: 'Later mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'deltaPp', label: 'Change', type: 'number', format: (v) => signed(v, ' pp') },
+  trendColumn(),
+  ...(comparison2.value?.dimensions ?? []).map((d) => ({
+    key: `delta-${d.dimension}`,
+    label: `${d.dimension} change`,
+    type: 'number',
+    value: (r) => r.dimensions[d.dimension]?.deltaPp ?? null,
+    format: (v) => signed(v, ' pp'),
+  })),
+])
+
 // ---- history and saved tabs -------------------------------------------------------
 
 const historyRows = computed(() =>
-  (history.value?.exams ?? []).map((e) => ({
+  historyDeltas(history.value?.exams ?? []).map((e) => ({
     ...e,
     ...Object.fromEntries(DIMENSIONS.map((d) => [`dim-${d}`, e.dimensions?.[d]?.masteryPct ?? null])),
   }))
@@ -1392,8 +1538,16 @@ const historyColumns = [
   { key: 'examTitle', label: 'Exam', type: 'text' },
   { key: 'earned', label: 'Score', type: 'number', format: (v, r) => `${num(v)} / ${num(r.totalMarks)}` },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'deltaMasteryPct', label: 'Change from previous', type: 'number', format: (v) => signed(v, ' pp') },
+  { key: 'trend', label: 'Trend', type: 'text', verdict: (r) => V.trendVerdict(r.deltaMasteryPct, settings.value) },
   { key: 'accuracyPct', label: 'Accuracy', type: 'number', format: (v) => pct(v) },
-  ...DIMENSIONS.map((d) => ({ key: `dim-${d}`, label: d, type: 'number', format: (v) => pct(v) })),
+  ...DIMENSIONS.map((d) => ({
+    key: `dim-${d}`,
+    label: d,
+    type: 'number',
+    format: (v) => pct(v),
+    dot: (r) => V.masteryVerdict(r[`dim-${d}`], settings.value),
+  })),
 ]
 
 const savedColumns = [
