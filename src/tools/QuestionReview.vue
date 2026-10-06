@@ -12,7 +12,11 @@
         :value="`${reuseTotals.reusedCount} / ${reuseTotals.questionCount}`"
         :description="`${pct(reuseTotals.reusedPct)} · ${reuseTotals.examCount} earlier exam${reuseTotals.examCount === 1 ? '' : 's'}`"
       />
-      <StatCard label="Average attempt rate (students)" :value="pct(attempts.totals.meanStudentAttemptRatePct)" description="share of questions a student attempted" />
+      <StatCard
+        label="Average attempt rate (students)"
+        :value="pct(attempts.totals.meanStudentAttemptRatePct)"
+        :description="`share of questions a student attempted${attempts.totals.absentCount ? ` · ${attempts.totals.absentCount} absent student(s) left out` : ''}`"
+      />
       <StatCard label="Marks left unattempted" :value="pct(attempts.totals.skippedMarksPct)" :description="`${num(attempts.totals.skippedMarks)} marks across all students`" />
       <StatCard label="Reliability (Cronbach's alpha)" :value="num(paper.reliability.alpha, 2)">
         <template #description><VerdictTag :verdict="V.reliabilityVerdict(paper.reliability.alpha, settings)" /></template>
@@ -204,6 +208,7 @@ const skipperColumns = [
   { key: 'name', label: 'Name', type: 'text' },
   { key: 'section', label: 'Section', type: 'text' },
   { key: 'skippedCount', label: 'Questions blank', type: 'number' },
+  { key: 'skippedIds', label: 'Not attempted', type: 'text', format: (v) => v.join(', '), value: (r) => r.skippedIds.join(' ') },
   { key: 'attemptRatePct', label: 'Attempt rate', type: 'number', format: (v) => pct(v) },
   { key: 'skippedMarks', label: 'Marks left', type: 'number', format: (v) => num(v) },
   { key: 'skippedMarksPct', label: '% of exam marks', type: 'number', format: (v) => pct(v) },

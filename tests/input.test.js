@@ -356,3 +356,37 @@ describe('readScores: multiple-choice cells hold the chosen option', () => {
     assert.ok(!('readAnswers' in module))
   })
 })
+
+describe('attendance in the student file', () => {
+  const read = async (text) => readStudentNames(await parse(text))
+
+  it('reads the optional attendance column; blank means present', async () => {
+    const { absent, errors, warnings } = await read('student_id,student_name,attendance\nS1,Alice,Present\nS2,Bob, ABSENT \nS3,Cara,\n')
+    assert.deepEqual(errors, [])
+    assert.deepEqual(absent, { S1: false, S2: true, S3: false })
+    assert.ok(!warnings.some((w) => w.includes('attendance')))
+  })
+
+  it('treats every student as present when the column is absent', async () => {
+    assert.deepEqual((await read('student_id,student_name\nS1,Alice\n')).absent, { S1: false })
+  })
+
+  it('rejects any other value', async () => {
+    const { errors } = await read('student_id,student_name,attendance\nS1,Alice,late\n')
+    assert.ok(errors.some((e) => e.includes('S1') && e.includes('attendance') && e.includes('late')), errors.join('|'))
+  })
+
+  it('puts the flag on the dataset students', async () => {
+    const { dataset } = readDataset({
+      config: await parse(CONFIG_CSV),
+      scores: await parse(SCORES_CSV),
+      students: await parse('student_id,student_name,attendance\nS1,Alice,present\nS2,Bob,absent\nS3,Cara,\n'),
+    })
+    assert.deepEqual(dataset.students.map((s) => s.absent), [false, true, false])
+  })
+
+  it('is false for everyone without a student file', async () => {
+    const { dataset } = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
+    assert.ok(dataset.students.every((s) => s.absent === false))
+  })
+})

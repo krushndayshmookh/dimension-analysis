@@ -56,6 +56,8 @@ function parseList(value) {
   return value.split(LIST_SEPARATOR).map((part) => part.trim())
 }
 
+const ATTENDANCE_VALUES = ['present', 'absent']
+
 const CONFIG_REQUIRED = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'question_topics', 'marks']
 const CONFIG_OPTIONAL = ['expected_solve_rate', 'correct_option', 'question_subtype']
 
@@ -223,7 +225,8 @@ export function readStudentNames(parsed) {
   const warnings = []
   const names = {}
   const sections = {}
-  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], ['section'], out)
+  const absent = {}
+  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], ['section', 'attendance'], out)
   if (extra.length) warnings.push(`${label}: ignoring unknown column(s): ${extra.join(', ')}`)
 
   if (!missing.length) {
@@ -233,14 +236,17 @@ export function readStudentNames(parsed) {
       if (!row.student_id) out.add(`${where}: student_id is empty`)
       else if (row.student_id in names) out.add(`${where}: duplicate student_id "${row.student_id}"`)
       else if (!row.student_name) out.add(`${where}: student_name is empty`)
-      else {
+      else if (row.attendance && !ATTENDANCE_VALUES.includes(row.attendance.toLowerCase())) {
+        out.add(`${where}: attendance "${row.attendance}" must be present or absent (or blank for present)`)
+      } else {
         names[row.student_id] = row.student_name
         sections[row.student_id] = row.section || null
+        absent[row.student_id] = (row.attendance ?? '').toLowerCase() === 'absent'
       }
     })
   }
 
-  return { names, sections, errors: out.finish(), warnings }
+  return { names, sections, absent, errors: out.finish(), warnings }
 }
 
 // config and scores are required; students (names) is optional.
@@ -258,12 +264,14 @@ export function readDataset({ config, scores, students }) {
 
   let names = null
   let sections = {}
+  let absent = {}
   if (students) {
     const namesResult = readStudentNames(students)
     errors.push(...namesResult.errors)
     warnings.push(...namesResult.warnings)
     names = namesResult.names
     sections = namesResult.sections
+    absent = namesResult.absent
   }
 
   if (names && !errors.length) {
@@ -283,6 +291,7 @@ export function readDataset({ config, scores, students }) {
         id: s.id,
         name: names?.[s.id] ?? s.id,
         section: sections[s.id] ?? null,
+        absent: absent[s.id] ?? false,
         scores: s.scores,
         ...(s.answers ? { answers: s.answers } : {}),
       })),

@@ -2,7 +2,8 @@ import { describe, it, before } from 'node:test'
 import assert from 'node:assert/strict'
 import { analyzeAttempts, buildReviewQueue } from '../src/lib/review.js'
 import { DEFAULT_SETTINGS as S, setPath } from '../src/lib/settings.js'
-import { loadAnalysis, closeTo } from './fixtures.js'
+import { buildProfiles } from '../src/lib/profiles.js'
+import { loadAnalysis, loadDataset, closeTo } from './fixtures.js'
 
 describe('analyzeAttempts', () => {
   let result
@@ -108,5 +109,34 @@ describe('buildReviewQueue', () => {
     const blank = row('Q1', { solveRatePct: null, attemptRatePct: null, deviationPct: null, discriminationIndex: null, alphaIfRemoved: null })
     assert.deepEqual(queue([blank]), [])
     assert.deepEqual(buildReviewQueue({ rows: [row('Q1', { alphaIfRemoved: 0.9 })], reliability: { alpha: null }, reuse: {}, settings: S }), [])
+  })
+})
+
+describe('absent students in attempt analysis', () => {
+  const absentCsv = 'student_id,student_name,attendance\nS1,Alice,\nS2,Bob,\nS3,Cara,absent\n'
+  let result
+  before(async () => {
+    const dataset = await loadDataset(undefined, undefined, absentCsv)
+    result = analyzeAttempts(dataset, buildProfiles(dataset))
+  })
+
+  it('leaves them out of the attempt rates', () => {
+    const q2 = result.questions.find((r) => r.id === 'Q2')
+    assert.deepEqual([q2.attemptedCount, q2.skippedCount, q2.attemptRatePct], [2, 0, 100])
+  })
+
+  it('does not list them as students who skipped, and reports how many were absent', () => {
+    assert.deepEqual(result.students.map((s) => s.id), ['S1', 'S2'])
+    assert.equal(result.totals.absentCount, 1)
+    assert.equal(result.totals.skippedMarks, 0)
+  })
+})
+
+describe('what each student did not attempt', () => {
+  it('lists the question ids left blank, in paper order', async () => {
+    const { dataset, profiles } = await loadAnalysis()
+    const rows = analyzeAttempts(dataset, profiles).students
+    assert.deepEqual(rows.find((s) => s.id === 'S3').skippedIds, ['Q2'])
+    assert.deepEqual(rows.find((s) => s.id === 'S1').skippedIds, [])
   })
 })

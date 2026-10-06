@@ -5,7 +5,8 @@ const LIST_LIMIT = 10
 const list = (ids) => (ids.length > LIST_LIMIT ? `${ids.slice(0, LIST_LIMIT).join(', ')}, and ${ids.length - LIST_LIMIT} more` : ids.join(', '))
 
 export function checkDataQuality(dataset, settings) {
-  const { questions, students } = dataset
+  const { questions } = dataset
+  const students = dataset.students.filter((s) => !s.absent)
   const warnings = []
   const attemptedCount = (s) => questions.filter((q) => q.id in s.scores).length
 

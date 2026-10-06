@@ -8,7 +8,9 @@ const rounded = (v) => (v == null ? null : round(v))
 // How students attempted (or skipped) questions. An unattempted question is a
 // blank score cell. dataset: { questions, students }, profiles from buildProfiles.
 export function analyzeAttempts(dataset, profiles) {
-  const { questions, students } = dataset
+  const { questions } = dataset
+  const students = dataset.students.filter((s) => !s.absent)
+  const absentCount = dataset.students.length - students.length
   const masteryById = new Map(profiles.students.map((s) => [s.id, s.masteryPct ?? 0]))
   const n = students.length
   const totalMarks = questions.reduce((sum, q) => sum + q.marks, 0)
@@ -58,6 +60,7 @@ export function analyzeAttempts(dataset, profiles) {
       section: s.section ?? null,
       attemptedCount: attempted.length,
       skippedCount: questions.length - attempted.length,
+      skippedIds: questions.filter((q) => !(q.id in s.scores)).map((q) => q.id),
       attemptRatePct: questions.length ? rounded((attempted.length / questions.length) * 100) : null,
       skippedMarks: round(skippedMarks),
       skippedMarksPct: totalMarks > 0 ? rounded((skippedMarks / totalMarks) * 100) : null,
@@ -69,6 +72,7 @@ export function analyzeAttempts(dataset, profiles) {
     questions: questionRows,
     students: studentRows,
     totals: {
+      absentCount,
       skippedMarks: round(skippedMarks),
       skippedMarksPct: totalMarks > 0 && n ? rounded((skippedMarks / (totalMarks * n)) * 100) : null,
       meanStudentAttemptRatePct: rounded(mean(studentRows.map((s) => s.attemptRatePct).filter((v) => v != null))),

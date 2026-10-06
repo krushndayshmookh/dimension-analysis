@@ -84,6 +84,7 @@ export function buildProfiles(dataset) {
       id: student.id,
       name: student.name,
       section: student.section ?? null,
+      absent: student.absent ?? false,
       earned: round(earned),
       totalMarks: round(totalMarks),
       attemptedMarks: round(attemptedMarks),
@@ -126,6 +127,7 @@ export function buildProfiles(dataset) {
   const cohortDimensions = cohortGroup('dimensions')
   const cohort = {
     studentCount: count,
+    absentCount: students.filter((s) => s.absent).length,
     earned: round(cohortEarned),
     totalMarks: round(totalMarks),
     attemptedMarks: round(cohortAttempted),

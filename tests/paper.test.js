@@ -245,3 +245,16 @@ describe('analyzePaper: top and bottom quartile profiles', () => {
     assert.equal(big.quartiles.groupSize, 2)
   })
 })
+
+describe('attempt rate with absent students', () => {
+  it('is out of the students who were present, while solve rate still counts everyone', async () => {
+    const dataset = await loadDataset(undefined, undefined, 'student_id,student_name,attendance\nS1,Alice,\nS2,Bob,\nS3,Cara,absent\n')
+    const { analyzePaper } = await import('../src/lib/paper.js')
+    const { buildProfiles } = await import('../src/lib/profiles.js')
+    const paper = analyzePaper(dataset, buildProfiles(dataset))
+    const q2 = paper.questions.rows.find((r) => r.id === 'Q2')
+    assert.equal(q2.attemptRatePct, 100)
+    assert.equal(q2.studentCount, 3)
+    assert.ok(closeTo(q2.solveRatePct, 33.33), 'S3 is still counted in the cohort, with zero')
+  })
+})

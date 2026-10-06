@@ -44,5 +44,6 @@ One row per student, one column per question.
 | `student_id` | Unique. Must include every student in the scores file. |
 | `student_name` | Required. |
 | `section` | Optional. The student's section or batch, used to compare sections. Blank means no section. |
+| `attendance` | Optional. `present` or `absent`; blank means present. Absent students stay in the cohort with the scores given (normally blank, which counts as zero), are counted as absent, and are left out of attempt rates and skipping statistics. |
 
 Without this file, student ids are used as names and there are no sections. Extra columns are ignored.

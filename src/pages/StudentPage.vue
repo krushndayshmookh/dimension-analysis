@@ -40,6 +40,13 @@
                   <VerdictTag :verdict="dimensionLevel(student.weakestDimension)" />
                 </span>
               </Highlight>
+              <Highlight v-if="student.absent" label="Attendance"><VerdictTag :verdict="{ label: 'Absent', tone: 'warn' }" /></Highlight>
+              <Highlight v-else label="Not attempted">
+                <span v-if="notAttempted.length" class="flex flex-wrap gap-1.5">
+                  <Badge v-for="id in notAttempted" :key="id" variant="outline">{{ id }}</Badge>
+                </span>
+                <span v-else class="text-muted-foreground">Everything attempted</span>
+              </Highlight>
               <Highlight label="Needs attention">
                 <span class="flex flex-wrap items-center gap-1.5">
                   <VerdictTag v-for="r in attention" :key="r.id" :verdict="r" />
@@ -79,6 +86,7 @@
 import { computed, defineComponent, h, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { HistoryIcon } from '@lucide/vue'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import DataTable from '@/components/display/DataTable.vue'
@@ -95,7 +103,7 @@ import { useSessionStore } from '@/stores/session.js'
 import { useSettingsStore } from '@/stores/settings.js'
 
 const sessionStore = useSessionStore()
-const { profiles, selectedStudentId } = storeToRefs(sessionStore)
+const { exam, profiles, selectedStudentId } = storeToRefs(sessionStore)
 const { openHistory } = sessionStore
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
@@ -115,10 +123,15 @@ const items = computed(() =>
     id: s.id,
     name: s.name,
     section: s.section,
-    detail: pct(s.masteryPct),
+    detail: s.absent ? 'Absent' : pct(s.masteryPct),
     tone: V.masteryVerdict(s.masteryPct, settings.value)?.tone ?? null,
   }))
 )
+
+const notAttempted = computed(() => {
+  const raw = exam.value.dataset.students.find((s) => s.id === selectedStudentId.value)
+  return raw ? exam.value.dataset.questions.filter((q) => !(q.id in raw.scores)).map((q) => q.id) : []
+})
 
 const metricKey = computed(() => (metric.value === 'accuracy' ? 'accuracyPct' : 'masteryPct'))
 const radarOf = (breakdowns) => Object.fromEntries(profiles.value.dimensions.map((d) => [d, breakdowns[d][metricKey.value]]))

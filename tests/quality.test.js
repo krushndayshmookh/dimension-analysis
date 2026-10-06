@@ -44,3 +44,11 @@ describe('checkDataQuality', () => {
     assert.ok(warning.includes('and 4 more'))
   })
 })
+
+describe('checkDataQuality and absent students', () => {
+  it('does not report absent students as having attempted nothing', () => {
+    const data = dataset({ S1: { Q1: 2 }, S2: {} }, ['Q1'])
+    data.students[1].absent = true
+    assert.deepEqual(checkDataQuality(data, S), [])
+  })
+})

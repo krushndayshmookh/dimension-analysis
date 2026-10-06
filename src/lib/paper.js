@@ -14,6 +14,7 @@ const distribution = (items, totalMarks) => ({
 function analyzeQuestions(dataset, itemStats) {
   const { questions, students } = dataset
   const n = students.length
+  const present = students.filter((s) => !s.absent).length
   const itemsById = new Map(itemStats.items.map((i) => [i.id, i]))
 
   const rows = questions.map((q) => {
@@ -21,7 +22,7 @@ function analyzeQuestions(dataset, itemStats) {
     let solvedCount = 0
     let totalEarned = 0
     for (const s of students) {
-      if (!(q.id in s.scores)) continue
+      if (s.absent || !(q.id in s.scores)) continue
       attemptedCount++
       totalEarned += s.scores[q.id]
       if (s.scores[q.id] >= q.marks - EPSILON) solvedCount++
@@ -38,7 +39,7 @@ function analyzeQuestions(dataset, itemStats) {
       marks: q.marks,
       studentCount: n,
       attemptedCount,
-      attemptRatePct: n ? round((attemptedCount / n) * 100) : null,
+      attemptRatePct: present ? round((attemptedCount / present) * 100) : null,
       solvedCount,
       solveRatePct: solveRatePct == null ? null : round(solveRatePct),
       attemptedSolveRatePct: attemptedCount ? round((solvedCount / attemptedCount) * 100) : null,

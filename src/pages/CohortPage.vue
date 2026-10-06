@@ -3,7 +3,7 @@
     <PageHeader title="Cohort overview" :description="`${exam.courseName} · ${exam.examTitle} · ${exam.examDate}`" />
 
     <StatGrid>
-      <StatCard label="Students" :value="profiles.cohort.studentCount" />
+      <StatCard label="Students" :value="profiles.cohort.studentCount" :description="profiles.cohort.absentCount ? `${profiles.cohort.absentCount} absent (scored 0)` : undefined" />
       <StatCard label="Average score" :value="`${num(profiles.cohort.earned)} / ${num(profiles.totalMarks)}`" />
       <StatCard label="Mastery" :value="pct(profiles.cohort.masteryPct)">
         <template #description>
