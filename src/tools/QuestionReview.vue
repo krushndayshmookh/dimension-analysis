@@ -48,13 +48,13 @@
       title="Attempt behaviour"
       description="A question is unattempted when its score cell is blank. “Skippers vs attempters” compares the overall mastery of students who left the question blank with those who attempted it."
     >
-      <LineChart
+      <BarChart
         :labels="rows.map((r) => r.id)"
         :series="[
           { label: 'Attempted by (%)', data: attempts.questions.map((q) => q.attemptRatePct), color: '#2563eb' },
           { label: 'Solved by (%)', data: rows.map((r) => r.solveRatePct), color: '#16a34a' },
         ]"
-        y-label="% of students, in paper order"
+        y-label="% of students, by question id"
       />
       <DataTable :columns="attemptColumns" :rows="attempts.questions" row-key="id" export-name="question-attempts" />
       <h4 class="text-sm font-semibold">Students who left questions blank</h4>
@@ -97,7 +97,7 @@ import StatCard from '@/components/common/StatCard.vue'
 import StatGrid from '@/components/common/StatGrid.vue'
 import DataTable from '@/components/display/DataTable.vue'
 import VerdictTag from '@/components/display/VerdictTag.vue'
-import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
 import ScatterChart from '@/components/charts/ScatterChart.vue'
 import { analyzeAttempts, buildReviewQueue } from '@/lib/review.js'
 import { findReuse, reuseSummary } from '@/lib/reuse.js'
