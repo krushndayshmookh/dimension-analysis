@@ -31,6 +31,10 @@ function render() {
         data: s.data,
         backgroundColor: s.color,
         borderRadius: 2,
+        // Thin bars: each group fills only part of its slot and a bar never exceeds this width.
+        categoryPercentage: 0.6,
+        barPercentage: 0.8,
+        maxBarThickness: 14,
       })),
     },
     options: {
