@@ -149,3 +149,14 @@ describe('oneWayAnova', () => {
     assert.equal(oneWayAnova([[1, 2], []]), null, 'an empty group')
   })
 })
+
+describe('highestFirst', () => {
+  it('returns the bins in reverse order for display, without changing the original', async () => {
+    const { highestFirst, decileBins } = await import('../src/lib/stats.js')
+    const bins = decileBins([{ id: 'a', pct: 5 }, { id: 'b', pct: 95 }])
+    const flipped = highestFirst(bins)
+    assert.deepEqual(flipped.map((b) => b.label), ['90-100%', '80-90%', '70-80%', '60-70%', '50-60%', '40-50%', '30-40%', '20-30%', '10-20%', '0-10%'])
+    assert.equal(flipped[0].count, 1)
+    assert.equal(bins[0].label, '0-10%')
+  })
+})

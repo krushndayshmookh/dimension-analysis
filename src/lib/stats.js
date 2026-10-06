@@ -161,3 +161,6 @@ export function oneWayAnova(groups) {
   const p = f <= 0 ? 1 : regularizedBeta(df2 / (df2 + df1 * f), df2 / 2, df1 / 2)
   return { f: round(f, 3), p: round(p, 4), df1, df2 }
 }
+
+// Bins are computed lowest first; tables show the highest range at the top.
+export const highestFirst = (bins) => [...bins].reverse()

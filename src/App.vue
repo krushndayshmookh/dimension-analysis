@@ -554,7 +554,7 @@
             <h3>Score distribution</h3>
             <BinModeToggle v-model="simBinMode" name="sim-bins" />
           </div>
-          <DataTable :columns="comparisonBinColumns" :rows="simBinMode === 'percentage' ? comparison.decileBins : comparison.markBins" row-key="label" :searchable="false" export-name="simulation-distribution">
+          <DataTable :columns="comparisonBinColumns" :rows="highestFirst(simBinMode === 'percentage' ? comparison.decileBins : comparison.markBins)" row-key="label" :searchable="false" export-name="simulation-distribution">
             <template #cell-deltaPp="{ value }">{{ signed(value, ' pp') }}</template>
             <template #cell-bars="{ row }">
               <PairBar :first="row.expectedPct" :second="row.actualPct" first-label="Expected" second-label="Actual" />
@@ -881,6 +881,7 @@ import StudentSidebar from './components/StudentSidebar.vue'
 import { TOOLS } from './tools/index.js'
 import { questionSummaries } from './lib/reuse.js'
 import { checkDataQuality } from './lib/quality.js'
+import { highestFirst } from './lib/stats.js'
 import { downloadText } from './lib/download.js'
 import LineChart from './components/LineChart.vue'
 import { parseCsv } from './lib/csv.js'
@@ -1284,7 +1285,7 @@ const binColumns = (mode) => [
 
 // dist has decileBins and markBins; valueOf renders the per-student number shown in the chip.
 function binRows(dist, mode, valueOf) {
-  const bins = mode === 'percentage' ? dist.decileBins : dist.markBins
+  const bins = highestFirst(mode === 'percentage' ? dist.decileBins : dist.markBins)
   return bins.map((b) => ({
     label: b.label,
     count: b.count,
