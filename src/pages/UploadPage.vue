@@ -2,14 +2,23 @@
   <div class="flex flex-col gap-6">
     <PageHeader help="page.upload" title="Upload exam data">
       <template #description>
-        Files must follow the format in <code class="rounded bg-muted px-1">templates/README.md</code>. Files that do not are
-        rejected with the rows that need fixing. Examples to upload are in <code class="rounded bg-muted px-1">samples/</code>.
+        An exam is uploaded for a cohort, whose students are added once on the Cohorts page. Files must follow the format in
+        <code class="rounded bg-muted px-1">templates/README.md</code>; files that do not are rejected with the rows that need fixing.
+        Examples to upload are in <code class="rounded bg-muted px-1">samples/</code>.
       </template>
     </PageHeader>
 
-    <form class="flex flex-col gap-4" @submit.prevent="analyze">
+    <EmptyState v-if="!cohorts.length">
+      There is no cohort yet. <Button variant="link" class="h-auto p-0" @click="tab = 'cohorts'">Create one on the Cohorts page</Button>
+      by adding its students, then come back to upload an exam.
+    </EmptyState>
+
+    <form v-else class="flex flex-col gap-4" @submit.prevent="analyze">
       <SectionCard title="Exam" help="upload.exam">
-        <div class="grid gap-4 md:grid-cols-3">
+        <div class="grid gap-4 md:grid-cols-4">
+          <Field label="Cohort" html-for="cohortId">
+            <SelectField id="cohortId" v-model="cohortId" :options="cohortOptions" placeholder="Choose a cohort" aria-label="Cohort" />
+          </Field>
           <Field label="Course name" html-for="courseName">
             <Input id="courseName" v-model="meta.courseName" required />
           </Field>
@@ -30,11 +39,11 @@
           </Field>
           <Field label="Student scores *" html-for="scoresFile">
             <FileInput id="scoresFile" aria-label="Student scores file" @change="(f) => pick('scores', f)" />
-            <template #hint>student_id, then one column per question_id: marks, or for mcq questions the option chosen. Blank = unattempted.</template>
+            <template #hint>student_id, then one column per question_id: marks, or for mcq questions the option chosen. Blank = unattempted. A cohort student with no row is absent.</template>
           </Field>
-          <Field label="Student details (optional)" html-for="studentsFile">
-            <FileInput id="studentsFile" aria-label="Student details file" @change="(f) => pick('students', f)" />
-            <template #hint>student_id, student_name[, section][, attendance]</template>
+          <Field label="Attendance (optional)" html-for="attendanceFile">
+            <FileInput id="attendanceFile" aria-label="Attendance file" @change="(f) => pick('attendance', f)" />
+            <template #hint>student_id, attendance (present or absent). Only needed to mark absent students who have a scores row.</template>
           </Field>
         </div>
         <div>
@@ -59,14 +68,16 @@
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import EmptyState from '@/components/common/EmptyState.vue'
 import Field from '@/components/common/Field.vue'
 import FileInput from '@/components/common/FileInput.vue'
 import NoticeAlert from '@/components/common/NoticeAlert.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
+import SelectField from '@/components/common/SelectField.vue'
 import { EXAM_LANDING_PAGE } from '@/pages/registry.js'
 import { parseCsv } from '@/lib/csv.js'
 import { readDataset } from '@/lib/input.js'
@@ -78,15 +89,17 @@ import { useSessionStore } from '@/stores/session.js'
 import { useSettingsStore } from '@/stores/settings.js'
 
 const sessionStore = useSessionStore()
-const { tab, exam } = storeToRefs(sessionStore)
-const { openExam, refreshSaved, refreshHistoryStudents } = sessionStore
+const { tab, exam, cohorts } = storeToRefs(sessionStore)
+const { openExam, refreshSaved, refreshCohorts, refreshHistoryStudents } = sessionStore
 const settingsStore = useSettingsStore()
 const { settings } = storeToRefs(settingsStore)
 const noticeStore = useNoticeStore()
 const { notify, dismiss } = noticeStore
 
 const meta = reactive({ courseName: '', examTitle: '', examDate: new Date().toISOString().slice(0, 10) })
-const files = reactive({ config: null, scores: null, students: null })
+const cohortId = ref(undefined)
+const cohortOptions = computed(() => cohorts.value.map((c) => ({ value: c.id, label: `${c.name} (${c.studentCount} students)` })))
+const files = reactive({ config: null, scores: null, attendance: null })
 const issues = reactive({ errors: [], warnings: [] })
 const analyzing = ref(false)
 
@@ -100,16 +113,22 @@ async function analyze() {
   issues.errors = []
   issues.warnings = []
   dismiss()
+  if (!cohortId.value) {
+    issues.errors = ['Choose the cohort this exam is for.']
+    return
+  }
   if (!files.config || !files.scores) {
     issues.errors = ['Select an exam config file and a student scores file.']
     return
   }
   analyzing.value = true
   try {
+    const cohort = await api.getCohort(cohortId.value)
     const result = readDataset({
       config: await parseCsv(files.config),
       scores: await parseCsv(files.scores),
-      students: files.students ? await parseCsv(files.students) : null,
+      cohort: cohort.students,
+      attendance: files.attendance ? await parseCsv(files.attendance) : null,
     })
     issues.warnings = result.warnings
     if (result.errors.length) {
@@ -117,10 +136,11 @@ async function analyze() {
       return
     }
     issues.warnings = [...result.warnings, ...checkDataQuality(result.dataset, settings.value)]
-    openExam({ ...meta, dataset: result.dataset })
+    openExam({ ...meta, cohortId: cohortId.value, dataset: result.dataset })
     try {
       const { id } = await api.saveExam({
         ...meta,
+        cohortId: cohortId.value,
         dataset: result.dataset,
         analysis: exam.value.profiles,
         questionSummaries: questionSummaries(exam.value.paper),
@@ -130,7 +150,7 @@ async function analyze() {
     } catch (err) {
       notify('error', `Analyzed, but not saved: ${err.message}`)
     }
-    await Promise.all([refreshSaved(), refreshHistoryStudents()])
+    await Promise.all([refreshSaved(), refreshCohorts(), refreshHistoryStudents()])
     tab.value = EXAM_LANDING_PAGE
   } catch (err) {
     issues.errors = [err.message ?? String(err)]

@@ -1,4 +1,5 @@
 import CohortPage from './CohortPage.vue'
+import CohortsPage from './CohortsPage.vue'
 import ComparePage from './ComparePage.vue'
 import DashboardPage from './DashboardPage.vue'
 import HistoryPage from './HistoryPage.vue'
@@ -35,6 +36,7 @@ const COMPONENTS = {
   history: HistoryPage,
   compare: ComparePage,
   dashboard: DashboardPage,
+  cohorts: CohortsPage,
   upload: UploadPage,
   convert: SheetConverter,
   saved: SavedExamsPage,

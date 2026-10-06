@@ -14,14 +14,15 @@ app from the storage server alone.
 
 ## Input files
 
-Strict CSV formats, documented in [templates/README.md](templates/README.md) with header-plus-example files in
+Students are added once to a named cohort, and exams are uploaded for a cohort. Strict CSV formats, documented in [templates/README.md](templates/README.md) with header-plus-example files in
 `templates/` and valid sample uploads in `samples/` (`small` and `large`; the large one has multiple-choice questions).
 
 | file | required | notes |
 | --- | --- | --- |
 | `exam_config.csv` | yes | question type (`assignment` / `assessment`), difficulty, dimensions, topics, marks; optional `expected_solve_rate`, `question_subtype` (`mcq`) with its `correct_option` |
 | `student_scores.csv` | yes | one column per question: marks, or the chosen option for `mcq` questions; blank = unattempted |
-| `students.csv` | no | names; optional `section` |
+| `students.csv` | for a cohort | the cohort's students: id, name, optional `section`; uploaded once on the Cohorts page |
+| `attendance.csv` | no | per exam: `present` / `absent`; a cohort student with no row in the scores file counts as absent |
 
 Files that do not follow the format are rejected with the rows that need fixing.
 
@@ -33,7 +34,7 @@ Files that do not follow the format are rejected with the rows that need fixing.
 - **Scenarios:** Simulation (expected vs actual, with tunable parameters and a 90% range over repeated runs), What-if
   (rescoring).
 - **Over time:** History, Compare exams.
-- **Data:** Dashboard (shown when no exam is open), Upload, Sheet converter, Saved exams.
+- **Data:** Dashboard (shown when no exam is open), Cohorts, Upload exam, Sheet converter, Saved exams.
 - **Settings** (its own top-level tab): every threshold behind a tag, with a description of what it affects, plus backup
   and restore.
 

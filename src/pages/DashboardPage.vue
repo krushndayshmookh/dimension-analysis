@@ -15,14 +15,15 @@
     </SectionCard>
 
     <StatGrid>
+      <StatCard label="Cohorts" :value="cohorts.length" :description="`${cohorts.reduce((n, c) => n + c.studentCount, 0)} students`" />
       <StatCard label="Saved exams" :value="savedExams.length" />
       <StatCard label="Student results" :value="studentResults" description="students counted once for every exam they took" />
-      <StatCard label="Students across exams" :value="historyStudents.length" description="distinct student ids" />
       <StatCard label="Most recent exam" :value="latest?.examTitle ?? '—'" :description="latest ? `${latest.courseName} · ${latest.examDate}` : 'none saved yet'" />
     </StatGrid>
 
     <SectionCard title="Start">
       <div class="flex flex-wrap gap-2">
+        <Button variant="outline" @click="tab = 'cohorts'"><UsersIcon /> Cohorts</Button>
         <Button @click="tab = 'upload'"><UploadIcon /> Upload an exam</Button>
         <Button variant="outline" @click="tab = 'convert'"><FileSpreadsheetIcon /> Convert analytics sheets</Button>
         <Button variant="outline" @click="tab = 'settings'"><SettingsIcon /> Settings</Button>
@@ -42,7 +43,7 @@
 <script setup>
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
-import { FileSpreadsheetIcon, SettingsIcon, UploadIcon, XIcon } from '@lucide/vue'
+import { FileSpreadsheetIcon, SettingsIcon, UploadIcon, UsersIcon, XIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import EmptyState from '@/components/common/EmptyState.vue'
 import PageHeader from '@/components/common/PageHeader.vue'
@@ -55,15 +56,16 @@ import { EXAM_LANDING_PAGE } from '@/pages/registry.js'
 import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
-const { tab, exam, savedExams, historyStudents } = storeToRefs(sessionStore)
-const { closeExam, loadSaved } = sessionStore
+const { tab, exam, savedExams, cohorts } = storeToRefs(sessionStore)
+const { closeExam, loadSaved, cohortName } = sessionStore
 
 const newestFirst = computed(() => [...savedExams.value].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))))
 const latest = computed(() => newestFirst.value[0] ?? null)
-const recent = computed(() => newestFirst.value.slice(0, 8))
+const recent = computed(() => newestFirst.value.slice(0, 8).map((e) => ({ ...e, cohort: cohortName(e.cohortId) })))
 const studentResults = computed(() => savedExams.value.reduce((sum, e) => sum + (e.studentCount ?? 0), 0))
 
 const columns = [
+  { key: 'cohort', label: 'Cohort', type: 'text' },
   { key: 'courseName', label: 'Course', type: 'text' },
   { key: 'examTitle', label: 'Exam', type: 'text' },
   { key: 'examDate', label: 'Date', type: 'text' },

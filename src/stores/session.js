@@ -16,6 +16,8 @@ export const useSessionStore = defineStore('session', () => {
   // Changes whenever an exam is opened (not when its id is filled in after saving).
   const examKey = ref(0)
   const savedExams = ref([])
+  const cohorts = ref([])
+  const selectedCohortId = ref('')
   const selectedStudentId = ref('')
   const historyStudents = ref([])
   const historyStudentId = ref('')
@@ -24,9 +26,9 @@ export const useSessionStore = defineStore('session', () => {
   const profiles = computed(() => exam.value?.profiles ?? null)
   const paper = computed(() => exam.value?.paper ?? null)
 
-  function openExam({ id = null, courseName, examTitle, examDate, dataset: data }) {
+  function openExam({ id = null, cohortId = null, courseName, examTitle, examDate, dataset: data }) {
     const { profiles: p, paper: pa } = analyzeDataset(data)
-    exam.value = { id, courseName, examTitle, examDate, dataset: data, profiles: p, paper: pa }
+    exam.value = { id, cohortId, courseName, examTitle, examDate, dataset: data, profiles: p, paper: pa }
     examKey.value++
     selectedStudentId.value = p.students[0]?.id ?? ''
   }
@@ -46,6 +48,16 @@ export const useSessionStore = defineStore('session', () => {
       notices.fail(err)
     }
   }
+
+  async function refreshCohorts() {
+    try {
+      cohorts.value = await api.listCohorts()
+    } catch (err) {
+      notices.fail(err)
+    }
+  }
+
+  const cohortName = (id) => cohorts.value.find((c) => c.id === id)?.name ?? ''
 
   async function refreshHistoryStudents() {
     try {
@@ -98,6 +110,10 @@ export const useSessionStore = defineStore('session', () => {
     profiles,
     paper,
     savedExams,
+    cohorts,
+    selectedCohortId,
+    cohortName,
+    refreshCohorts,
     selectedStudentId,
     historyStudents,
     historyStudentId,

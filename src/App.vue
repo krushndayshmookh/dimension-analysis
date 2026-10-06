@@ -31,7 +31,7 @@ import { useSettingsStore } from '@/stores/settings.js'
 
 const sessionStore = useSessionStore()
 const { tab, exam, examKey } = storeToRefs(sessionStore)
-const { openStudent, refreshSaved, refreshHistoryStudents } = sessionStore
+const { openStudent, refreshSaved, refreshHistoryStudents, refreshCohorts } = sessionStore
 const settingsStore = useSettingsStore()
 const noticeStore = useNoticeStore()
 const { notice } = storeToRefs(noticeStore)
@@ -42,6 +42,7 @@ const page = computed(() => PAGES.find((p) => p.id === tab.value))
 onMounted(() => {
   settingsStore.load()
   refreshSaved()
+  refreshCohorts()
   refreshHistoryStudents()
 })
 </script>

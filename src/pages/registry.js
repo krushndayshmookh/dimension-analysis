@@ -32,7 +32,8 @@ export const PAGE_META = [
   { id: 'compare', label: 'Compare exams', group: 'time', needsExam: false },
 
   { id: 'dashboard', label: 'Dashboard', group: 'data', needsExam: false },
-  { id: 'upload', label: 'Upload', group: 'data', needsExam: false },
+  { id: 'cohorts', label: 'Cohorts', group: 'data', needsExam: false },
+  { id: 'upload', label: 'Upload exam', group: 'data', needsExam: false },
   { id: 'convert', label: 'Sheet converter', group: 'data', needsExam: false },
   { id: 'saved', label: 'Saved exams', group: 'data', needsExam: false },
   { id: 'settings', label: 'Settings', group: 'settings', needsExam: false },

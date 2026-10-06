@@ -209,36 +209,75 @@ export const PAGES = {
     about: 'The page shown when no exam is open. It shows what is saved and where to go next.',
     parts: [{ heading: 'On the page', entries: [
       entry('Open exam', 'Shown while an exam is open: go to its cohort page, or close it to come back here. Closing does not delete anything; the exam stays in Saved exams.'),
-      entry('Cards', 'The number of saved exams, the number of student results (a student in three exams counts three times), the number of distinct student ids, and the most recently saved exam.'),
-      entry('Start', 'Upload a new exam, convert the analytics team’s sheets, or open Settings.'),
+      entry('Cards', 'The number of cohorts and their students, the number of saved exams, the number of student results (a student in three exams counts three times), and the most recently saved exam.'),
+      entry('Start', 'Manage cohorts, upload a new exam, convert the analytics team’s sheets, or open Settings.'),
       entry('Recent exams', 'The latest saved exams with their size and mean mastery. Open makes one the current exam; all of them and deleting are under Saved exams.'),
+    ] }],
+  },
+
+  'page.cohorts': {
+    title: 'Cohorts',
+    about: 'A cohort is a named group of students. Add the students once, then upload any number of exams and courses for it.',
+    parts: [{ heading: 'How cohorts work', entries: [
+      entry('One list of students', 'Each student is stored once, by student_id, with a name and an optional section. Exams use this list, so the file with students is not uploaded again with every exam.'),
+      entry('Adding to a cohort', 'Upload a students file to a new or an existing cohort. Students are matched by student_id: new ids are added and changed names or sections are updated. A student is never duplicated, and nobody is removed.'),
+      entry('One cohort per student', 'A student id belongs to one cohort only. An id already in another cohort is rejected, naming that cohort.'),
+      entry('Deleting', 'A cohort that exams use cannot be deleted; delete those exams first.'),
+    ] }],
+  },
+  'cohorts.add': {
+    title: 'Add students',
+    about: 'Create a cohort or add students to one.',
+    parts: [{ heading: 'Fields', entries: [
+      entry('Cohort', 'Choose New cohort… and give it a name, or choose an existing cohort to add to.'),
+      entry('Students file', 'A CSV with student_id and student_name, and optionally section. Rows with an empty id or name, and repeated ids, are rejected.'),
+      entry('Result', 'After adding you see how many students were added, updated and unchanged.'),
+    ] }],
+  },
+  'cohorts.list': {
+    title: 'Cohorts table',
+    about: 'Every cohort.',
+    parts: [{ heading: 'Table columns and buttons', entries: [
+      entry('Cohort / Students / Exams', 'The name, the number of students and the number of exams uploaded for it.'),
+      entry('Last changed', 'The date its students were last added or updated.'),
+      entry('Students', 'Shows the students of the cohort below.'),
+      entry('Delete', 'Removes the cohort after confirmation, unless exams use it.'),
+    ] }],
+  },
+  'cohorts.students': {
+    title: 'Students of a cohort',
+    about: 'The cohort’s student list as stored.',
+    parts: [{ heading: 'Table columns', entries: [
+      entry('ID / Name / Section', 'The student id the exams are matched on, the name, and the optional section used by the Sections page.'),
     ] }],
   },
 
   'page.upload': {
     title: 'Upload exam data',
-    about: 'Imports an exam from three CSV files, checks them and saves the analysis. A file that does not follow the format is rejected with the rows to fix.',
+    about: 'Imports an exam for a cohort from its exam config and scores files, checks them and saves the analysis. A file that does not follow the format is rejected with the rows to fix. The same exam can be uploaded more than once; each upload is a separate exam.',
     parts: [{ heading: 'Steps', entries: [
-      entry('Convert first, if needed', 'The Sheet converter under Data turns the analytics team’s sheets into these three files.'),
-      entry('Exam details', 'Course name, exam title and date identify the exam in saved exams, history and comparisons.'),
+      entry('Cohort first', 'Choose the cohort the exam is for. Create it on the Cohorts page by adding its students once.'),
+      entry('Convert first, if needed', 'The Sheet converter under Data turns the analytics team’s sheets into the students, exam config, scores and attendance files.'),
+      entry('Exam details', 'The cohort, course name, exam title and date identify the exam in saved exams, history and comparisons.'),
       entry('Format', 'The columns of each file are described in templates/README.md; samples are in the samples folder.'),
       entry('Notes', 'After a successful upload, notes mention data that is valid but worth a second look, such as students who attempted nothing. They never block an upload (Settings → Upload checks).'),
     ] }],
   },
   'upload.exam': {
     title: 'Exam details',
-    about: 'Who and when the exam is for.',
+    about: 'Who the exam is for, and what and when it was.',
     parts: [{ heading: 'Fields', entries: [
+      entry('Cohort', 'The students taking the exam. Every student in the scores file must be in this cohort.'),
       entry('Course name, Exam title, Exam date', 'All three are required. They label the saved exam and the exam’s place in each student’s history, and Compare exams uses them to list the exam.'),
     ] }],
   },
   'upload.files': {
     title: 'CSV files',
-    about: 'The three files that describe an exam.',
+    about: 'The files that describe an exam. The students come from the cohort.',
     parts: [{ heading: 'Files', entries: [
       entry('Exam config (required)', 'One row per question: id, type (assignment or assessment), difficulty, dimensions, marks and optionally topics, expected solve rate, subtype and correct option.'),
-      entry('Student scores (required)', 'One row per student with a column per question: marks, or the option chosen for multiple-choice questions. A blank cell means unattempted, and 0 means attempted with no marks.'),
-      entry('Student details (optional)', 'student_id and student_name, with an optional section and attendance (present or absent). Absent students count in the cohort with zero and are left out of attempt statistics.'),
+      entry('Student scores (required)', 'One row per student with a column per question: marks, or the option chosen for multiple-choice questions. A blank cell means unattempted, and 0 means attempted with no marks. A cohort student with no row is counted as absent.'),
+      entry('Attendance (optional)', 'student_id and attendance (present or absent) for this exam. Use it to mark absent students who do have a scores row; their scores are ignored. Absent students count in the cohort with zero and are left out of attempt statistics.'),
     ] }],
   },
 
@@ -299,7 +338,7 @@ export const PAGES = {
     title: 'Saved exams',
     about: 'Every exam stored on this computer. Saved exams feed the history, the comparison and the check for reused questions.',
     parts: [{ heading: 'Table columns and buttons', entries: [
-      entry('Course, Exam, Date', 'As entered on upload.'),
+      entry('Cohort / Course, Exam, Date', 'The cohort the exam was uploaded for, and the course, title and date entered on upload.'),
       entry('Questions, Students', 'The size of the exam.'),
       entry('Mean mastery', 'The cohort’s average mastery.'),
       entry('Saved at', 'When the exam was saved.'),

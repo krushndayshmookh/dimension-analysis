@@ -10,7 +10,7 @@ describe('page registry', () => {
     assert.deepEqual(labels('paper'), ['Paper analysis', 'Question review', 'Distractors'])
     assert.deepEqual(labels('scenarios'), ['Simulation', 'What-if'])
     assert.deepEqual(labels('time'), ['History', 'Compare exams'])
-    assert.deepEqual(labels('data'), ['Dashboard', 'Upload', 'Sheet converter', 'Saved exams'])
+    assert.deepEqual(labels('data'), ['Dashboard', 'Cohorts', 'Upload exam', 'Sheet converter', 'Saved exams'])
     assert.deepEqual(labels('settings'), ['Settings'])
   })
 
@@ -24,7 +24,7 @@ describe('page registry', () => {
 
   it('needs an open exam for the analysis pages only', () => {
     const free = PAGE_META.filter((p) => !p.needsExam).map((p) => p.id).sort()
-    assert.deepEqual(free, ['compare', 'convert', 'dashboard', 'history', 'saved', 'settings', 'upload'])
+    assert.deepEqual(free, ['cohorts', 'compare', 'convert', 'dashboard', 'history', 'saved', 'settings', 'upload'])
   })
 
   it('starts on the dashboard and lands on the cohort when an exam is opened', () => {

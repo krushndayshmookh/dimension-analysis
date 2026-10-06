@@ -334,7 +334,7 @@ export const TOOLS = {
 
   'page.converter': {
     title: 'Sheet converter',
-    about: 'Turns the analytics team’s sheets into the three files the Upload page takes. It only formats and downloads; nothing is imported here.',
+    about: 'Turns the analytics team’s sheets into the files the Cohorts and Upload pages take. It only formats and downloads; nothing is imported here.',
     parts: [{ heading: 'How it works', entries: [
       entry('Sheets', 'Drop any of the question listing, coding scores, quiz scores and enrolled students. Each is recognised by its columns.'),
       entry('One exam per sheet or combined', 'Each score sheet becomes its own exam; with both loaded you can combine them into one.'),
@@ -349,7 +349,7 @@ export const TOOLS = {
       entry('Question listing', 'Supplies difficulty, dimensions, topics and expected solve rate. Rows are matched by question id; the listing may hold several sets, and the one matching the score sheets is used.'),
       entry('Coding scores', 'One row per student per question. A score is the share of test cases passed times the question’s marks; blank means unattempted.'),
       entry('Quiz scores', 'One row per student per question. Correct earns the full marks, a wrong answer (including negative marking) scores 0, and unattempted stays blank.'),
-      entry('Enrolled students', 'Student names. Enrolled students who appear in no score sheet can be added as absent.'),
+      entry('Enrolled students', 'Student names, which become the cohort. Enrolled students who appear in no score sheet stay in the cohort and count as absent.'),
     ] }],
   },
   'converter.marks': {
@@ -358,7 +358,6 @@ export const TOOLS = {
     parts: [{ heading: 'Fields', entries: [
       entry('Total marks of coding / quiz questions', 'For example 60 coding marks over 4 questions gives 15 each; 40 quiz marks over 20 gives 2 each. Marks can be edited per question afterwards.'),
       entry('Combine coding and quiz', 'Produces one exam with both types.'),
-      entry('Add enrolled students as absent', 'Adds students from the enrolled list who are in no score sheet, marked absent.'),
     ] }],
   },
   'converter.preview': {
@@ -368,8 +367,8 @@ export const TOOLS = {
       entry('Notes from the conversion', 'Things the converter could not decide on its own, such as questions missing from the listing.'),
       entry('Questions', 'Edit difficulty, dimensions, topics (optional), marks and expected rate, or remove a question. Rows that fail the checks are shaded red.'),
       entry('Listing rows not in the exam', 'Rows of the listing that are not in the score sheets, with the reason; Add includes one as a question with blank scores.'),
-      entry('Students', 'Edit names and sections, mark a student absent (their scores are then left blank) or remove them.'),
-      entry('Downloads', 'exam_config.csv, student_scores.csv and students.csv, individually or all three.'),
+      entry('Students', 'Edit names and sections, mark a student absent (their scores are then left blank) or remove them. The students file becomes the cohort; the attendance file belongs to this exam.'),
+      entry('Downloads', 'students.csv (the cohort), exam_config.csv, student_scores.csv and attendance.csv, individually or all four.'),
     ] }],
   },
 }

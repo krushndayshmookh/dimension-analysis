@@ -5,7 +5,7 @@
     </PageHeader>
 
     <SectionCard v-if="savedExams.length" help="saved.list">
-      <DataTable :columns="columns" :rows="savedExams" row-key="id" :default-sort="{ key: 'createdAt', dir: 'desc' }">
+      <DataTable :columns="columns" :rows="rows" row-key="id" :default-sort="{ key: 'createdAt', dir: 'desc' }">
         <template #cell-actions="{ row }">
           <span class="flex gap-1.5">
             <Button size="sm" @click="loadSaved(row)">Open</Button>
@@ -19,6 +19,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RefreshCwIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
@@ -32,7 +33,7 @@ import { useSessionStore } from '@/stores/session.js'
 
 const sessionStore = useSessionStore()
 const { savedExams } = storeToRefs(sessionStore)
-const { refreshSaved, loadSaved, removeSaved } = sessionStore
+const { refreshSaved, loadSaved, removeSaved, cohortName } = sessionStore
 const { confirm } = useConfirm()
 
 async function remove(entry) {
@@ -45,7 +46,9 @@ async function remove(entry) {
   if (ok) await removeSaved(entry)
 }
 
+const rows = computed(() => savedExams.value.map((e) => ({ ...e, cohort: cohortName(e.cohortId) })))
 const columns = [
+  { key: 'cohort', label: 'Cohort', type: 'text' },
   { key: 'courseName', label: 'Course', type: 'text' },
   { key: 'examTitle', label: 'Exam', type: 'text' },
   { key: 'examDate', label: 'Date', type: 'text' },

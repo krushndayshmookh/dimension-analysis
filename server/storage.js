@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { randomBytes } from 'crypto'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -56,6 +57,9 @@ export function getExam(id, dataDir = DEFAULT_DATA_DIR) {
   return fs.existsSync(file) ? readJson(file) : null
 }
 
+// A time stamp and a few random characters, so ids never collide.
+const stamp = () => `${Date.now()}-${randomBytes(3).toString('hex')}`
+
 const slug = (text, fallback) =>
   String(text || fallback).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || fallback
 
@@ -104,7 +108,7 @@ export function saveExam(payload, dataDir = DEFAULT_DATA_DIR) {
   const courseName = payload.courseName || 'Untitled course'
   const examTitle = payload.examTitle || 'Untitled exam'
   const exam = {
-    id: payload.id || `${slug(courseName, 'course')}-${slug(examTitle, 'exam')}-${Date.now()}`,
+    id: payload.id || `${slug(courseName, 'course')}-${slug(examTitle, 'exam')}-${stamp()}`,
     cohortId: payload.cohortId,
     courseName,
     examTitle,
@@ -309,7 +313,7 @@ export function createCohort(payload, dataDir = DEFAULT_DATA_DIR) {
   checkOwnership(incoming, cohorts, null)
   const now = new Date().toISOString()
   const { students, summary } = merge([], incoming)
-  const cohort = { id: `${slug(name, 'cohort')}-${Date.now()}`, name, students, createdAt: now, updatedAt: now }
+  const cohort = { id: `${slug(name, 'cohort')}-${stamp()}`, name, students, createdAt: now, updatedAt: now }
   writeJson(fileFor(paths(dataDir).cohortsDir, cohort.id), cohort)
   return { success: true, id: cohort.id, summary }
 }
