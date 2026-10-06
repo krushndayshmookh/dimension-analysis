@@ -45,5 +45,6 @@ function render() {
 
 onMounted(render)
 onBeforeUnmount(() => chart?.destroy())
-watch(() => [props.labels, props.series], render, { deep: true })
+// Redraw only when the plotted values change, not when a parent re-renders with equal arrays.
+watch(() => JSON.stringify([props.labels, props.series, props.yLabel, props.yMin, props.yMax]), render)
 </script>
