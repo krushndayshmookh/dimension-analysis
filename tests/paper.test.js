@@ -2,7 +2,7 @@ import { describe, it, before } from 'node:test'
 import assert from 'node:assert/strict'
 import { resolveExpectedSolveRate } from '../src/lib/expected.js'
 import { DEFAULT_EXPECTED_SOLVE_RATES } from '../src/lib/constants.js'
-import { loadAnalysis, closeTo } from './fixtures.js'
+import { loadAnalysis, loadDataset, closeTo } from './fixtures.js'
 
 describe('resolveExpectedSolveRate', () => {
   it('uses the CSV rate when present', () => {
@@ -183,5 +183,65 @@ describe('analyzePaper', () => {
   it('contains no generated narrative text', () => {
     assert.ok(!('insights' in paper))
     assert.ok(!('insights' in paper.summary))
+  })
+})
+
+describe('analyzePaper: item analysis and reliability', () => {
+  let paper
+  before(async () => {
+    ;({ paper } = await loadAnalysis())
+  })
+
+  it('adds attempt rate and item statistics to each question row', () => {
+    const q2 = paper.questions.rows.find((r) => r.id === 'Q2')
+    assert.ok(closeTo(q2.attemptRatePct, 66.67))
+    for (const key of ['discriminationIndex', 'itemRestCorrelation', 'alphaIfRemoved']) assert.ok(key in q2, key)
+    assert.equal(q2.discriminationIndex, 1)
+  })
+
+  it('reports exam reliability', () => {
+    assert.ok('alpha' in paper.reliability && 'sem' in paper.reliability)
+    assert.equal(paper.reliability.itemCount, 3)
+  })
+})
+
+describe('analyzePaper: marks share', () => {
+  let paper
+  before(async () => {
+    ;({ paper } = await loadAnalysis())
+  })
+
+  it('reports each dimension’s share of the exam’s marks', () => {
+    const share = Object.fromEntries(paper.dimensions.map((d) => [d.dimension, d.shareOfExamPct]))
+    assert.deepEqual(share, { Recall: 25, Comprehend: 12.5, Solve: 62.5 })
+  })
+})
+
+describe('analyzePaper: top and bottom quartile profiles', () => {
+  let paper
+  before(async () => {
+    ;({ paper } = await loadAnalysis())
+  })
+
+  it('compares the top and bottom quarter of students (at least one each) by dimension', () => {
+    const { quartiles } = paper
+    assert.equal(quartiles.groupSize, 1)
+    const recall = quartiles.dimensions.find((d) => d.dimension === 'Recall')
+    assert.deepEqual([recall.topMeanPct, recall.bottomMeanPct, recall.separationPp], [100, 0, 100])
+    assert.equal(quartiles.difficulties.length, 3)
+  })
+
+  it('sizes the groups at a quarter of the cohort', async () => {
+    const dataset = await loadDataset()
+    const students = Array.from({ length: 8 }, (_, i) => ({
+      id: `X${i}`, name: `X${i}`, scores: { Q1: i % 3, Q2: i % 5, Q3: i },
+    }))
+    const { paper: big } = await (async () => {
+      const { buildProfiles } = await import('../src/lib/profiles.js')
+      const { analyzePaper } = await import('../src/lib/paper.js')
+      const d = { ...dataset, students }
+      return { paper: analyzePaper(d, buildProfiles(d)) }
+    })()
+    assert.equal(big.quartiles.groupSize, 2)
   })
 })

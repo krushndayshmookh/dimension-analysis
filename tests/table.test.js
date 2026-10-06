@@ -128,3 +128,33 @@ describe('applyTableState: sorting', () => {
     assert.deepEqual(ids(applyTableState(rows, columns, {})), ['S1', 'S2', 'S10', 'S3'])
   })
 })
+
+describe('tableToCsv', () => {
+  const cols = [
+    { key: 'id', label: 'ID', type: 'text' },
+    { key: 'name', label: 'Name', type: 'text' },
+    { key: 'score', label: 'Score', type: 'number', format: (v) => `${v}%` },
+    { key: 'dims', label: 'Dimensions', type: 'text' },
+    { key: 'bar', label: '', type: 'number', exportable: false },
+  ]
+
+  it('exports header labels and raw values, one line per row', async () => {
+    const { tableToCsv } = await import('../src/lib/table.js')
+    const csv = tableToCsv(rows, cols)
+    const lines = csv.trim().split('\n')
+    assert.equal(lines[0], 'ID,Name,Score,Dimensions')
+    assert.equal(lines[1], 'S1,Alice,90,Recall; Solve', 'raw number, not the formatted "90%"')
+    assert.equal(lines[3], 'S10,Cara,,')
+  })
+
+  it('quotes values containing commas, quotes or newlines', async () => {
+    const { tableToCsv } = await import('../src/lib/table.js')
+    const csv = tableToCsv([{ id: 'a,b', name: 'say "hi"', score: 1, dims: [] }], cols)
+    assert.equal(csv.trim().split('\n')[1], '"a,b","say ""hi""",1,')
+  })
+
+  it('skips columns marked exportable: false', async () => {
+    const { tableToCsv } = await import('../src/lib/table.js')
+    assert.ok(!tableToCsv(rows, cols).split('\n')[0].includes(',,'))
+  })
+})

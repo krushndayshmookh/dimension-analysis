@@ -10,6 +10,8 @@ import {
   deleteExam,
   listStudents,
   getStudentHistory,
+  getSettings,
+  saveSettings,
 } from '../server/storage.js'
 import { createApp } from '../server/server.js'
 import { loadDataset } from './fixtures.js'
@@ -197,5 +199,38 @@ describe('http api', () => {
 
   it('no longer serves sample data', async () => {
     assert.equal((await fetch(`${base}/api/samples`)).status, 404)
+  })
+})
+
+describe('settings storage', () => {
+  it('returns an empty object when nothing has been saved', () => {
+    assert.deepEqual(getSettings(dataDir), {})
+  })
+
+  it('saves and returns settings exactly as given', () => {
+    saveSettings({ mastery: { weakBelow: 45 }, showVerdicts: false }, dataDir)
+    assert.deepEqual(getSettings(dataDir), { mastery: { weakBelow: 45 }, showVerdicts: false })
+  })
+
+  it('rejects anything that is not an object', () => {
+    for (const bad of [null, 'x', [1], 3]) assert.throws(() => saveSettings(bad, dataDir), /object/)
+  })
+
+  it('is served over http', async () => {
+    const server = createApp({ dataDir }).listen(0)
+    await new Promise((r) => server.once('listening', r))
+    const base = `http://127.0.0.1:${server.address().port}`
+    try {
+      assert.deepEqual(await (await fetch(`${base}/api/settings`)).json(), {})
+      const put = await fetch(`${base}/api/settings`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ trend: { notableChangePp: 7 } }),
+      })
+      assert.equal(put.status, 200)
+      assert.deepEqual(await (await fetch(`${base}/api/settings`)).json(), { trend: { notableChangePp: 7 } })
+      const bad = await fetch(`${base}/api/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: '[1]' })
+      assert.equal(bad.status, 400)
+    } finally {
+      await new Promise((r) => server.close(r))
+    }
   })
 })

@@ -114,3 +114,40 @@ describe('buildProfiles', () => {
     assert.equal(single.students[0].dimensionVsCohort.Recall, 0)
   })
 })
+
+describe('buildProfiles: ranking', () => {
+  let profiles
+  before(async () => {
+    profiles = buildProfiles(await loadDataset())
+  })
+  const s = (id) => profiles.students.find((x) => x.id === id)
+
+  it('ranks by mastery, 1 = highest', () => {
+    assert.deepEqual(['S1', 'S2', 'S3'].map((id) => s(id).rank), [1, 2, 3])
+  })
+
+  it('gives tied students the same (competition) rank', async () => {
+    const dataset = await loadDataset()
+    dataset.students[1].scores = { ...dataset.students[0].scores }
+    const tied = buildProfiles(dataset)
+    assert.deepEqual(tied.students.map((x) => x.rank), [1, 1, 3])
+  })
+
+  it('computes the mid-rank percentile of each student', () => {
+    assert.ok(closeTo(s('S1').percentile, 83.33))
+    assert.ok(closeTo(s('S2').percentile, 50))
+    assert.ok(closeTo(s('S3').percentile, 16.67))
+  })
+
+  it('computes z-scores against the cohort mean and population standard deviation', () => {
+    assert.ok(closeTo(s('S1').zScore, 1.27))
+    assert.ok(closeTo(s('S2').zScore, -0.1))
+    assert.ok(closeTo(s('S3').zScore, -1.17))
+  })
+
+  it('has a null z-score when every student scored the same', async () => {
+    const dataset = await loadDataset()
+    dataset.students = dataset.students.map((st) => ({ ...st, scores: { ...dataset.students[0].scores } }))
+    assert.ok(buildProfiles(dataset).students.every((x) => x.zScore === null))
+  })
+})
