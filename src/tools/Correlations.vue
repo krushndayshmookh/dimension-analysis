@@ -19,8 +19,8 @@
 
       <SectionCard title="Correlation matrix" help="correlations.matrix">
         <template #description>
-          Pearson correlation of mastery percentages, from −1 to +1. Blue is positive, orange is negative; hover a cell for the
-          number of students behind it. Select a cell to see the scatter.
+          Pearson correlation of mastery percentages, from −1 to +1. Yellow through green and teal to navy is positive, stronger
+          the darker; orange to red is negative. Hover a cell for the number of students behind it. Select a cell to see the scatter.
         </template>
         <div class="rounded-lg border">
           <Table>
@@ -47,6 +47,11 @@
               </TableRow>
             </TableBody>
           </Table>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-muted-foreground" aria-label="Colour key">
+          −1
+          <span class="inline-block h-3 w-64 rounded border" :style="{ background: CORRELATION_GRADIENT }"></span>
+          +1
         </div>
         <p class="text-xs text-muted-foreground">
           Marks of a question with several {{ unit }}s are shared between them, so related {{ unit }}s can correlate partly because
@@ -82,6 +87,7 @@ import { storeToRefs } from 'pinia'
 import { useSessionStore } from '@/stores/session.js'
 import { useSettingsStore } from '@/stores/settings.js'
 import { computed, ref, watch } from 'vue'
+import { CORRELATION_GRADIENT, correlationColor } from '@/lib/colors.js'
 import DataTable from '@/components/display/DataTable.vue'
 import VerdictTag from '@/components/display/VerdictTag.vue'
 import ScatterChart from '@/components/charts/ScatterChart.vue'
@@ -105,11 +111,10 @@ const groupOptions = computed(() => [
 const unit = computed(() => ({ dimensions: 'dimension', difficulties: 'tier', topics: 'topic' })[group.value])
 const result = computed(() => correlationMatrix(exam.value.profiles, group.value))
 
-// Diverging shade: blue for positive, orange for negative, strength by |r|.
+// Cell colors from the diverging scale in lib/colors.js, with text that stays readable.
 const shade = (r) => {
-  if (r == null) return {}
-  const alpha = (0.08 + 0.6 * Math.abs(r)).toFixed(3)
-  return { backgroundColor: r >= 0 ? `rgba(37, 99, 235, ${alpha})` : `rgba(234, 88, 12, ${alpha})` }
+  const color = correlationColor(r)
+  return color ? { backgroundColor: color.background, color: color.text } : {}
 }
 
 const pairRows = computed(() => result.value.pairs.map((p) => ({ ...p, key: `${p.a}|${p.b}` })))

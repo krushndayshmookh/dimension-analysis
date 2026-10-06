@@ -156,7 +156,7 @@ export const TOOLS = {
     about: 'The Pearson correlation of mastery for every pair.',
     parts: [{ heading: 'Reading the matrix', entries: [
       entry('Cell', 'The coefficient for the row and column. Hover for the number of students behind it; click to see the scatter below.'),
-      entry('Colour', 'Blue is positive and orange is negative; a stronger colour means a larger absolute value.'),
+      entry('Colour', 'Positive values run from pale yellow through green and teal to navy; negative values run from orange to red. Darker or deeper means a stronger correlation, and the key under the matrix shows the scale from −1 to +1.'),
       entry('Diagonal', 'A group against itself is always 1.'),
       entry('Shared marks', 'A question with several dimensions (or tiers or topics) shares its marks, so related groups can correlate partly because they draw on the same questions.'),
       entry('A dash', 'Not enough students with values for both, or no variation.'),
