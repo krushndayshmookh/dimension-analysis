@@ -91,6 +91,9 @@ export function saveExam(payload, dataDir = DEFAULT_DATA_DIR) {
   if (!analysis || !Array.isArray(analysis.students)) {
     throw new ValidationError('analysis with students is required')
   }
+  if (payload.questionSummaries !== undefined && !Array.isArray(payload.questionSummaries)) {
+    throw new ValidationError('questionSummaries must be a list')
+  }
   ensureDirs(dataDir)
 
   const courseName = payload.courseName || 'Untitled course'
@@ -103,6 +106,7 @@ export function saveExam(payload, dataDir = DEFAULT_DATA_DIR) {
     studentCount: dataset.students.length,
     questionCount: dataset.questions.length,
     avgMasteryPct: analysis.cohort?.masteryPct ?? null,
+    questionSummaries: payload.questionSummaries ?? [],
     createdAt: new Date().toISOString(),
     dataset,
     analysis,

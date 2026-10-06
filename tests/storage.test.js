@@ -66,6 +66,23 @@ describe('storage', () => {
     assert.equal(entry.examTitle, 'Midterm')
   })
 
+  it('keeps the per-question summaries in the exam and in its index entry', () => {
+    const questionSummaries = [{ id: 'Q1', type: 'assessment', solveRatePct: 66.67 }]
+    const { id } = saveExam(payload({ questionSummaries }), dataDir)
+    assert.deepEqual(getExam(id, dataDir).questionSummaries, questionSummaries)
+    assert.deepEqual(getIndex(dataDir)[0].questionSummaries, questionSummaries)
+  })
+
+  it('defaults the question summaries to an empty list', () => {
+    const { id } = saveExam(payload(), dataDir)
+    assert.deepEqual(getIndex(dataDir)[0].questionSummaries, [])
+    assert.deepEqual(getExam(id, dataDir).questionSummaries, [])
+  })
+
+  it('rejects question summaries that are not a list', () => {
+    assert.throws(() => saveExam(payload({ questionSummaries: 'x' }), dataDir), /questionSummaries/)
+  })
+
   it('replaces the index entry when saving an existing id', () => {
     const { id } = saveExam(payload(), dataDir)
     saveExam(payload({ id, examTitle: 'Renamed' }), dataDir)
