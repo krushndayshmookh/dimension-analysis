@@ -584,27 +584,95 @@
       </div>
       <div v-else class="empty-state"><p>No saved exams.</p></div>
     </section>
+
+    <!-- SETTINGS -->
+    <section v-if="tab === 'settings'" class="view-panel">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Settings</h2>
+          <p class="view-desc">
+            The thresholds behind every colored tag, verdict and flag. Each section says what its rules affect. Changes
+            apply once saved, and are stored with your data.
+          </p>
+        </div>
+      </div>
+
+      <div v-for="group in SETTINGS_SCHEMA" :key="group.title" class="card-box settings-group">
+        <div>
+          <h3>{{ group.title }}</h3>
+          <p class="hint">{{ group.description }}</p>
+        </div>
+        <div v-for="f in group.fields" :key="f.path" class="settings-field">
+          <label :for="`set-${f.path}`">{{ f.label }}</label>
+          <div>
+            <input
+              v-if="f.type === 'boolean'"
+              :id="`set-${f.path}`"
+              type="checkbox"
+              :checked="draftValue(f.path)"
+              @change="setDraft(f, $event.target.checked)"
+            />
+            <template v-else>
+              <input
+                :id="`set-${f.path}`"
+                type="number"
+                :min="f.min"
+                :max="f.max"
+                :step="f.step"
+                :value="draftValue(f.path)"
+                :placeholder="f.type === 'target' ? 'none' : ''"
+                @input="setDraft(f, $event.target.value)"
+              />
+              <span v-if="f.unit" class="unit">{{ f.unit }}</span>
+            </template>
+          </div>
+          <p class="hint">{{ f.description }}</p>
+        </div>
+      </div>
+
+      <div v-if="settingsErrors.length" class="notice notice-error">
+        <ul><li v-for="(e, i) in settingsErrors" :key="i">{{ e }}</li></ul>
+      </div>
+      <div class="sticky-actions">
+        <button type="button" class="btn-primary" :disabled="settingsErrors.length > 0 || !settingsDirty" @click="saveSettingsNow">
+          Save settings
+        </button>
+        <button type="button" class="btn-secondary" @click="resetSettingsDraft">Reset to defaults</button>
+        <button v-if="settingsDirty" type="button" class="btn-secondary" @click="discardSettingsDraft">Discard changes</button>
+        <span v-if="settingsDirty" class="hint">Unsaved changes.</span>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { computed, defineComponent, h, onMounted, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, defineComponent, h, onMounted, provide, reactive, ref, shallowRef, watch } from 'vue'
 import RadarChart from './components/RadarChart.vue'
 import DataTable from './components/DataTable.vue'
+import VerdictTag from './components/VerdictTag.vue'
 import { parseCsv } from './lib/csv.js'
 import { readDataset } from './lib/input.js'
 import { analyzeDataset } from './lib/analysis.js'
 import { DIMENSIONS, DEFAULT_EXPECTED_SOLVE_RATES } from './lib/constants.js'
 import { DEFAULT_SIM_PARAMS, validateSimParams, simulateCohort, compareToActual } from './lib/simulation.js'
 import { formatNumber as num, formatPct as pct, formatSigned as signed, clampPct } from './lib/format.js'
+import { DEFAULT_SETTINGS, SETTINGS_SCHEMA, mergeSettings, validateSettings, getPath, setPath } from './lib/settings.js'
+import * as V from './lib/verdicts.js'
+import { compareExams, historyDeltas } from './lib/compare.js'
+import { dimensionColor } from './lib/colors.js'
 import * as api from './api.js'
 
 // ---- small presentational helpers -------------------------------------------------
 
 const Bar = defineComponent({
-  props: { value: { type: Number, default: null } },
+  props: { value: { type: Number, default: null }, color: { type: String, default: null } },
   setup: (props) => () =>
-    h('div', { class: 'bar' }, [h('div', { class: 'bar-fill', style: { width: `${clampPct(props.value)}%` } })]),
+    h('div', { class: 'bar' }, [
+      h('div', {
+        class: ['bar-fill', { tinted: props.color }],
+        style: { width: `${clampPct(props.value)}%`, ...(props.color ? { '--bar-color': props.color } : {}) },
+      }),
+    ]),
 })
 
 const PairBar = defineComponent({
@@ -653,11 +721,18 @@ const tabs = [
   { id: 'simulation', label: 'Simulation', needsExam: true },
   { id: 'student', label: 'Student profile', needsExam: true },
   { id: 'history', label: 'History', needsExam: false },
+  { id: 'compare', label: 'Compare exams', needsExam: false },
   { id: 'saved', label: 'Saved exams', needsExam: false },
+  { id: 'settings', label: 'Settings', needsExam: false },
 ]
 
 const tab = ref('upload')
 const notice = ref(null)
+
+// Thresholds behind every tag; provided to VerdictTag. Defaults until loaded.
+const settings = ref(mergeSettings())
+provide('settings', settings)
+const draft = ref(structuredClone(settings.value))
 const analyzing = ref(false)
 
 const meta = reactive({ courseName: '', examTitle: '', examDate: new Date().toISOString().slice(0, 10) })
@@ -799,7 +874,48 @@ async function openHistory(studentId) {
   await loadHistory()
 }
 
+// ---- settings ---------------------------------------------------------------------
+
+const settingsErrors = computed(() => validateSettings(draft.value))
+const settingsDirty = computed(() => JSON.stringify(draft.value) !== JSON.stringify(settings.value))
+const draftValue = (path) => getPath(draft.value, path)
+
+function setDraft(field, raw) {
+  let value
+  if (field.type === 'boolean') value = raw
+  else if (raw === '') value = field.type === 'target' ? null : NaN
+  else value = Number(raw)
+  draft.value = setPath(draft.value, field.path, value)
+}
+
+async function loadSettings() {
+  try {
+    settings.value = mergeSettings(await api.getSettings())
+    draft.value = structuredClone(settings.value)
+  } catch (err) {
+    fail(err)
+  }
+}
+
+async function saveSettingsNow() {
+  try {
+    await api.saveSettings(draft.value)
+    settings.value = structuredClone(draft.value)
+    notice.value = { kind: 'info', text: 'Settings saved.' }
+  } catch (err) {
+    fail(err)
+  }
+}
+
+const resetSettingsDraft = () => {
+  draft.value = structuredClone(DEFAULT_SETTINGS)
+}
+const discardSettingsDraft = () => {
+  draft.value = structuredClone(settings.value)
+}
+
 onMounted(() => {
+  loadSettings()
   refreshSaved()
   refreshHistoryStudents()
 })
