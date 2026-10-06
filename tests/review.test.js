@@ -113,10 +113,10 @@ describe('buildReviewQueue', () => {
 })
 
 describe('absent students in attempt analysis', () => {
-  const absentCsv = 'student_id,student_name,attendance\nS1,Alice,\nS2,Bob,\nS3,Cara,absent\n'
+  const absentCsv = 'student_id,attendance\nS3,absent\n'
   let result
   before(async () => {
-    const dataset = await loadDataset(undefined, undefined, absentCsv)
+    const dataset = await loadDataset(undefined, undefined, undefined, absentCsv)
     result = analyzeAttempts(dataset, buildProfiles(dataset))
   })
 

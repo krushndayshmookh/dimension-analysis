@@ -1,5 +1,5 @@
 import { parseCsv } from '../src/lib/csv.js'
-import { readDataset } from '../src/lib/input.js'
+import { readDataset, readStudentNames } from '../src/lib/input.js'
 import { buildProfiles } from '../src/lib/profiles.js'
 import { analyzePaper } from '../src/lib/paper.js'
 
@@ -30,13 +30,17 @@ S3,Cara,B
 
 export const parse = (text) => parseCsv(text)
 
-export async function loadDataset(config = CONFIG_CSV, scores = SCORES_CSV, students = STUDENTS_CSV) {
+// The cohort file and the attendance file are optional here; by default every student of
+// STUDENTS_CSV is in the cohort and everyone who has a scores row was present.
+export async function loadDataset(config = CONFIG_CSV, scores = SCORES_CSV, cohort = STUDENTS_CSV, attendance = null) {
+  const cohortResult = readStudentNames(await parse(cohort))
   const result = readDataset({
     config: await parse(config),
     scores: await parse(scores),
-    students: students === null ? null : await parse(students),
+    cohort: cohortResult.students,
+    attendance: attendance === null ? null : await parse(attendance),
   })
-  if (result.errors.length) throw new Error(`fixture invalid: ${result.errors.join('; ')}`)
+  if (result.errors.length || cohortResult.errors.length) throw new Error(`fixture invalid: ${[...cohortResult.errors, ...result.errors].join('; ')}`)
   return result.dataset
 }
 

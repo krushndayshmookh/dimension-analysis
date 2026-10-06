@@ -1,3 +1,3 @@
-student_id,student_name,section,attendance
-S1,Alice,A,present
-S2,Bob,B,absent
+student_id,student_name,section
+S1,Alice,A
+S2,Bob,B

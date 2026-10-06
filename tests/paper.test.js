@@ -248,7 +248,7 @@ describe('analyzePaper: top and bottom quartile profiles', () => {
 
 describe('attempt rate with absent students', () => {
   it('is out of the students who were present, while solve rate still counts everyone', async () => {
-    const dataset = await loadDataset(undefined, undefined, 'student_id,student_name,attendance\nS1,Alice,\nS2,Bob,\nS3,Cara,absent\n')
+    const dataset = await loadDataset(undefined, undefined, undefined, 'student_id,attendance\nS3,absent\n')
     const { analyzePaper } = await import('../src/lib/paper.js')
     const { buildProfiles } = await import('../src/lib/profiles.js')
     const paper = analyzePaper(dataset, buildProfiles(dataset))

@@ -220,14 +220,15 @@ export function readScores(parsed, questions) {
   return { students, errors: out.finish(), warnings }
 }
 
+// The cohort file: one row per student. Returns { students, names, sections, errors, warnings }.
 export function readStudentNames(parsed) {
   const label = 'Student details'
   const out = collector()
   const warnings = []
   const names = {}
   const sections = {}
-  const absent = {}
-  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], ['section', 'attendance'], out)
+  const students = []
+  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], ['section'], out)
   if (extra.length) warnings.push(`${label}: ignoring unknown column(s): ${extra.join(', ')}`)
 
   if (!missing.length) {
@@ -237,21 +238,48 @@ export function readStudentNames(parsed) {
       if (!row.student_id) out.add(`${where}: student_id is empty`)
       else if (row.student_id in names) out.add(`${where}: duplicate student_id "${row.student_id}"`)
       else if (!row.student_name) out.add(`${where}: student_name is empty`)
-      else if (row.attendance && !ATTENDANCE_VALUES.includes(row.attendance.toLowerCase())) {
-        out.add(`${where}: attendance "${row.attendance}" must be present or absent (or blank for present)`)
-      } else {
+      else {
         names[row.student_id] = row.student_name
         sections[row.student_id] = row.section || null
-        absent[row.student_id] = (row.attendance ?? '').toLowerCase() === 'absent'
+        students.push({ id: row.student_id, name: row.student_name, section: row.section || null })
       }
     })
   }
 
-  return { names, sections, absent, errors: out.finish(), warnings }
+  return { students, names, sections, errors: out.finish(), warnings }
 }
 
-// config and scores are required; students (names) is optional.
-export function readDataset({ config, scores, students }) {
+// The attendance file of one exam: student_id and attendance (present or absent;
+// blank means present). Returns { absent: { id: boolean }, errors, warnings }.
+export function readAttendance(parsed) {
+  const label = 'Attendance'
+  const out = collector()
+  const warnings = []
+  const absent = {}
+  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'attendance'], [], out)
+  if (extra.length) warnings.push(`${label}: ignoring unknown column(s): ${extra.join(', ')}`)
+
+  if (!missing.length) {
+    ;(parsed.data ?? []).forEach((rawRow, i) => {
+      const row = normalizeRow(rawRow)
+      const where = `${label}: row ${i + 1}${row.student_id ? ` (${row.student_id})` : ''}`
+      const value = row.attendance.toLowerCase()
+      if (!row.student_id) out.add(`${where}: student_id is empty`)
+      else if (row.student_id in absent) out.add(`${where}: duplicate student_id "${row.student_id}"`)
+      else if (value && !ATTENDANCE_VALUES.includes(value)) out.add(`${where}: attendance "${row.attendance}" must be present or absent (or blank for present)`)
+      else absent[row.student_id] = value === 'absent'
+    })
+  }
+  return { absent, errors: out.finish(), warnings }
+}
+
+const list = (ids) => (ids.length > 10 ? `${ids.slice(0, 10).join(', ')}, and ${ids.length - 10} more` : ids.join(', '))
+
+// config and scores are the exam's files. cohort is the list of students the exam
+// is for ([{ id, name, section }]); attendance is the optional parsed attendance
+// file. Every cohort student is in the exam: one without a row in the scores file
+// is absent, and an attendance file can mark others absent (their scores are ignored).
+export function readDataset({ config, scores, cohort, attendance = null }) {
   const configResult = readExamConfig(config)
   const errors = [...configResult.errors]
   const warnings = [...configResult.warnings]
@@ -263,46 +291,50 @@ export function readDataset({ config, scores, students }) {
   errors.push(...scoresResult.errors)
   warnings.push(...scoresResult.warnings)
 
-  let names = null
-  let sections = {}
-  let absent = {}
-  if (students) {
-    const namesResult = readStudentNames(students)
-    errors.push(...namesResult.errors)
-    warnings.push(...namesResult.warnings)
-    names = namesResult.names
-    sections = namesResult.sections
-    absent = namesResult.absent
+  if (!Array.isArray(cohort)) errors.push('A cohort is required: choose the cohort this exam is for')
+
+  let attendanceResult = { absent: {}, errors: [], warnings: [] }
+  if (attendance) {
+    attendanceResult = readAttendance(attendance)
+    errors.push(...attendanceResult.errors)
+    warnings.push(...attendanceResult.warnings)
   }
 
-  if (names && !errors.length) {
-    const scored = new Set(scoresResult.students.map((s) => s.id))
-    const unnamed = scoresResult.students.filter((s) => !(s.id in names)).map((s) => s.id)
-    if (unnamed.length) errors.push(`Student details: no row for scored student(s): ${unnamed.join(', ')}`)
-    const unscored = Object.keys(names).filter((id) => !scored.has(id))
-    if (unscored.length) warnings.push(`Student details: ignoring ${unscored.length} student(s) with no scores: ${unscored.join(', ')}`)
+  if (Array.isArray(cohort) && !errors.length) {
+    const inCohort = new Set(cohort.map((s) => s.id))
+    const notInCohort = scoresResult.students.filter((s) => !inCohort.has(s.id)).map((s) => s.id)
+    if (notInCohort.length) errors.push(`Scores: ${notInCohort.length} student(s) are not in the cohort: ${list(notInCohort)}`)
+    const unknown = Object.keys(attendanceResult.absent).filter((id) => !inCohort.has(id))
+    if (unknown.length) errors.push(`Attendance: ${unknown.length} student(s) are not in the cohort: ${list(unknown)}`)
   }
 
   if (errors.length) return { dataset: null, errors, warnings }
 
-  // An absent student has no score: anything recorded for them is ignored.
-  const withScores = scoresResult.students.filter((s) => absent[s.id] && Object.keys(s.scores).length)
+  const rows = new Map(scoresResult.students.map((s) => [s.id, s]))
+  const explicit = attendanceResult.absent
+
+  const noRow = cohort.filter((s) => !rows.has(s.id) && !(s.id in explicit))
+  if (noRow.length) {
+    warnings.push(`Scores: ${noRow.length} cohort student(s) have no row and are counted as absent: ${list(noRow.map((s) => s.id))}`)
+  }
+  const withScores = cohort.filter((s) => explicit[s.id] && rows.has(s.id) && Object.keys(rows.get(s.id).scores).length)
   if (withScores.length) {
-    warnings.push(`Student details: ${withScores.length} student(s) marked absent have scores, which are ignored (counted as zero): ${withScores.map((s) => s.id).join(', ')}`)
+    warnings.push(`Attendance: ${withScores.length} student(s) marked absent have scores, which are ignored (counted as zero): ${list(withScores.map((s) => s.id))}`)
   }
 
   return {
     dataset: {
       questions: configResult.questions,
-      students: scoresResult.students.map((s) => {
-        const isAbsent = absent[s.id] ?? false
+      students: cohort.map((student) => {
+        const row = rows.get(student.id)
+        const absent = student.id in explicit ? explicit[student.id] : !row
         return {
-          id: s.id,
-          name: names?.[s.id] ?? s.id,
-          section: sections[s.id] ?? null,
-          absent: isAbsent,
-          scores: isAbsent ? {} : s.scores,
-          ...(s.answers && !isAbsent ? { answers: s.answers } : {}),
+          id: student.id,
+          name: student.name,
+          section: student.section ?? null,
+          absent,
+          scores: absent || !row ? {} : row.scores,
+          ...(row?.answers && !absent ? { answers: row.answers } : {}),
         }
       }),
     },

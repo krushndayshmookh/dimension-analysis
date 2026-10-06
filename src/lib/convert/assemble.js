@@ -12,7 +12,8 @@ const MARKS_DECIMALS = 4
 const round = (value) => Math.round(value * 10 ** MARKS_DECIMALS) / 10 ** MARKS_DECIMALS
 
 export const CONFIG_COLUMNS = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'question_topics', 'marks', 'expected_solve_rate']
-export const STUDENT_COLUMNS = ['student_id', 'student_name', 'section', 'attendance']
+export const STUDENT_COLUMNS = ['student_id', 'student_name', 'section']
+export const ATTENDANCE_COLUMNS = ['student_id', 'attendance']
 
 const configRow = (kind, id, fields, marks, problems) => ({
   key: `${kind}:${id}`,
@@ -41,7 +42,7 @@ const marksEach = (total, count) => (count > 0 && Number(total) > 0 ? round(Numb
 // listing, coding, quiz, enrolled: results of the readers, or null when that
 // sheet was not given. totalMarks: { coding, quiz } the marks of all questions
 // of that kind together.
-export function assembleExam({ listing, coding, quiz, enrolled, totalMarks, addMissingEnrolled = true }) {
+export function assembleExam({ listing, coding, quiz, enrolled, totalMarks }) {
   const issues = []
   const listed = new Map((listing?.questions ?? []).map((q) => [q.id, q]))
   const sheets = [
@@ -100,13 +101,14 @@ export function assembleExam({ listing, coding, quiz, enrolled, totalMarks, addM
   }
   if (extras.length) issues.push(issue('info', `${extras.length} listing row(s) are not part of the exam; they are listed so you can add them`))
 
-  // Students.
+  // Students: everyone in a score sheet, then the enrolled students who are in none
+  // (they belong to the cohort and count as absent, with no scores row).
   const byId = new Map()
   for (const { data } of sheets) {
     for (const s of data.students) {
       const known = byId.get(s.id)
       if (known) known.absent &&= s.absent
-      else byId.set(s.id, { id: s.id, name: s.name, absent: s.absent })
+      else byId.set(s.id, { id: s.id, name: s.name, absent: s.absent, inSheets: true })
     }
   }
   if (enrolled) {
@@ -115,11 +117,9 @@ export function assembleExam({ listing, coding, quiz, enrolled, totalMarks, addM
     const notEnrolled = [...byId.keys()].filter((id) => !enrolledIds.has(id))
     if (notEnrolled.length) issues.push(issue('warning', `${notEnrolled.length} scored student(s) not in the enrolled list: ${notEnrolled.join(', ')}`))
     const missing = enrolled.students.filter((s) => !byId.has(s.id))
-    if (missing.length && addMissingEnrolled) {
-      for (const s of missing) byId.set(s.id, { id: s.id, name: s.name, absent: true })
-      issues.push(issue('info', `${missing.length} enrolled student(s) have no rows in the score sheets and were added as absent: ${missing.map((s) => s.id).join(', ')}`))
-    } else if (missing.length) {
-      issues.push(issue('info', `${missing.length} enrolled student(s) have no rows in the score sheets and were left out`))
+    for (const s of missing) byId.set(s.id, { id: s.id, name: s.name, absent: true, inSheets: false })
+    if (missing.length) {
+      issues.push(issue('info', `${missing.length} enrolled student(s) have no rows in the score sheets; they stay in the cohort and count as absent: ${missing.map((s) => s.id).join(', ')}`))
     }
   }
 
@@ -147,7 +147,8 @@ export const configTable = (config) => ({ columns: CONFIG_COLUMNS, rows: config 
 // of a question rescales its scores. Absent students get blanks.
 export function scoresTable(config, students, fractions) {
   const columns = ['student_id', ...config.map((r) => r.question_id)]
-  const rows = students.map((s) => {
+  // A student with no row in any score sheet gets no row: missing means absent.
+  const rows = students.filter((s) => s.inSheets !== false).map((s) => {
     const row = { student_id: s.id }
     for (const q of config) {
       const fraction = s.absent ? null : fractions[s.id]?.[q.question_id]
@@ -160,5 +161,10 @@ export function scoresTable(config, students, fractions) {
 
 export const studentsTable = (students) => ({
   columns: STUDENT_COLUMNS,
-  rows: students.map((s) => ({ student_id: s.id, student_name: s.name || s.id, section: s.section ?? '', attendance: s.absent ? 'absent' : 'present' })),
+  rows: students.map((s) => ({ student_id: s.id, student_name: s.name || s.id, section: s.section ?? '' })),
+})
+
+export const attendanceTable = (students) => ({
+  columns: ATTENDANCE_COLUMNS,
+  rows: students.map((s) => ({ student_id: s.id, attendance: s.absent ? 'absent' : 'present' })),
 })

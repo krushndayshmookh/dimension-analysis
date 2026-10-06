@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-6">
     <PageHeader help="page.converter"
       title="Sheet converter"
-      description="Turns the analytics team's sheets into the three files the Upload page takes. Nothing is imported here: check and edit the result, then download the CSVs."
+      description="Turns the analytics team's sheets into the files the Cohorts and Upload pages take: the students (cohort), the exam config, the scores and the attendance. Nothing is imported here: check and edit the result, then download the CSVs."
     />
 
     <SectionCard title="Sheets" help="converter.sheets" description="Choose any of: the question listing, the coding scores, the quiz scores and the enrolled students. Each sheet is recognised by its columns.">
@@ -32,9 +32,6 @@
       </div>
       <label v-if="sheets.coding && sheets.quiz" class="flex items-center gap-2 text-sm">
         <Checkbox v-model="combined" /> Combine coding and quiz into one exam
-      </label>
-      <label v-if="sheets.enrolled" class="flex items-center gap-2 text-sm">
-        <Checkbox v-model="addMissing" /> Add enrolled students who appear in no score sheet, as absent
       </label>
     </SectionCard>
 
@@ -82,7 +79,6 @@ const rejected = ref([])
 const codingMarks = ref(NaN)
 const quizMarks = ref(NaN)
 const combined = ref(false)
-const addMissing = ref(true)
 
 const loaded = computed(() =>
   Object.entries(sheets)
@@ -119,12 +115,11 @@ const exams = computed(() => {
     listing: sheets.listing?.result ?? null,
     enrolled: sheets.enrolled?.result ?? null,
     totalMarks: { coding: codingMarks.value, quiz: quizMarks.value },
-    addMissingEnrolled: addMissing.value,
   }
   const part = (label, coding, quiz) => {
     const exam = assembleExam({ ...base, coding, quiz })
     // Changes to what the sheet means start the preview over, so edits are made last.
-    return { label, ...exam, signature: JSON.stringify([base.totalMarks, addMissing.value, Object.keys(sheets).filter((k) => sheets[k]).map((k) => sheets[k].fileName)]) }
+    return { label, ...exam, signature: JSON.stringify([base.totalMarks, Object.keys(sheets).filter((k) => sheets[k]).map((k) => sheets[k].fileName)]) }
   }
   const coding = sheets.coding?.result ?? null
   const quiz = sheets.quiz?.result ?? null

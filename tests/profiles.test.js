@@ -161,7 +161,7 @@ describe('buildProfiles: ranking', () => {
 
 describe('absent students in the profiles', () => {
   it('keep their scores in the cohort and are counted and flagged', async () => {
-    const dataset = await loadDataset(undefined, undefined, 'student_id,student_name,attendance\nS1,Alice,\nS2,Bob,\nS3,Cara,absent\n')
+    const dataset = await loadDataset(undefined, undefined, undefined, 'student_id,attendance\nS3,absent\n')
     const profiles = buildProfiles(dataset)
     assert.equal(profiles.cohort.studentCount, 3)
     assert.equal(profiles.cohort.absentCount, 1)

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { readExamConfig, readScores, readStudentNames, readDataset } from '../src/lib/input.js'
+import { readAttendance, readExamConfig, readScores, readStudentNames, readDataset } from '../src/lib/input.js'
 import { CONFIG_CSV, SCORES_CSV, STUDENTS_CSV, parse } from './fixtures.js'
 
 const configWith = (rows) =>
@@ -226,53 +226,62 @@ describe('readStudentNames', () => {
     const { sections } = readStudentNames(await parse('student_id,student_name\nS1,Alice\n'))
     assert.deepEqual(sections, { S1: null })
   })
+
+  it('gives the cohort as a list in file order', async () => {
+    const { students } = readStudentNames(await parse('student_id,student_name,section\nS2,Bob,B\nS1,Alice,\n'))
+    assert.deepEqual(students, [{ id: 'S2', name: 'Bob', section: 'B' }, { id: 'S1', name: 'Alice', section: null }])
+  })
+
+  it('no longer takes attendance: that is a file of its own, per exam', async () => {
+    const { warnings } = readStudentNames(await parse('student_id,student_name,attendance\nS1,Alice,absent\n'))
+    assert.ok(warnings.some((w) => w.includes('attendance')))
+  })
 })
 
+const cohortOf = async (csv = STUDENTS_CSV) => readStudentNames(await parse(csv)).students
+const readAll = async ({ config = CONFIG_CSV, scores = SCORES_CSV, cohort, attendance = null } = {}) =>
+  readDataset({
+    config: await parse(config),
+    scores: await parse(scores),
+    cohort: cohort === undefined ? await cohortOf() : cohort,
+    attendance: attendance === null ? null : await parse(attendance),
+  })
+
 describe('readDataset', () => {
-  it('combines the three files into one dataset', async () => {
-    const { dataset, errors } = readDataset({
-      config: await parse(CONFIG_CSV),
-      scores: await parse(SCORES_CSV),
-      students: await parse(STUDENTS_CSV),
-    })
+  it('combines the exam files with the cohort into one dataset', async () => {
+    const { dataset, errors, warnings } = await readAll()
     assert.deepEqual(errors, [])
+    assert.deepEqual(warnings, [])
     assert.equal(dataset.questions.length, 3)
-    assert.deepEqual(dataset.students.map((s) => [s.id, s.name, s.section]), [['S1', 'Alice', 'A'], ['S2', 'Bob', 'A'], ['S3', 'Cara', 'B']])
+    assert.deepEqual(dataset.students.map((s) => [s.id, s.name, s.section, s.absent]), [['S1', 'Alice', 'A', false], ['S2', 'Bob', 'A', false], ['S3', 'Cara', 'B', false]])
     assert.deepEqual(dataset.students[0].scores, { Q1: 2, Q2: 4, Q3: 10 })
   })
 
-  it('uses the student id as the name when no student file is given', async () => {
-    const { dataset } = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
-    assert.equal(dataset.students[0].name, 'S1')
-    assert.equal(dataset.students[0].section, null)
+  it('needs a cohort', async () => {
+    const result = await readAll({ cohort: null })
+    assert.equal(result.dataset, null)
+    assert.ok(hasError(result, 'cohort'))
   })
 
-  it('rejects when a scored student is missing from the student file', async () => {
-    const result = readDataset({
-      config: await parse(CONFIG_CSV),
-      scores: await parse(SCORES_CSV),
-      students: await parse('student_id,student_name\nS1,Alice\nS2,Bob\n'),
-    })
+  it('rejects scored students who are not in the cohort, and lists them', async () => {
+    const result = await readAll({ cohort: await cohortOf('student_id,student_name\nS1,Alice\nS2,Bob\n') })
     assert.equal(result.dataset, null)
     assert.ok(hasError(result, 'S3'))
+    assert.ok(hasError(result, 'not in the cohort'))
   })
 
-  it('warns, but still accepts, student file rows with no scores', async () => {
-    const result = readDataset({
-      config: await parse(CONFIG_CSV),
-      scores: await parse(SCORES_CSV),
-      students: await parse(`${STUDENTS_CSV}S9,Zed,C\n`),
-    })
-    assert.deepEqual(result.errors, [])
-    assert.ok(result.warnings.some((w) => w.includes('S9')))
+  it('counts cohort students with no row in the scores file as absent, with no scores', async () => {
+    const cohort = await cohortOf(`${STUDENTS_CSV}S9,Zed,C\n`)
+    const { dataset, errors, warnings } = await readAll({ cohort })
+    assert.deepEqual(errors, [])
+    const zed = dataset.students.find((s) => s.id === 'S9')
+    assert.deepEqual([zed.absent, zed.scores, zed.name, zed.section], [true, {}, 'Zed', 'C'])
+    assert.equal(dataset.students.length, 4, 'the whole cohort is in the exam')
+    assert.ok(warnings.some((w) => w.includes('S9') && /absent/i.test(w)))
   })
 
   it('returns no dataset and the errors of every file when any file is invalid', async () => {
-    const result = readDataset({
-      config: await parse(configWith('Q1,assessment,easy,Bad,Arrays,2,')),
-      scores: await parse('student_id,Q1\nS1,1\n'),
-      students: null,
-    })
+    const result = await readAll({ config: configWith('Q1,assessment,easy,Bad,Arrays,2,'), scores: 'student_id,Q1\nS1,1\n' })
     assert.equal(result.dataset, null)
     assert.ok(result.errors.length >= 1)
   })
@@ -353,10 +362,10 @@ describe('readScores: multiple-choice cells hold the chosen option', () => {
   })
 
   it('carries the chosen options into the dataset', async () => {
-    const result = readDataset({
-      config: await parse(mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,B\nQ2,assignment,hard,Solve,Sorting,10,,')),
-      scores: await parse('student_id,Q1,Q2\nS1,B,7\nS2,C,\n'),
-      students: null,
+    const result = await readAll({
+      config: mcqConfig('Q1,assessment,easy,Recall,Arrays,2,mcq,B\nQ2,assignment,hard,Solve,Sorting,10,,'),
+      scores: 'student_id,Q1,Q2\nS1,B,7\nS2,C,\n',
+      cohort: await cohortOf('student_id,student_name\nS1,A\nS2,B\n'),
     })
     assert.deepEqual(result.errors, [])
     assert.deepEqual(result.dataset.students.map((s) => s.answers), [{ Q1: 'B' }, { Q1: 'C' }])
@@ -369,59 +378,59 @@ describe('readScores: multiple-choice cells hold the chosen option', () => {
   })
 })
 
-describe('attendance in the student file', () => {
-  const read = async (text) => readStudentNames(await parse(text))
+describe('readAttendance', () => {
+  const read = async (text) => readAttendance(await parse(text))
 
-  it('reads the optional attendance column; blank means present', async () => {
-    const { absent, errors, warnings } = await read('student_id,student_name,attendance\nS1,Alice,Present\nS2,Bob, ABSENT \nS3,Cara,\n')
+  it('reads present and absent, ignoring case and spaces; blank means present', async () => {
+    const { absent, errors } = await read('student_id,attendance\nS1,Present\nS2, ABSENT \nS3,\n')
     assert.deepEqual(errors, [])
     assert.deepEqual(absent, { S1: false, S2: true, S3: false })
-    assert.ok(!warnings.some((w) => w.includes('attendance')))
   })
 
-  it('treats every student as present when the column is absent', async () => {
-    assert.deepEqual((await read('student_id,student_name\nS1,Alice\n')).absent, { S1: false })
-  })
-
-  it('rejects any other value', async () => {
-    const { errors } = await read('student_id,student_name,attendance\nS1,Alice,late\n')
-    assert.ok(errors.some((e) => e.includes('S1') && e.includes('attendance') && e.includes('late')), errors.join('|'))
-  })
-
-  it('puts the flag on the dataset students', async () => {
-    const { dataset } = readDataset({
-      config: await parse(CONFIG_CSV),
-      scores: await parse(SCORES_CSV),
-      students: await parse('student_id,student_name,attendance\nS1,Alice,present\nS2,Bob,absent\nS3,Cara,\n'),
-    })
-    assert.deepEqual(dataset.students.map((s) => s.absent), [false, true, false])
-  })
-
-  it('is false for everyone without a student file', async () => {
-    const { dataset } = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
-    assert.ok(dataset.students.every((s) => s.absent === false))
+  it('needs both columns and rejects other values and duplicate students', async () => {
+    assert.ok(hasError(await read('student_id,status\nS1,absent\n'), 'attendance'))
+    assert.ok(hasError(await read('student_id,attendance\nS1,late\n'), 'late'))
+    assert.ok(hasError(await read('student_id,attendance\nS1,absent\nS1,present\n'), 'duplicate'))
+    assert.ok(hasError(await read('student_id,attendance\n,absent\n'), 'student_id'))
   })
 })
 
-describe('absent students with scores', () => {
-  const load = async () =>
-    readDataset({
-      config: await parse(CONFIG_CSV),
-      scores: await parse(SCORES_CSV),
-      students: await parse('student_id,student_name,attendance\nS1,Alice,present\nS2,Bob,absent\nS3,Cara,absent\n'),
-    })
+describe('attendance in the dataset', () => {
+  it('flags the students the attendance file marks absent', async () => {
+    const { dataset, errors } = await readAll({ attendance: 'student_id,attendance\nS2,absent\nS1,present\n' })
+    assert.deepEqual(errors, [])
+    assert.deepEqual(dataset.students.map((s) => s.absent), [false, true, false])
+  })
+
+  it('treats everyone with a scores row as present when there is no attendance file', async () => {
+    const { dataset } = await readAll()
+    assert.ok(dataset.students.every((s) => s.absent === false))
+  })
+
+  it('rejects an attendance row for a student who is not in the cohort', async () => {
+    const result = await readAll({ attendance: 'student_id,attendance\nS9,absent\n' })
+    assert.equal(result.dataset, null)
+    assert.ok(hasError(result, 'S9'))
+  })
 
   it('ignores the scores of a student marked absent, and says so', async () => {
-    const { dataset, errors, warnings } = await load()
+    const { dataset, errors, warnings } = await readAll({ attendance: 'student_id,attendance\nS2,absent\nS3,absent\n' })
     assert.deepEqual(errors, [])
     assert.deepEqual(dataset.students.map((s) => Object.keys(s.scores).length), [3, 0, 0])
     assert.ok(warnings.some((w) => w.includes('S2') && /absent/i.test(w) && /ignored/i.test(w)), warnings.join('|'))
     assert.ok(!warnings.some((w) => w.includes('S1')))
   })
 
+  it('lets an explicit "present" stand even when the student has no scores row', async () => {
+    const cohort = await cohortOf(`${STUDENTS_CSV}S9,Zed,C\n`)
+    const { dataset } = await readAll({ cohort, attendance: 'student_id,attendance\nS9,present\n' })
+    const zed = dataset.students.find((s) => s.id === 'S9')
+    assert.deepEqual([zed.absent, zed.scores], [false, {}])
+  })
+
   it('does not mention an absent student who has no scores', async () => {
-    const { warnings } = await load()
-    const text = warnings.filter((w) => w.includes('absent')).join(' ')
-    assert.ok(text.includes('S2') && !text.includes('S3 '), text)
+    const cohort = await cohortOf(`${STUDENTS_CSV}S9,Zed,C\n`)
+    const { warnings } = await readAll({ cohort })
+    assert.ok(!warnings.some((w) => /ignored/i.test(w)))
   })
 })

@@ -51,6 +51,9 @@
     </template>
 
     <h4 class="text-sm font-semibold">Students ({{ students.length }}, {{ absentCount }} absent)</h4>
+    <p class="text-xs text-muted-foreground">
+      The students file is the cohort; the attendance file is for this exam. A student with no row in the scores file counts as absent.
+    </p>
     <div class="max-h-96 overflow-y-auto rounded-lg border">
       <Table>
         <TableHeader class="sticky top-0 bg-card">
@@ -80,10 +83,10 @@
       </ul>
       <p v-if="errors.length > 20" class="mt-1">…and {{ errors.length - 20 }} more.</p>
     </NoticeAlert>
-    <NoticeAlert v-else kind="info">The files are valid. Scores are written as the share of each question earned times its marks.</NoticeAlert>
+    <NoticeAlert v-else kind="info">The files are valid. Scores are written as the share of each question earned times its marks. Upload the students file to a cohort (Cohorts page), then the other three with the exam.</NoticeAlert>
 
     <div class="flex flex-wrap items-center gap-2">
-      <Button :disabled="errors.length > 0" @click="downloadAll"><DownloadIcon /> Download all three</Button>
+      <Button :disabled="errors.length > 0" @click="downloadAll"><DownloadIcon /> Download all four</Button>
       <Button v-for="file in FILES" :key="file.key" variant="outline" :disabled="errors.length > 0" @click="download(file)">
         <DownloadIcon /> {{ file.name }}
       </Button>
@@ -100,10 +103,10 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import NoticeAlert from '@/components/common/NoticeAlert.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
-import { configTable, extraToConfig, scoresTable, studentsTable } from '@/lib/convert/assemble.js'
+import { attendanceTable, configTable, extraToConfig, scoresTable, studentsTable } from '@/lib/convert/assemble.js'
 import { toCsv } from '@/lib/convert/common.js'
 import { downloadText } from '@/lib/download.js'
-import { readDataset } from '@/lib/input.js'
+import { readAttendance, readDataset, readStudentNames } from '@/lib/input.js'
 
 const props = defineProps({
   // One result of assembleExam(), with a `label`.
@@ -135,13 +138,22 @@ const tables = computed(() => ({
   config: configTable(config.value),
   scores: scoresTable(config.value, students.value, props.exam.fractions),
   students: studentsTable(students.value),
+  attendance: attendanceTable(students.value),
 }))
 
 // The application's own checks, so what is downloaded is what Upload accepts.
 const asParsed = ({ columns, rows }) => ({ data: rows, meta: { fields: columns }, errors: [] })
 const errors = computed(() => {
   if (!config.value.length) return ['The exam has no questions']
-  return readDataset({ config: asParsed(tables.value.config), scores: asParsed(tables.value.scores), students: asParsed(tables.value.students) }).errors
+  const cohort = readStudentNames(asParsed(tables.value.students))
+  const attendance = readAttendance(asParsed(tables.value.attendance))
+  const result = readDataset({
+    config: asParsed(tables.value.config),
+    scores: asParsed(tables.value.scores),
+    cohort: cohort.students,
+    attendance: asParsed(tables.value.attendance),
+  })
+  return [...cohort.errors, ...attendance.errors, ...result.errors]
 })
 const hasError = (id) => errors.value.some((e) => e.includes(`(${id})`) || e.includes(`${id}:`))
 
@@ -150,6 +162,7 @@ const FILES = [
   { key: 'config', name: 'exam_config.csv' },
   { key: 'scores', name: 'student_scores.csv' },
   { key: 'students', name: 'students.csv' },
+  { key: 'attendance', name: 'attendance.csv' },
 ]
 function download(file) {
   const { rows, columns } = tables.value[file.key]

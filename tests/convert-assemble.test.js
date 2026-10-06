@@ -4,8 +4,8 @@ import { readListing } from '../src/lib/convert/listing.js'
 import { readCoding } from '../src/lib/convert/coding.js'
 import { readQuiz } from '../src/lib/convert/quiz.js'
 import { readEnrolled } from '../src/lib/convert/enrolled.js'
-import { assembleExam, configTable, scoresTable, studentsTable, extraToConfig } from '../src/lib/convert/assemble.js'
-import { readDataset } from '../src/lib/input.js'
+import { assembleExam, attendanceTable, configTable, scoresTable, studentsTable, extraToConfig } from '../src/lib/convert/assemble.js'
+import { readAttendance, readDataset, readStudentNames } from '../src/lib/input.js'
 import { parse } from './fixtures.js'
 
 const LISTING = `Question ID,Type,Set,Difficulty,Dimensions,Topics,ComprehensionID,Solve Rate
@@ -134,15 +134,11 @@ describe('assembleExam: students', () => {
     ])
   })
 
-  it('adds enrolled students who are in no score sheet as absent, and says so', async () => {
+  it('keeps enrolled students who are in no score sheet in the cohort as absent, and says so', async () => {
     const { students, issues } = assembleExam({ ...(await load()), totalMarks: TOTALS })
-    assert.deepEqual(students.find((s) => s.id === '1004'), { id: '1004', name: 'Esha N', absent: true })
-    assert.ok(issues.some((i) => i.text.includes('1') && /enrolled/i.test(i.text) && /absent/i.test(i.text)))
-  })
-
-  it('can leave them out', async () => {
-    const { students } = assembleExam({ ...(await load()), totalMarks: TOTALS, addMissingEnrolled: false })
-    assert.ok(!students.some((s) => s.id === '1004'))
+    assert.deepEqual(students.find((s) => s.id === '1004'), { id: '1004', name: 'Esha N', absent: true, inSheets: false })
+    assert.ok(students.filter((s) => s.id !== '1004').every((s) => s.inSheets))
+    assert.ok(issues.some((i) => i.text.includes('1004') && /enrolled/i.test(i.text) && /absent/i.test(i.text)))
   })
 
   it('notes scored students who are not enrolled, keeping the name from the sheet', async () => {
@@ -167,7 +163,8 @@ describe('tables', () => {
     const byId = Object.fromEntries(rows.map((r) => [r.student_id, r]))
     assert.deepEqual([byId['1001']['10'], byId['1001']['11'], byId['1001']['20']], [20, 0, 30])
     assert.deepEqual([byId['1002']['10'], byId['1002']['11'], byId['1002']['20']], ['', 20, 60])
-    assert.deepEqual([byId['1004']['10'], byId['1004']['20']], ['', ''])
+    assert.ok(!('1004' in byId), 'an enrolled student with no sheet row has no scores row: they count as absent')
+    assert.equal(rows.length, 4)
   })
 
   it('follows edited marks and removed questions', async () => {
@@ -178,12 +175,19 @@ describe('tables', () => {
     assert.equal(rows.find((r) => r.student_id === '1001')['20'], 5)
   })
 
-  it('writes the students file with attendance', async () => {
+  it('writes the cohort file: id, name and section', async () => {
     const { students } = assembleExam({ ...(await load()), totalMarks: TOTALS })
     const table = studentsTable(students)
-    assert.deepEqual(table.columns, ['student_id', 'student_name', 'section', 'attendance'])
-    assert.deepEqual(table.rows[2], { student_id: '1003', student_name: 'Chitra M', section: '', attendance: 'absent' })
-    assert.equal(table.rows[0].attendance, 'present')
+    assert.deepEqual(table.columns, ['student_id', 'student_name', 'section'])
+    assert.deepEqual(table.rows[2], { student_id: '1003', student_name: 'Chitra M', section: '' })
+    assert.equal(table.rows.length, 5, 'the whole cohort, including students in no sheet')
+  })
+
+  it('writes the attendance file for every student', async () => {
+    const { students } = assembleExam({ ...(await load()), totalMarks: TOTALS })
+    const table = attendanceTable(students)
+    assert.deepEqual(table.columns, ['student_id', 'attendance'])
+    assert.deepEqual(table.rows.map((r) => r.attendance), ['present', 'present', 'absent', 'present', 'absent'])
   })
 
   it('writes the config table with our column names', async () => {
@@ -203,10 +207,15 @@ describe('tables', () => {
     const c = configTable(config)
     const s = scoresTable(config, students, fractions)
     const t = studentsTable(students)
+    const a = attendanceTable(students)
+    const cohort = readStudentNames(await parse(toCsv(t.rows, t.columns)))
+    assert.deepEqual(cohort.errors, [])
+    assert.deepEqual(readAttendance(await parse(toCsv(a.rows, a.columns))).errors, [])
     const { dataset, errors } = readDataset({
       config: await parse(toCsv(c.rows, c.columns)),
       scores: await parse(toCsv(s.rows, s.columns)),
-      students: await parse(toCsv(t.rows, t.columns)),
+      cohort: cohort.students,
+      attendance: await parse(toCsv(a.rows, a.columns)),
     })
     assert.deepEqual(errors, [])
     assert.equal(dataset.students.length, 5)

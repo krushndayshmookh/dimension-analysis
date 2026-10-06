@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseCsv } from '../src/lib/csv.js'
-import { readDataset } from '../src/lib/input.js'
+import { readAttendance, readDataset, readStudentNames } from '../src/lib/input.js'
 import { analyzeDataset } from '../src/lib/analysis.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -18,10 +18,16 @@ for (const [folder, students, questions, hasMcq] of [
 ]) {
   describe(`${folder} files`, () => {
     it('are accepted by the strict reader and can be analyzed', async () => {
+      const cohort = readStudentNames(await read(folder, 'students.csv'))
+      assert.deepEqual(cohort.errors, [])
+      const attendanceFile = path.join(root, folder, 'attendance.csv')
+      const attendance = fs.existsSync(attendanceFile) ? await read(folder, 'attendance.csv') : null
+      if (attendance) assert.deepEqual(readAttendance(attendance).errors, [])
       const result = readDataset({
         config: await read(folder, 'exam_config.csv'),
         scores: await read(folder, 'student_scores.csv'),
-        students: await read(folder, 'students.csv'),
+        cohort: cohort.students,
+        attendance,
       })
       assert.deepEqual(result.errors, [])
       assert.deepEqual(result.warnings, [])
