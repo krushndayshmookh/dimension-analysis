@@ -1,7 +1,8 @@
 <template>
   <div class="data-table">
-    <div v-if="searchable" class="dt-toolbar">
+    <div v-if="searchable || exportName" class="dt-toolbar">
       <input
+        v-if="searchable"
         v-model="search"
         type="search"
         class="dt-search"
@@ -10,6 +11,9 @@
       />
       <button v-if="hasActiveFilters" type="button" class="btn-sm btn-secondary" @click="clearAll">
         Clear filters
+      </button>
+      <button v-if="exportName" type="button" class="btn-sm btn-secondary" @click="exportCsv">
+        Export CSV
       </button>
       <span class="dt-count">{{ visibleRows.length }} of {{ rows.length }} rows</span>
     </div>
@@ -80,7 +84,7 @@
 
 <script setup>
 import { computed, reactive, ref } from 'vue'
-import { applyTableState, columnText, columnValue } from '../lib/table.js'
+import { applyTableState, columnText, columnValue, tableToCsv } from '../lib/table.js'
 
 const props = defineProps({
   columns: { type: Array, required: true },
@@ -91,6 +95,8 @@ const props = defineProps({
   searchable: { type: Boolean, default: true },
   searchPlaceholder: { type: String, default: 'Search all columns…' },
   emptyText: { type: String, default: 'No data.' },
+  // File name (without .csv) for the Export CSV button; omit to hide the button.
+  exportName: { type: String, default: null },
 })
 
 defineEmits(['row-click'])
@@ -112,6 +118,17 @@ const visibleRows = computed(() =>
 const hasActiveFilters = computed(
   () => search.value.trim() !== '' || Object.values(filters).some((f) => String(f ?? '').trim() !== '')
 )
+
+// Exports the rows as currently searched, filtered and sorted.
+function exportCsv() {
+  const blob = new Blob([tableToCsv(visibleRows.value, props.columns)], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${props.exportName}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
+}
 
 function clearAll() {
   search.value = ''

@@ -8,6 +8,7 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import Chart from 'chart.js/auto'
 import { DIMENSIONS } from '../lib/constants.js'
+import { dimensionColor } from '../lib/colors.js'
 
 // values / referenceValues: { [dimension]: percentage | null }
 const props = defineProps({
@@ -58,7 +59,12 @@ function render() {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        r: { min: 0, max: 100, ticks: { stepSize: 20, backdropColor: 'transparent', callback: (v) => `${v}%` } },
+        r: {
+          min: 0,
+          max: 100,
+          ticks: { stepSize: 20, backdropColor: 'transparent', callback: (v) => `${v}%` },
+          pointLabels: { color: DIMENSIONS.map(dimensionColor), font: { weight: 'bold', size: 13 } },
+        },
       },
       plugins: {
         legend: { position: 'top' },
