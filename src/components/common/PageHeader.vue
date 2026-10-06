@@ -6,12 +6,16 @@
         <slot name="description">{{ description }}</slot>
       </p>
     </div>
-    <div v-if="$slots.actions" class="no-print flex flex-wrap items-center gap-2">
+    <div v-if="$slots.actions || help" class="no-print flex flex-wrap items-center gap-2">
       <slot name="actions" />
+      <LearnMore v-if="help" :topic="help" />
     </div>
   </header>
 </template>
 
 <script setup>
-defineProps({ title: { type: String, required: true }, description: { type: String, default: '' } })
+import LearnMore from '@/components/common/LearnMore.vue'
+
+// help: a topic of lib/help.js, shown as a Learn more button.
+defineProps({ title: { type: String, required: true }, description: { type: String, default: '' }, help: { type: String, default: '' } })
 </script>

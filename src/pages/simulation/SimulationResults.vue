@@ -22,7 +22,7 @@
       <StatCard label="Distribution distance" :value="pct(comparison.distributionDistancePct)" description="total variation distance between the decile distributions" />
     </StatGrid>
 
-    <SectionCard title="Score distribution">
+    <SectionCard title="Score distribution" help="simulation.distribution">
       <template #actions><BinModeToggle v-model="mode" /></template>
       <DataTable :columns="binColumns" :rows="highestFirst(mode === 'percentage' ? comparison.decileBins : comparison.markBins)" row-key="label" :searchable="false" export-name="simulation-distribution">
         <template #cell-deltaPp="{ value }">{{ signed(value, ' pp') }}</template>
@@ -30,7 +30,7 @@
       </DataTable>
     </SectionCard>
 
-    <SectionCard title="Dimensions">
+    <SectionCard title="Dimensions" help="simulation.dimensions">
       <DataTable :columns="gapColumns('dimension', 'Dimension')" :rows="comparison.dimensions" row-key="dimension" :searchable="false" export-name="simulation-dimensions">
         <template #cell-dimension="{ value }"><DimensionBadge :dimension="value" /></template>
         <template #cell-gapPp="{ value }">{{ signed(value, ' pp') }}</template>
@@ -38,7 +38,7 @@
       </DataTable>
     </SectionCard>
 
-    <SectionCard v-if="comparison.topics.length" title="Topics">
+    <SectionCard v-if="comparison.topics.length" title="Topics" help="simulation.topics">
       <DataTable :columns="gapColumns('topic', 'Topic')" :rows="comparison.topics" row-key="topic" export-name="simulation-topics">
         <template #cell-gapPp="{ value }">{{ signed(value, ' pp') }}</template>
         <template #cell-bars="{ row }"><PairBar :first="row.expectedMasteryPct" :second="row.actualMasteryPct" first-label="Expected" second-label="Actual" /></template>

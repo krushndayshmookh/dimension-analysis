@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.settings"
       title="Settings"
       description="The thresholds behind every colored tag, verdict and flag. Each section says what its rules affect. Changes apply once saved, and are stored with your data."
     />

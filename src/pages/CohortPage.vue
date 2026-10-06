@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader title="Cohort overview" :description="`${exam.courseName} · ${exam.examTitle} · ${exam.examDate}`" />
+    <PageHeader help="page.cohort" title="Cohort overview" :description="`${exam.courseName} · ${exam.examTitle} · ${exam.examDate}`" />
 
     <StatGrid>
       <StatCard label="Students" :value="profiles.cohort.studentCount" :description="profiles.cohort.absentCount ? `${profiles.cohort.absentCount} absent (scored 0)` : undefined" />
@@ -17,10 +17,10 @@
     </StatGrid>
 
     <div class="grid gap-4 lg:grid-cols-2">
-      <SectionCard title="Cohort mastery by dimension">
+      <SectionCard title="Cohort mastery by dimension" help="cohort.radar">
         <RadarChart :values="radar" label="Cohort mastery %" />
       </SectionCard>
-      <SectionCard title="Dimensions">
+      <SectionCard title="Dimensions" help="cohort.dimensions">
         <DataTable :columns="dimensionColumns" :rows="dimensionRows" row-key="dimension" :searchable="false" export-name="cohort-dimensions">
           <template #cell-dimension="{ value }"><DimensionBadge :dimension="value" /></template>
           <template #cell-bar="{ row }"><Bar :value="row.masteryPct" :color="dimensionColor(row.dimension)" /></template>
@@ -28,7 +28,7 @@
       </SectionCard>
     </div>
 
-    <SectionCard title="Students needing attention">
+    <SectionCard title="Students needing attention" help="cohort.attention">
       <template #description>
         Below the pass mark, within {{ settings.attention.nearPassMarginPp }} points above it, or weak in
         {{ settings.attention.weakDimensionCount }} or more dimensions. Thresholds are set in Settings.
@@ -46,7 +46,7 @@
       </DataTable>
     </SectionCard>
 
-    <SectionCard title="Students">
+    <SectionCard title="Students" help="cohort.students">
       <template #description>
         Select a row to open the student profile. Rank 1 is the highest mastery; percentile is the share of students
         scoring lower (ties count half).

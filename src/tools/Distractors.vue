@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.distractors"
       title="Distractors"
       description="For multiple-choice questions: how often each option was chosen, overall and by the top and bottom 27% of students (by total score)."
     />
@@ -22,13 +22,13 @@
         <StatCard label="Group size" :value="analysis.questions[0]?.groupSize" description="students in each of the top and bottom groups" />
       </StatGrid>
 
-      <SectionCard title="Questions" description="Select a question to see its options.">
+      <SectionCard title="Questions" help="distractors.questions" description="Select a question to see its options.">
         <DataTable :columns="questionColumns" :rows="questionRows" row-key="id" clickable export-name="distractor-questions" @row-click="selectedId = $event.id">
           <template #cell-flags="{ row }"><ReasonTags :reasons="row.flags" /></template>
         </DataTable>
       </SectionCard>
 
-      <SectionCard v-if="selected" :title="`${selected.id} — options`">
+      <SectionCard v-if="selected" :title="`${selected.id} — options`" help="distractors.options">
         <template #description>
           Key: <strong>{{ selected.correctOption }}</strong> · {{ selected.answered }} answered, {{ selected.blank }} left blank.
           Percentages are of the students who answered.

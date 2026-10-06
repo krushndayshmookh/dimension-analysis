@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.review"
       title="Question review"
       description="Which questions deserve a second look, whether they were used before, and how students attempted them. Thresholds are set in Settings."
     />
@@ -23,7 +23,7 @@
       </StatCard>
     </StatGrid>
 
-    <SectionCard title="Review queue" description="Most severe first. Severity adds up the reasons; negative discrimination and a high deviation weigh most.">
+    <SectionCard title="Review queue" help="review.queue" description="Most severe first. Severity adds up the reasons; negative discrimination and a high deviation weigh most.">
       <template v-if="hasBothTypes" #actions><TypeToggle v-model="queueType" /></template>
       <DataTable :columns="queueColumns" :rows="queueRows" row-key="id" export-name="question-review-queue" empty-text="No question has a reason to be reviewed.">
         <template #cell-reasons="{ row }"><ReasonTags :reasons="row.reasons" /></template>
@@ -31,7 +31,7 @@
     </SectionCard>
 
     <SectionCard
-      title="Reuse across exams"
+      title="Reuse across exams" help="review.reuse"
       description="A question counts as reused when an earlier saved exam has a question with the same type and id. Keep question ids stable across exams for this to work."
     >
       <template v-if="hasBothTypes" #actions><TypeToggle v-model="reuseType" /></template>
@@ -47,7 +47,7 @@
     </SectionCard>
 
     <SectionCard
-      title="Attempt behaviour"
+      title="Attempt behaviour" help="review.attempts"
       description="A question is unattempted when its score cell is blank. “Skippers vs attempters” compares the overall mastery of students who left the question blank with those who attempted it."
     >
       <template v-if="hasBothTypes" #actions><TypeToggle v-model="attemptType" /></template>
@@ -72,7 +72,7 @@
       />
     </SectionCard>
 
-    <SectionCard title="Charts">
+    <SectionCard title="Charts" help="review.charts">
       <template v-if="hasBothTypes" #actions><TypeToggle v-model="chartType" /></template>
       <div class="grid gap-6 lg:grid-cols-2">
         <div class="flex flex-col gap-1">

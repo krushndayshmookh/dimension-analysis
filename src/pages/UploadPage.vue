@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader title="Upload exam data">
+    <PageHeader help="page.upload" title="Upload exam data">
       <template #description>
         Files must follow the format in <code class="rounded bg-muted px-1">templates/README.md</code>. Files that do not are
         rejected with the rows that need fixing. Examples to upload are in <code class="rounded bg-muted px-1">samples/</code>.
@@ -8,7 +8,7 @@
     </PageHeader>
 
     <form class="flex flex-col gap-4" @submit.prevent="analyze">
-      <SectionCard title="Exam">
+      <SectionCard title="Exam" help="upload.exam">
         <div class="grid gap-4 md:grid-cols-3">
           <Field label="Course name" html-for="courseName">
             <Input id="courseName" v-model="meta.courseName" required />
@@ -22,7 +22,7 @@
         </div>
       </SectionCard>
 
-      <SectionCard title="CSV files">
+      <SectionCard title="CSV files" help="upload.files">
         <div class="grid gap-4 md:grid-cols-3">
           <Field label="Exam config *" html-for="configFile">
             <FileInput id="configFile" aria-label="Exam config file" @change="(f) => pick('config', f)" />

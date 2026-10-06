@@ -1,13 +1,13 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.whatif"
       title="What-if adjustments"
       description="Try rescoring questions and see what would change, before deciding anything. Nothing here is saved or changes the exam."
     >
       <template #actions><Button variant="outline" :disabled="!activeCount" @click="reset">Reset all</Button></template>
     </PageHeader>
 
-    <SectionCard title="Adjust questions">
+    <SectionCard title="Adjust questions" help="whatif.adjust">
       <template #description>
         <strong>Drop</strong> removes the question from the paper (total marks fall). <strong>Full marks to everyone</strong>
         awards every student the question's marks, including blanks. <strong>Full marks to those who attempted</strong> leaves
@@ -32,7 +32,7 @@
         <StatCard :label="`Crossing the pass mark (${settings.attainment.passMark}%)`" :value="`+${crossing.gained} / −${crossing.lost}`" description="students gaining / losing a pass" />
       </StatGrid>
 
-      <SectionCard title="Score distribution" description="Share of students in each decile of mastery, before and after.">
+      <SectionCard title="Score distribution" help="whatif.distribution" description="Share of students in each decile of mastery, before and after.">
         <LineChart
           :labels="scenario.summary.decileShare.map((b) => b.label)"
           :series="[
@@ -43,7 +43,7 @@
         />
       </SectionCard>
 
-      <SectionCard title="Students" description="Rank change is positive when the student moves up. Pass and distinction marks come from Settings.">
+      <SectionCard title="Students" help="whatif.students" description="Rank change is positive when the student moves up. Pass and distinction marks come from Settings.">
         <DataTable
           :columns="studentColumns"
           :rows="scenario.students"

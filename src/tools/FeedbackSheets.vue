@@ -4,12 +4,12 @@
       <StudentSidebar v-model="selectedIds" :items="items" multiple />
 
       <div class="flex min-w-0 flex-col gap-6">
-        <PageHeader
+        <PageHeader help="page.feedback"
           title="Feedback sheets"
           description="One page per student: marks, dimensions, lowest topics and (optionally) marks per question. Choose the students in the sidebar, then print or save as PDF, or download as HTML."
         />
 
-        <SectionCard title="Contents" description="These start from the Feedback sheets settings. Changing them here affects only this page.">
+        <SectionCard title="Contents" help="feedback.contents" description="These start from the Feedback sheets settings. Changing them here affects only this page.">
           <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <label v-for="o in toggles" :key="o.key" class="flex items-center gap-2 text-sm">
               <Checkbox :model-value="options[o.key]" @update:model-value="(v) => (options[o.key] = Boolean(v))" />

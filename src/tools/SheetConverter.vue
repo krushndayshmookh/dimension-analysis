@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.converter"
       title="Sheet converter"
       description="Turns the analytics team's sheets into the three files the Upload page takes. Nothing is imported here: check and edit the result, then download the CSVs."
     />
 
-    <SectionCard title="Sheets" description="Choose any of: the question listing, the coding scores, the quiz scores and the enrolled students. Each sheet is recognised by its columns.">
+    <SectionCard title="Sheets" help="converter.sheets" description="Choose any of: the question listing, the coding scores, the quiz scores and the enrolled students. Each sheet is recognised by its columns.">
       <FileInput multiple aria-label="Sheets to convert" @change="addFiles" />
       <ul v-if="loaded.length" class="flex flex-col gap-1 text-sm">
         <li v-for="item in loaded" :key="item.type" class="flex flex-wrap items-center gap-2">
@@ -19,7 +19,7 @@
       </NoticeAlert>
     </SectionCard>
 
-    <SectionCard v-if="hasScores" title="Marks" description="Each type's total marks are divided equally over its questions. Coding scores follow the share of test cases passed.">
+    <SectionCard v-if="hasScores" title="Marks" help="converter.marks" description="Each type's total marks are divided equally over its questions. Coding scores follow the share of test cases passed.">
       <div class="grid gap-4 md:grid-cols-3">
         <Field v-if="sheets.coding" label="Total marks of the coding questions" html-for="codingMarks">
           <NumberInput id="codingMarks" v-model="codingMarks" :min="0" aria-label="Total coding marks" />

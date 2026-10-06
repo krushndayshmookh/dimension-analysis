@@ -3,9 +3,9 @@
     <StudentSidebar v-model="historyStudentId" :items="items" />
 
     <div class="flex min-w-0 flex-col gap-6">
-      <PageHeader title="Longitudinal history" description="A student's results across all saved exams. Students are matched by student_id." />
+      <PageHeader help="page.history" title="Longitudinal history" description="A student's results across all saved exams. Students are matched by student_id." />
 
-      <SectionCard v-if="history" :title="`${history.name} (${history.id})`">
+      <SectionCard v-if="history" :title="`${history.name} (${history.id})`" help="history.student">
         <LineChart v-if="rows.length > 1" :labels="rows.map((r) => `${r.examTitle} (${r.examDate})`)" :series="series" y-label="mastery %" />
         <DataTable :columns="columns" :rows="rows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" export-name="student-history" />
       </SectionCard>

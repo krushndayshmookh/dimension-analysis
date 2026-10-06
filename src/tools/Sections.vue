@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader title="Sections">
+    <PageHeader help="page.sections" title="Sections">
       <template #description>
         Compare sections (batches) on every measure. Sections come from the optional <code class="rounded bg-muted px-1">section</code> column of the student file.
       </template>
@@ -25,7 +25,7 @@
         </StatCard>
       </StatGrid>
 
-      <SectionCard title="Overall">
+      <SectionCard title="Overall" help="sections.overall">
         <template #description>
           Difference from cohort = section mean minus cohort mean. Effect size is Cohen's d against all other students (about 0.2
           small, 0.5 medium, 0.8 large). Pass and distinction marks come from Settings.
@@ -37,15 +37,15 @@
         </DataTable>
       </SectionCard>
 
-      <SectionCard title="Dimension balance by section">
+      <SectionCard title="Dimension balance by section" help="sections.radar">
         <div class="mx-auto w-full max-w-2xl"><RadarChart :series="radarSeries" height-class="h-96" /></div>
       </SectionCard>
 
-      <SectionCard title="Score distribution by section" description="Share of each section's students in each decile of mastery.">
+      <SectionCard title="Score distribution by section" help="sections.distribution" description="Share of each section's students in each decile of mastery.">
         <LineChart :labels="decileLabels" :series="distributionSeries" y-label="% of the section's students" :y-max="100" />
       </SectionCard>
 
-      <SectionCard title="Mean mastery by dimension">
+      <SectionCard title="Mean mastery by dimension" help="sections.dimensions">
         <template #description>
           The p-value tests whether the sections' means for that dimension differ (one-way ANOVA). With few students per section
           treat it as indicative only.
@@ -55,13 +55,13 @@
         </DataTable>
       </SectionCard>
 
-      <SectionCard title="Mean mastery by difficulty tier">
+      <SectionCard title="Mean mastery by difficulty tier" help="sections.tiers">
         <DataTable :columns="tierColumns" :rows="tierRows" row-key="name" :searchable="false" export-name="sections-tiers">
           <template #cell-name="{ value }"><TierBadge :tier="value" /></template>
         </DataTable>
       </SectionCard>
 
-      <SectionCard title="Students">
+      <SectionCard title="Students" help="sections.students">
         <DataTable :columns="studentColumns" :rows="profiles.students" row-key="id" clickable export-name="students-by-section" @row-click="openStudent($event.id)" />
       </SectionCard>
     </template>

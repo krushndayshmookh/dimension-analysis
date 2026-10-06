@@ -1,4 +1,6 @@
 import { DEFAULT_EXPECTED_SOLVE_RATES } from './constants.js'
+import { PAGES } from './help-pages.js'
+import { TOOLS } from './help-tools.js'
 
 // Explanations shown by the "Learn more" button of each analysis section.
 // A topic is { title, about, parts: [{ heading, entries: [{ term, text }] }] }.
@@ -9,7 +11,7 @@ const tierDefaults = Object.entries(DEFAULT_EXPECTED_SOLVE_RATES).map(([tier, ra
 const MASTERY =
   'Mastery is the marks a student earned divided by the marks available. A question left blank counts as zero. Absent students stay in the cohort with zero.'
 
-export const HELP = {
+const PAPER = {
   summary: {
     title: 'Summary',
     about: 'Six headline numbers for the paper. Every level tag uses the thresholds on the Settings page.',
@@ -209,5 +211,7 @@ export const HELP = {
     ],
   },
 }
+
+export const HELP = { ...PAPER, ...PAGES, ...TOOLS }
 
 export const helpTopics = () => HELP

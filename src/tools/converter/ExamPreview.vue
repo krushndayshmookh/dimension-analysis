@@ -1,5 +1,5 @@
 <template>
-  <SectionCard :title="`${label} exam`" :description="summary">
+  <SectionCard :title="`${label} exam`" :description="summary" help="converter.preview">
     <NoticeAlert v-if="exam.issues.length" kind="info" title="Notes from the conversion">
       <ul class="list-disc pl-5">
         <li v-for="(item, i) in exam.issues" :key="i">{{ item.text }}</li>

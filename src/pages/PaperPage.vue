@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.paper"
       title="Paper analysis"
       :description="`${dataset.questions.length} questions · ${num(profiles.totalMarks)} marks · ${profiles.students.length} students`"
     >

@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.bands"
       title="Grade bands"
       description="Count students per band, see how many pass at any cutoff, and find students just below a cutoff. Changes on this page are for exploring only; the default bands are in Settings."
     />
 
-    <SectionCard title="Bands">
+    <SectionCard title="Bands" help="bands.bands">
       <BandsEditor v-model="bands" />
       <div>
         <Button variant="outline" size="sm" @click="resetBands">Reset to settings</Button>
@@ -16,7 +16,7 @@
     </SectionCard>
 
     <template v-if="!bandProblems.length">
-      <SectionCard title="Students per band">
+      <SectionCard title="Students per band" help="bands.perband">
         <DataTable :columns="distributionColumns" :rows="distributionRows" row-key="label" :searchable="false" export-name="grade-bands">
           <template #cell-label="{ value }"><TierBadge :tier="value" class="normal-case" /></template>
           <template #cell-bar="{ row }"><Bar :value="row.percentage" /></template>
@@ -24,7 +24,7 @@
         </DataTable>
       </SectionCard>
 
-      <SectionCard title="Cutoff explorer">
+      <SectionCard title="Cutoff explorer" help="bands.cutoff">
         <div class="flex flex-wrap items-center gap-3">
           <span class="text-sm font-semibold">Cutoff</span>
           <Slider :model-value="[cutoffClamped]" :min="0" :max="100" :step="1" class="min-w-56 flex-1" aria-label="Cutoff percentage" @update:model-value="(v) => (cutoff = v[0])" />
@@ -40,7 +40,7 @@
         <LineChart :labels="curve.map((c) => String(c.cutoff))" :series="[{ label: 'Students at or above the cutoff (%)', data: curve.map((c) => c.ratePct), color: '#2563eb' }]" y-label="% of students" />
       </SectionCard>
 
-      <SectionCard title="Students just below the cutoff">
+      <SectionCard title="Students just below the cutoff" help="bands.borderline">
         <div class="flex flex-wrap items-center gap-2 text-sm">
           <label for="within">Within</label>
           <NumberInput id="within" v-model="within" :min="0" :max="100" :step="1" class="w-20" />
@@ -49,7 +49,7 @@
         <DataTable :columns="borderlineColumns" :rows="borderline" row-key="id" clickable export-name="borderline-students" empty-text="No students in this range." @row-click="openStudent($event.id)" />
       </SectionCard>
 
-      <SectionCard title="Students">
+      <SectionCard title="Students" help="bands.students">
         <DataTable :columns="studentColumns" :rows="studentRows" row-key="id" clickable export-name="students-bands" @row-click="openStudent($event.id)" />
       </SectionCard>
     </template>

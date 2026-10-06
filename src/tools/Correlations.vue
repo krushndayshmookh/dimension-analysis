@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.correlations"
       title="Correlations"
       :description="`How students' mastery in one ${unit} relates to their mastery in another. A positive coefficient means students who do well in one tend to do well in the other.`"
     >
@@ -17,7 +17,7 @@
         change a lot when a few students change; read them as indicative.
       </NoticeAlert>
 
-      <SectionCard title="Correlation matrix">
+      <SectionCard title="Correlation matrix" help="correlations.matrix">
         <template #description>
           Pearson correlation of mastery percentages, from −1 to +1. Blue is positive, orange is negative; hover a cell for the
           number of students behind it. Select a cell to see the scatter.
@@ -54,11 +54,11 @@
         </p>
       </SectionCard>
 
-      <SectionCard title="Pairs, strongest first">
+      <SectionCard title="Pairs, strongest first" help="correlations.pairs">
         <DataTable :columns="pairColumns" :rows="pairRows" row-key="key" clickable export-name="correlation-pairs" @row-click="select($event.a, $event.b)" />
       </SectionCard>
 
-      <SectionCard v-if="selected" :title="`${selected.a} vs ${selected.b}`">
+      <SectionCard v-if="selected" :title="`${selected.a} vs ${selected.b}`" help="correlations.scatter">
         <template #description>
           One point per student ({{ points.length }}). r = {{ selectedPair?.r ?? '—' }}
           <VerdictTag :verdict="V.correlationVerdict(selectedPair?.r, settings)" />

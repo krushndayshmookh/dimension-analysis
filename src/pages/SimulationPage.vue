@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.simulation"
       title="Expected vs actual (simulation)"
       :description="`Simulates a synthetic cohort whose per-question success matches the expected solve rates, and compares it with the actual cohort of ${profiles.students.length} students. Change the parameters and run again.`"
     />

@@ -1,5 +1,5 @@
 <template>
-  <SectionCard title="Parameters">
+  <SectionCard title="Parameters" help="simulation.parameters">
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <Field v-for="f in fields" :key="f.key" :label="f.label" :html-for="`sim-${f.key}`" :hint="f.hint">
         <NumberInput :id="`sim-${f.key}`" v-model="form[f.key]" :step="f.step" :aria-label="f.label" />

@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader
+    <PageHeader help="page.compare"
       title="Compare exams"
       description="Compare two saved exams: cohort, dimensions, and students matched by student_id. Changes are later minus earlier, in percentage points."
     />
 
-    <SectionCard title="Exams">
+    <SectionCard title="Exams" help="compare.exams">
       <div class="grid gap-4 md:grid-cols-2">
         <Field label="Earlier exam" html-for="compareBase">
           <SelectField id="compareBase" v-model="baseId" :options="choices" placeholder="Select an exam" aria-label="Earlier exam" />
@@ -31,13 +31,13 @@
         Only in the earlier exam: {{ result.unmatched.onlyInBase.length }} student(s). Only in the later exam:
         {{ result.unmatched.onlyInLater.length }} student(s). They are left out of the student table.
       </p>
-      <SectionCard title="Dimensions">
+      <SectionCard title="Dimensions" help="compare.dimensions">
         <DataTable :columns="dimensionColumns" :rows="result.dimensions" row-key="dimension" :searchable="false" export-name="compare-dimensions">
           <template #cell-dimension="{ value }"><DimensionBadge :dimension="value" /></template>
           <template #cell-bars="{ row }"><PairBar :first="row.basePct" :second="row.laterPct" first-label="Earlier" second-label="Later" :color="dimensionColor(row.dimension)" /></template>
         </DataTable>
       </SectionCard>
-      <SectionCard title="Students">
+      <SectionCard title="Students" help="compare.students">
         <DataTable :columns="studentColumns" :rows="result.students" row-key="id" export-name="compare-students" />
       </SectionCard>
     </template>

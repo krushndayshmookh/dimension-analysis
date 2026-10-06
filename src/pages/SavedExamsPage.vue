@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-6">
-    <PageHeader title="Saved exams">
+    <PageHeader help="page.saved" title="Saved exams">
       <template #actions><Button variant="outline" @click="refreshSaved"><RefreshCwIcon /> Refresh</Button></template>
     </PageHeader>
 
-    <SectionCard v-if="savedExams.length">
+    <SectionCard v-if="savedExams.length" help="saved.list">
       <DataTable :columns="columns" :rows="savedExams" row-key="id" :default-sort="{ key: 'createdAt', dir: 'desc' }">
         <template #cell-actions="{ row }">
           <span class="flex gap-1.5">

@@ -3,10 +3,10 @@
     <StudentSidebar v-model="selectedStudentId" :items="items" />
 
     <div class="flex min-w-0 flex-col gap-6">
-      <PageHeader title="Student profile" />
+      <PageHeader help="page.student" title="Student profile" />
 
       <template v-if="student">
-        <SectionCard title="Radar metric">
+        <SectionCard title="Radar metric" help="student.metric">
           <ToggleGroup v-model="metric" type="single" variant="outline" size="sm" class="w-fit" @update:model-value="(v) => !v && (metric = 'mastery')">
             <ToggleGroupItem value="mastery">Mastery (earned ÷ all marks)</ToggleGroupItem>
             <ToggleGroupItem value="accuracy">Accuracy (earned ÷ attempted marks)</ToggleGroupItem>
@@ -14,11 +14,11 @@
         </SectionCard>
 
         <div class="grid gap-4 xl:grid-cols-2">
-          <SectionCard :title="`${student.name} vs cohort`">
+          <SectionCard :title="`${student.name} vs cohort`" help="student.radar">
             <RadarChart :values="studentRadar" :label="student.name" :reference-values="cohortRadar" reference-label="Cohort average" />
           </SectionCard>
 
-          <SectionCard :title="`${student.name} (${student.id})`">
+          <SectionCard :title="`${student.name} (${student.id})`" help="student.summary">
             <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <Highlight label="Marks earned">{{ num(student.earned) }} / {{ num(student.totalMarks) }}</Highlight>
               <Highlight label="Attempted marks">{{ num(student.attemptedMarks) }}</Highlight>
@@ -60,19 +60,19 @@
           </SectionCard>
         </div>
 
-        <SectionCard title="Dimensions">
+        <SectionCard title="Dimensions" help="student.dimensions">
           <DataTable :columns="breakdownColumns('Dimension')" :rows="breakdown('dimensions')" row-key="name" :searchable="false" export-name="student-dimensions">
             <template #cell-name="{ value }"><DimensionBadge :dimension="value" /></template>
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </SectionCard>
-        <SectionCard title="Difficulty tiers">
+        <SectionCard title="Difficulty tiers" help="student.tiers">
           <DataTable :columns="breakdownColumns('Tier')" :rows="breakdown('difficulties')" row-key="name" :searchable="false" export-name="student-tiers">
             <template #cell-name="{ value }"><TierBadge :tier="value" /></template>
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>
         </SectionCard>
-        <SectionCard v-if="profiles.topics.length" title="Topics">
+        <SectionCard v-if="profiles.topics.length" title="Topics" help="student.topics">
           <DataTable :columns="breakdownColumns('Topic')" :rows="breakdown('topics')" row-key="name" export-name="student-topics">
             <template #cell-vsCohort="{ value }">{{ signed(value, ' pp') }}</template>
           </DataTable>

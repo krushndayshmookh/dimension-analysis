@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { HELP, helpTopics } from '../src/lib/help.js'
 
 describe('help topics', () => {
@@ -30,5 +32,29 @@ describe('help topics', () => {
 
   it('quotes the tier defaults from the constants', () => {
     assert.match(JSON.stringify(HELP.questions), /beginner 85%/)
+  })
+})
+
+describe('help wiring', () => {
+  const files = []
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) walk(full)
+      else if (name.endsWith('.vue')) files.push(full)
+    }
+  }
+  walk('src')
+  const used = new Set()
+  for (const file of files) {
+    for (const m of readFileSync(file, 'utf8').matchAll(/(?<![:\w])(?:help|topic)="([\w.]+)"/g)) used.add(m[1])
+  }
+
+  it('uses only topics that exist', () => {
+    for (const id of used) assert.ok(HELP[id], `no help topic "${id}"`)
+  })
+
+  it('has a button for every topic', () => {
+    for (const id of Object.keys(HELP)) assert.ok(used.has(id), `topic "${id}" is not used by any page`)
   })
 })
