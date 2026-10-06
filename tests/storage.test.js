@@ -12,6 +12,7 @@ import {
   getStudentHistory,
   getSettings,
   saveSettings,
+  createCohort,
 } from '../server/storage.js'
 import { createApp } from '../server/server.js'
 import { loadDataset } from './fixtures.js'
@@ -20,11 +21,13 @@ import { buildProfiles } from '../src/lib/profiles.js'
 let dataDir
 let dataset
 let analysis
+let cohortId
 
 beforeEach(async () => {
   dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dimension-analysis-'))
   dataset = await loadDataset()
   analysis = buildProfiles(dataset)
+  cohortId = createCohort({ name: 'Batch 1', students: dataset.students.map((s) => ({ id: s.id, name: s.name, section: s.section })) }, dataDir).id
 })
 
 afterEach(() => {
@@ -32,6 +35,7 @@ afterEach(() => {
 })
 
 const payload = (overrides = {}) => ({
+  cohortId,
   courseName: 'CS101',
   examTitle: 'Midterm',
   examDate: '2026-03-01',
@@ -259,14 +263,14 @@ describe('backup and restore', () => {
     saveExam(payload({ id: 'e2', examTitle: 'Two', examDate: '2026-05-01' }), dataDir)
     const { exportBackup, restoreBackup } = await import('../server/storage.js')
     const backup = exportBackup(dataDir)
-    assert.equal(backup.version, 1)
+    assert.equal(backup.version, 2)
     assert.deepEqual(backup.exams.map((e) => e.id).sort(), ['e1', 'e2'])
     assert.deepEqual(backup.settings, { trend: { notableChangePp: 7 } })
 
     const other = fs.mkdtempSync(path.join(os.tmpdir(), 'dimension-analysis-restore-'))
     try {
       const result = restoreBackup(JSON.parse(JSON.stringify(backup)), other)
-      assert.deepEqual(result, { success: true, exams: 2 })
+      assert.deepEqual(result, { success: true, cohorts: 1, exams: 2 })
       assert.deepEqual(getIndex(other).map((e) => e.id).sort(), ['e1', 'e2'])
       assert.deepEqual(getSettings(other), { trend: { notableChangePp: 7 } })
       assert.equal(getStudentHistory('S1', other).exams.length, 2, 'student histories are rebuilt')
@@ -298,7 +302,7 @@ describe('backup and restore', () => {
 
   it('rejects anything that is not a backup', async () => {
     const { restoreBackup } = await import('../server/storage.js')
-    for (const bad of [null, 'x', {}, { version: 2, exams: [] }, { version: 1, exams: 'x' }]) {
+    for (const bad of [null, 'x', {}, { version: 1, exams: [], cohorts: [] }, { version: 2, exams: 'x', cohorts: [] }, { version: 2, exams: [] }]) {
       assert.throws(() => restoreBackup(bad, dataDir), /backup/i)
     }
   })

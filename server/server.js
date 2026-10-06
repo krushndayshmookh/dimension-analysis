@@ -16,6 +16,11 @@ import {
   saveSettings,
   exportBackup,
   restoreBackup,
+  createCohort,
+  deleteCohort,
+  getCohort,
+  listCohorts,
+  updateCohort,
 } from './storage.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -49,6 +54,26 @@ export function createApp({ dataDir = DEFAULT_DATA_DIR } = {}) {
   app.delete('/api/exams/:id', handle((req, res) => {
     if (!getExam(req.params.id, dataDir)) return res.status(404).json({ error: 'Exam not found' })
     res.json(deleteExam(req.params.id, dataDir))
+  }))
+
+  app.get('/api/cohorts', handle((req, res) => res.json(listCohorts(dataDir))))
+
+  app.get('/api/cohorts/:id', handle((req, res) => {
+    const cohort = getCohort(req.params.id, dataDir)
+    if (!cohort) return res.status(404).json({ error: 'Cohort not found' })
+    res.json(cohort)
+  }))
+
+  app.post('/api/cohorts', handle((req, res) => res.status(201).json(createCohort(req.body, dataDir))))
+
+  app.put('/api/cohorts/:id', handle((req, res) => {
+    if (!getCohort(req.params.id, dataDir)) return res.status(404).json({ error: 'Cohort not found' })
+    res.json(updateCohort(req.params.id, req.body, dataDir))
+  }))
+
+  app.delete('/api/cohorts/:id', handle((req, res) => {
+    if (!getCohort(req.params.id, dataDir)) return res.status(404).json({ error: 'Cohort not found' })
+    res.json(deleteCohort(req.params.id, dataDir))
   }))
 
   app.get('/api/students', handle((req, res) => res.json(listStudents(dataDir))))

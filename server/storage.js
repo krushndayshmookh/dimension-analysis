@@ -13,6 +13,7 @@ const paths = (dataDir) => ({
   settingsFile: path.join(dataDir, 'settings.json'),
   examsDir: path.join(dataDir, 'exams'),
   studentsDir: path.join(dataDir, 'students'),
+  cohortsDir: path.join(dataDir, 'cohorts'),
   indexFile: path.join(dataDir, 'index.json'),
 })
 
@@ -30,9 +31,10 @@ function readJson(file) {
 }
 
 export function ensureDirs(dataDir = DEFAULT_DATA_DIR) {
-  const { examsDir, studentsDir, indexFile } = paths(dataDir)
+  const { examsDir, studentsDir, cohortsDir, indexFile } = paths(dataDir)
   fs.mkdirSync(examsDir, { recursive: true })
   fs.mkdirSync(studentsDir, { recursive: true })
+  fs.mkdirSync(cohortsDir, { recursive: true })
   if (!fs.existsSync(indexFile)) writeJson(indexFile, [])
 }
 
@@ -95,11 +97,15 @@ export function saveExam(payload, dataDir = DEFAULT_DATA_DIR) {
     throw new ValidationError('questionSummaries must be a list')
   }
   ensureDirs(dataDir)
+  if (!payload.cohortId || !getCohort(payload.cohortId, dataDir)) {
+    throw new ValidationError('An exam needs an existing cohort (cohortId)')
+  }
 
   const courseName = payload.courseName || 'Untitled course'
   const examTitle = payload.examTitle || 'Untitled exam'
   const exam = {
     id: payload.id || `${slug(courseName, 'course')}-${slug(examTitle, 'exam')}-${Date.now()}`,
+    cohortId: payload.cohortId,
     courseName,
     examTitle,
     examDate: payload.examDate || new Date().toISOString().slice(0, 10),
@@ -176,22 +182,28 @@ export function saveSettings(settings, dataDir = DEFAULT_DATA_DIR) {
   return { success: true }
 }
 
-// Everything needed to rebuild the data folder: settings and every full exam
-// (the index and student histories are derived from the exams).
+// Everything needed to rebuild the data folder: settings, the cohorts and every
+// full exam (the index and student histories are derived from the exams).
 export function exportBackup(dataDir = DEFAULT_DATA_DIR) {
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     settings: getSettings(dataDir),
+    cohorts: readCohorts(dataDir),
     exams: getIndex(dataDir).map((entry) => getExam(entry.id, dataDir)).filter(Boolean),
   }
 }
 
-// Merges a backup into the data folder: exams with the same id are replaced,
-// other exams are kept, and settings are replaced.
+// Merges a backup into the data folder: cohorts and exams with the same id are
+// replaced, others are kept, and settings are replaced.
 export function restoreBackup(backup, dataDir = DEFAULT_DATA_DIR) {
-  if (!backup || typeof backup !== 'object' || backup.version !== 1 || !Array.isArray(backup.exams)) {
-    throw new ValidationError('This is not a backup file made by this app (version 1)')
+  if (!backup || typeof backup !== 'object' || backup.version !== 2 || !Array.isArray(backup.exams) || !Array.isArray(backup.cohorts)) {
+    throw new ValidationError('This is not a backup file made by this app (version 2)')
+  }
+  ensureDirs(dataDir)
+  for (const cohort of backup.cohorts) {
+    if (!cohort?.id || !Array.isArray(cohort.students)) throw new ValidationError('The backup contains an invalid cohort')
+    writeJson(fileFor(paths(dataDir).cohortsDir, cohort.id), cohort)
   }
   for (const exam of backup.exams) {
     try {
@@ -201,5 +213,128 @@ export function restoreBackup(backup, dataDir = DEFAULT_DATA_DIR) {
     }
   }
   if (backup.settings && typeof backup.settings === 'object' && !Array.isArray(backup.settings)) saveSettings(backup.settings, dataDir)
-  return { success: true, exams: backup.exams.length }
+  return { success: true, cohorts: backup.cohorts.length, exams: backup.exams.length }
+}
+
+// ---- cohorts --------------------------------------------------------------------
+// A cohort is a named group of students, uploaded once and used by many exams.
+// A student id belongs to one cohort only.
+
+function readCohorts(dataDir) {
+  ensureDirs(dataDir)
+  const { cohortsDir } = paths(dataDir)
+  return fs
+    .readdirSync(cohortsDir)
+    .filter((name) => name.endsWith('.json'))
+    .map((name) => readJson(path.join(cohortsDir, name)))
+    .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)) || a.name.localeCompare(b.name))
+}
+
+export function getCohort(id, dataDir = DEFAULT_DATA_DIR) {
+  ensureDirs(dataDir)
+  const file = fileFor(paths(dataDir).cohortsDir, id)
+  return fs.existsSync(file) ? readJson(file) : null
+}
+
+export function listCohorts(dataDir = DEFAULT_DATA_DIR) {
+  const index = getIndex(dataDir)
+  return readCohorts(dataDir).map(({ id, name, students, createdAt, updatedAt }) => ({
+    id,
+    name,
+    studentCount: students.length,
+    examCount: index.filter((e) => e.cohortId === id).length,
+    createdAt,
+    updatedAt,
+  }))
+}
+
+function cleanName(name, cohorts, exceptId) {
+  const text = String(name ?? '').trim()
+  if (!text) throw new ValidationError('A cohort needs a name')
+  if (cohorts.some((c) => c.id !== exceptId && c.name.toLowerCase() === text.toLowerCase())) {
+    throw new ValidationError(`A cohort named "${text}" already exists`)
+  }
+  return text
+}
+
+function cleanStudents(list) {
+  if (!Array.isArray(list)) throw new ValidationError('students must be a list')
+  const seen = new Set()
+  return list.map((raw, i) => {
+    const id = String(raw?.id ?? '').trim()
+    const name = String(raw?.name ?? '').trim()
+    if (!id) throw new ValidationError(`Student ${i + 1}: the student id is empty`)
+    if (!name) throw new ValidationError(`Student ${id}: the name is empty`)
+    if (seen.has(id)) throw new ValidationError(`Student ${id} appears more than once`)
+    seen.add(id)
+    return { id, name, section: String(raw?.section ?? '').trim() || null }
+  })
+}
+
+// Rejects ids that already belong to another cohort.
+function checkOwnership(students, cohorts, cohortId) {
+  const owner = new Map()
+  for (const c of cohorts) if (c.id !== cohortId) for (const s of c.students) owner.set(s.id, c.name)
+  const clashes = students.filter((s) => owner.has(s.id))
+  if (clashes.length) {
+    const shown = clashes.slice(0, 5).map((s) => `${s.id} (in ${owner.get(s.id)})`).join(', ')
+    throw new ValidationError(`${clashes.length} student(s) already belong to another cohort: ${shown}${clashes.length > 5 ? ', …' : ''}`)
+  }
+}
+
+// Adds new students and updates changed ones by student id; nobody is removed.
+function merge(existing, incoming) {
+  const students = existing.map((s) => ({ ...s }))
+  const summary = { added: 0, updated: 0, unchanged: 0 }
+  for (const s of incoming) {
+    const at = students.findIndex((x) => x.id === s.id)
+    if (at < 0) {
+      students.push(s)
+      summary.added++
+    } else if (students[at].name !== s.name || students[at].section !== s.section) {
+      students[at] = s
+      summary.updated++
+    } else {
+      summary.unchanged++
+    }
+  }
+  return { students, summary }
+}
+
+// payload: { name, students: [{ id, name, section }] }
+export function createCohort(payload, dataDir = DEFAULT_DATA_DIR) {
+  const cohorts = readCohorts(dataDir)
+  const name = cleanName(payload?.name, cohorts)
+  const incoming = cleanStudents(payload?.students ?? [])
+  checkOwnership(incoming, cohorts, null)
+  const now = new Date().toISOString()
+  const { students, summary } = merge([], incoming)
+  const cohort = { id: `${slug(name, 'cohort')}-${Date.now()}`, name, students, createdAt: now, updatedAt: now }
+  writeJson(fileFor(paths(dataDir).cohortsDir, cohort.id), cohort)
+  return { success: true, id: cohort.id, summary }
+}
+
+// payload: { name?, students? }. Students are merged into the cohort by id.
+export function updateCohort(id, payload, dataDir = DEFAULT_DATA_DIR) {
+  const cohorts = readCohorts(dataDir)
+  const cohort = cohorts.find((c) => c.id === id)
+  if (!cohort) throw new ValidationError('Cohort not found')
+  const name = payload?.name === undefined ? cohort.name : cleanName(payload.name, cohorts, id)
+  const incoming = payload?.students === undefined ? [] : cleanStudents(payload.students)
+  checkOwnership(incoming, cohorts, id)
+  const { students, summary } = merge(cohort.students, incoming)
+  writeJson(fileFor(paths(dataDir).cohortsDir, id), { ...cohort, name, students, updatedAt: new Date().toISOString() })
+  return { success: true, id, summary }
+}
+
+// A cohort that exams use cannot be deleted.
+export function deleteCohort(id, dataDir = DEFAULT_DATA_DIR) {
+  const cohort = getCohort(id, dataDir)
+  if (!cohort) throw new ValidationError('Cohort not found')
+  const using = getIndex(dataDir).filter((e) => e.cohortId === id)
+  if (using.length) {
+    throw new ValidationError(`Cohort "${cohort.name}" is used by ${using.length} exam(s): ${using.slice(0, 5).map((e) => e.examTitle).join(', ')}. Delete them first.`)
+  }
+  fs.rmSync(fileFor(paths(dataDir).cohortsDir, id))
+  return { success: true }
 }
