@@ -216,3 +216,45 @@ tr.clickable:hover td { background: var(--accent-soft); }
 .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
 .corr-cell { cursor: pointer; min-width: 90px; }
 .corr-cell.selected { outline: 2px solid var(--text); outline-offset: -2px; }
+
+/* Feedback sheets */
+.print-area { display: none; }
+.feedback-sheet { background: #fff; color: #111827; max-width: 190mm; margin: 0 auto; padding: 14mm 12mm; border: 1px solid var(--border-soft); border-radius: 4px; font-size: 12px; line-height: 1.4; }
+.feedback-sheet h1 { font-size: 20px; margin: 0; }
+.feedback-sheet h2 { font-size: 13px; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; color: #374151; }
+.fs-header { display: flex; justify-content: space-between; gap: 12px; border-bottom: 2px solid #111827; padding-bottom: 8px; }
+.fs-header p { margin: 2px 0 0; color: #4b5563; }
+.fs-student { text-align: right; display: flex; flex-direction: column; font-size: 13px; }
+.fs-student span { color: #4b5563; }
+.fs-summary { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+.fs-summary > div { border: 1px solid #d1d5db; border-radius: 6px; padding: 6px 12px; min-width: 100px; }
+.fs-label { display: block; font-size: 10px; text-transform: uppercase; color: #6b7280; }
+.fs-value { font-size: 17px; font-weight: 700; }
+.fs-columns { display: grid; grid-template-columns: 270px 1fr; gap: 14px; align-items: start; }
+.radar-svg { width: 270px; height: 270px; }
+.fs-legend { margin: 0; text-align: center; font-size: 11px; color: #4b5563; }
+.fs-key { display: inline-block; width: 18px; height: 0; border-top: 3px solid #2563eb; vertical-align: middle; margin: 0 4px 0 8px; }
+.fs-key-ref { border-top: 2px dashed #64748b; }
+.feedback-sheet table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.feedback-sheet th, .feedback-sheet td { border-bottom: 1px solid #e5e7eb; padding: 4px 6px; text-align: left; }
+.feedback-sheet th { background: #f3f4f6; }
+.feedback-sheet .num { text-align: right; }
+.feedback-sheet ul { margin: 0; padding-left: 18px; }
+.fs-note { font-size: 10px; color: #6b7280; margin: 4px 0 0; }
+.fs-comment p { white-space: pre-wrap; margin: 0; }
+.preview-nav { display: flex; gap: 10px; align-items: center; }
+
+@media print {
+  body.printing-sheets .app-header,
+  body.printing-sheets .group-nav,
+  body.printing-sheets .tab-nav,
+  body.printing-sheets .notice,
+  body.printing-sheets .feedback-screen { display: none !important; }
+  body.printing-sheets .print-area { display: block !important; }
+  body.printing-sheets .app-container { padding: 0; }
+  .print-area .feedback-sheet { border: 0; border-radius: 0; margin: 0; padding: 8mm 6mm; max-width: none; break-after: page; page-break-after: always; }
+  .print-area .feedback-sheet:last-child { break-after: auto; page-break-after: auto; }
+}
+
+.check { display: flex; gap: 6px; align-items: center; font-size: 0.9rem; }
+textarea { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px; font: inherit; resize: vertical; }

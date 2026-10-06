@@ -23,6 +23,7 @@ export const DEFAULT_SETTINGS = {
   review: { alphaGainFrom: 0.02, flagReuse: true },
   sections: { minSize: 5, significance: 0.05 },
   correlation: { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 },
+  feedback: { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true },
   blueprint: {
     tolerancePp: 5,
     dimensions: nullTargets(DIMENSIONS),
@@ -190,6 +191,18 @@ export const SETTINGS_SCHEMA = [
       { path: 'correlation.moderateFrom', label: 'Moderate from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Moderate; smaller values are Weak.' },
       { path: 'correlation.strongFrom', label: 'Strong from', type: 'number', unit: '|r|', min: 0, max: 1, step: 0.05, description: 'A correlation coefficient whose absolute value is at least this is tagged Strong.' },
       { path: 'correlation.minStudents', label: 'Students needed', type: 'number', unit: 'students', min: 3, max: 10000, step: 1, integer: true, description: 'Correlations based on fewer students than this are shown with a caution, because they change a lot with a few students.' },
+    ],
+  },
+  {
+    title: 'Feedback sheets',
+    description: 'Starting choices for what a student feedback sheet contains. They can be changed on the Feedback sheets page for a single print run. Sheets are meant for students, so rank and comparisons are off by default.',
+    fields: [
+      { path: 'feedback.lowestTopics', label: 'Lowest topics to list', type: 'number', unit: 'topics', min: 0, max: 20, step: 1, integer: true, description: 'How many of the student\'s lowest-scoring topics to list. 0 hides the list.' },
+      { path: 'feedback.showQuestionMarks', label: 'Show marks per question', type: 'boolean', description: 'Include a table with the marks the student earned on each question.' },
+      { path: 'feedback.showCohortAverage', label: 'Show cohort average', type: 'boolean', description: 'Show the cohort average next to the student\'s mastery, and on the radar chart.' },
+      { path: 'feedback.showRank', label: 'Show rank', type: 'boolean', description: 'Show the student\'s rank among all students.' },
+      { path: 'feedback.showPercentile', label: 'Show percentile', type: 'boolean', description: 'Show the student\'s percentile.' },
+      { path: 'feedback.showLevels', label: 'Show level tags', type: 'boolean', description: 'Show Weak / Average / Strong tags next to each dimension, using the mastery levels above. Only applies when verdict tags are enabled.' },
     ],
   },
   {

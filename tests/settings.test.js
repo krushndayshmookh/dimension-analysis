@@ -37,6 +37,7 @@ describe('default settings', () => {
     assert.deepEqual(d.review, { alphaGainFrom: 0.02, flagReuse: true })
     assert.deepEqual(d.sections, { minSize: 5, significance: 0.05 })
     assert.deepEqual(d.correlation, { moderateFrom: 0.4, strongFrom: 0.7, minStudents: 30 })
+    assert.deepEqual(d.feedback, { lowestTopics: 3, showRank: false, showPercentile: false, showCohortAverage: false, showLevels: false, showQuestionMarks: true })
   })
 
   it('has no blueprint targets until the instructor sets them', () => {
@@ -131,6 +132,8 @@ describe('validateSettings', () => {
     assert.ok(errorsFor('sections.minSize', 0).some((e) => e.includes('sections.minSize')))
     assert.ok(errorsFor('sections.minSize', 2.5).some((e) => e.includes('sections.minSize')))
     assert.ok(errorsFor('sections.significance', 0.9).some((e) => e.includes('sections.significance')))
+    assert.ok(errorsFor('feedback.lowestTopics', -1).some((e) => e.includes('feedback.lowestTopics')))
+    assert.ok(errorsFor('feedback.lowestTopics', 1.5).some((e) => e.includes('feedback.lowestTopics')))
   })
 
   it('rejects non-numeric values', () => {
