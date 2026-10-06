@@ -209,3 +209,7 @@ tr.clickable:hover td { background: var(--accent-soft); }
   .sort-icon { display: none; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Charts */
+.chart-container { position: relative; height: 320px; }
+.charts-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 18px; }
