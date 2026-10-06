@@ -1244,6 +1244,7 @@ const attentionColumns = [
 const studentColumns = computed(() => [
   { key: 'id', label: 'ID', type: 'text' },
   { key: 'name', label: 'Name', type: 'text' },
+  ...(profiles.value.students.some((s) => s.section != null) ? [{ key: 'section', label: 'Section', type: 'text' }] : []),
   { key: 'earned', label: 'Score', type: 'number', format: (v, r) => `${num(v)} / ${num(r.totalMarks)}` },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
   { key: 'level', label: 'Level', type: 'text', verdict: masteryLevel },
