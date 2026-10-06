@@ -870,7 +870,7 @@
 
 <script setup>
 import { computed, onMounted, provide, reactive, ref, shallowRef, watch } from 'vue'
-import RadarChart from './components/RadarChart.vue'
+import RadarChart from './components/charts/RadarChart.vue'
 import DataTable from './components/DataTable.vue'
 import VerdictTag from './components/VerdictTag.vue'
 import Bar from './components/Bar.vue'
@@ -883,7 +883,7 @@ import { questionSummaries } from './lib/reuse.js'
 import { checkDataQuality } from './lib/quality.js'
 import { highestFirst } from './lib/stats.js'
 import { downloadText } from './lib/download.js'
-import LineChart from './components/LineChart.vue'
+import LineChart from './components/charts/LineChart.vue'
 import { parseCsv } from './lib/csv.js'
 import { readDataset } from './lib/input.js'
 import { analyzeDataset } from './lib/analysis.js'

@@ -87,7 +87,7 @@
 import { computed, inject, ref, watch } from 'vue'
 import DataTable from '../components/DataTable.vue'
 import VerdictTag from '../components/VerdictTag.vue'
-import ScatterChart from '../components/ScatterChart.vue'
+import ScatterChart from '../components/charts/ScatterChart.vue'
 import { correlationMatrix, scatterPoints } from '../lib/correlations.js'
 import * as V from '../lib/verdicts.js'
 import { formatNumber as num } from '../lib/format.js'

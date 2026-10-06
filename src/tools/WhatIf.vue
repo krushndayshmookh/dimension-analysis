@@ -84,7 +84,7 @@
 import { computed, inject, reactive } from 'vue'
 import DataTable from '../components/DataTable.vue'
 import VerdictTag from '../components/VerdictTag.vue'
-import LineChart from '../components/LineChart.vue'
+import LineChart from '../components/charts/LineChart.vue'
 import { runScenario } from '../lib/whatif.js'
 import { analyzeAttempts, buildReviewQueue } from '../lib/review.js'
 import { findReuse } from '../lib/reuse.js'

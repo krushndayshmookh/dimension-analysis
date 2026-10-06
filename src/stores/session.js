@@ -1,23 +1,25 @@
 import { computed, ref, shallowRef } from 'vue'
+import { defineStore } from 'pinia'
 import { analyzeDataset } from '@/lib/analysis.js'
 import * as api from '@/api.js'
-import { useNotice } from './notice.js'
+import { useNoticeStore } from './notice.js'
 
 // State shared by every page: the open exam, the saved exams and the current page.
-const tab = ref('upload')
-// { id, courseName, examTitle, examDate, dataset, profiles, paper }
-const exam = shallowRef(null)
-const savedExams = ref([])
-const selectedStudentId = ref('')
-const historyStudents = ref([])
-const historyStudentId = ref('')
+export const useSessionStore = defineStore('session', () => {
+  const notices = useNoticeStore()
 
-const dataset = computed(() => exam.value?.dataset ?? null)
-const profiles = computed(() => exam.value?.profiles ?? null)
-const paper = computed(() => exam.value?.paper ?? null)
+  const tab = ref('upload')
+  // { id, courseName, examTitle, examDate, dataset, profiles, paper }. Shallow: the
+  // analysis is large and never mutated, so it is not made deeply reactive.
+  const exam = shallowRef(null)
+  const savedExams = ref([])
+  const selectedStudentId = ref('')
+  const historyStudents = ref([])
+  const historyStudentId = ref('')
 
-export function useSession() {
-  const { fail } = useNotice()
+  const dataset = computed(() => exam.value?.dataset ?? null)
+  const profiles = computed(() => exam.value?.profiles ?? null)
+  const paper = computed(() => exam.value?.paper ?? null)
 
   function openExam({ id = null, courseName, examTitle, examDate, dataset: data }) {
     const { profiles: p, paper: pa } = analyzeDataset(data)
@@ -29,7 +31,7 @@ export function useSession() {
     try {
       savedExams.value = await api.listExams()
     } catch (err) {
-      fail(err)
+      notices.fail(err)
     }
   }
 
@@ -37,7 +39,7 @@ export function useSession() {
     try {
       historyStudents.value = await api.listStudents()
     } catch (err) {
-      fail(err)
+      notices.fail(err)
     }
   }
 
@@ -50,7 +52,7 @@ export function useSession() {
       openExam(saved)
       tab.value = 'cohort'
     } catch (err) {
-      fail(err)
+      notices.fail(err)
     }
   }
 
@@ -60,7 +62,7 @@ export function useSession() {
       await Promise.all([refreshSaved(), refreshHistoryStudents()])
       return true
     } catch (err) {
-      fail(err)
+      notices.fail(err)
       return false
     }
   }
@@ -94,4 +96,4 @@ export function useSession() {
     openStudent,
     openHistory,
   }
-}
+})
