@@ -402,3 +402,26 @@ describe('attendance in the student file', () => {
     assert.ok(dataset.students.every((s) => s.absent === false))
   })
 })
+
+describe('absent students with scores', () => {
+  const load = async () =>
+    readDataset({
+      config: await parse(CONFIG_CSV),
+      scores: await parse(SCORES_CSV),
+      students: await parse('student_id,student_name,attendance\nS1,Alice,present\nS2,Bob,absent\nS3,Cara,absent\n'),
+    })
+
+  it('ignores the scores of a student marked absent, and says so', async () => {
+    const { dataset, errors, warnings } = await load()
+    assert.deepEqual(errors, [])
+    assert.deepEqual(dataset.students.map((s) => Object.keys(s.scores).length), [3, 0, 0])
+    assert.ok(warnings.some((w) => w.includes('S2') && /absent/i.test(w) && /ignored/i.test(w)), warnings.join('|'))
+    assert.ok(!warnings.some((w) => w.includes('S1')))
+  })
+
+  it('does not mention an absent student who has no scores', async () => {
+    const { warnings } = await load()
+    const text = warnings.filter((w) => w.includes('absent')).join(' ')
+    assert.ok(text.includes('S2') && !text.includes('S3 '), text)
+  })
+})

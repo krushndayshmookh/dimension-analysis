@@ -126,6 +126,13 @@ export function assembleExam({ listing, coding, quiz, enrolled, totalMarks, addM
   const fractions = {}
   for (const { data } of sheets) for (const [id, cells] of Object.entries(data.fractions)) fractions[id] = { ...fractions[id], ...cells }
 
+  // An absent student has no score (scoresTable writes blanks for them), but the
+  // platform may still hold attempts, so say which students are affected.
+  const absentWithMarks = [...byId.values()].filter((s) => s.absent && Object.keys(fractions[s.id] ?? {}).length)
+  if (absentWithMarks.length) {
+    issues.push(issue('warning', `${absentWithMarks.length} student(s) marked absent have marks in the sheets; their scores are left blank: ${absentWithMarks.map((s) => `${s.id} ${s.name}`.trim()).join(', ')}`))
+  }
+
   return { set, config, extras, students: [...byId.values()], fractions, issues }
 }
 
@@ -137,13 +144,13 @@ export const extraToConfig = (extra, marks) => {
 export const configTable = (config) => ({ columns: CONFIG_COLUMNS, rows: config })
 
 // Scores are stored as the fraction of a question earned, so editing the marks
-// of a question rescales its scores.
+// of a question rescales its scores. Absent students get blanks.
 export function scoresTable(config, students, fractions) {
   const columns = ['student_id', ...config.map((r) => r.question_id)]
   const rows = students.map((s) => {
     const row = { student_id: s.id }
     for (const q of config) {
-      const fraction = fractions[s.id]?.[q.question_id]
+      const fraction = s.absent ? null : fractions[s.id]?.[q.question_id]
       row[q.question_id] = fraction == null || !(Number(q.marks) > 0) ? '' : round(fraction * Number(q.marks))
     }
     return row

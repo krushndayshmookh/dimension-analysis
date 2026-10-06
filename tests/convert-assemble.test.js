@@ -214,3 +214,31 @@ describe('tables', () => {
     assert.equal(dataset.questions.reduce((n, q) => n + q.marks, 0), 100)
   })
 })
+
+describe('absent students with marks in the sheets', () => {
+  it('writes blank scores for an absent student, whatever the sheet recorded', async () => {
+    const parts = await load()
+    const exam = assembleExam({ ...parts, totalMarks: TOTALS })
+    const absent = exam.students.find((s) => s.id === '1003')
+    assert.equal(absent.absent, true)
+    exam.fractions['1003'] = { 10: 1, 11: 1, 20: 1 } // the sheet recorded marks although the student is absent
+    const { rows } = scoresTable(exam.config, exam.students, exam.fractions)
+    const row = rows.find((r) => r.student_id === '1003')
+    assert.deepEqual([row['10'], row['11'], row['20']], ['', '', ''])
+  })
+
+  it('reports absent students who have marks, and counts them', async () => {
+    const parts = await load()
+    parts.quiz.fractions['1003'] = { 10: 1 }
+    const { issues } = assembleExam({ ...parts, totalMarks: TOTALS })
+    assert.ok(issues.some((i) => i.level === 'warning' && i.text.includes('1003') && /absent/i.test(i.text) && /marks/i.test(i.text)), JSON.stringify(issues))
+  })
+
+  it('keeps the marks when the student is not absent after all', async () => {
+    const parts = await load()
+    const exam = assembleExam({ ...parts, totalMarks: TOTALS })
+    const students = exam.students.map((s) => (s.id === '1001' ? { ...s, absent: false } : s))
+    const { rows } = scoresTable(exam.config, students, exam.fractions)
+    assert.equal(rows.find((r) => r.student_id === '1001')['10'], 20)
+  })
+})

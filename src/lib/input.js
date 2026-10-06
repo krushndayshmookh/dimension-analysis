@@ -285,17 +285,26 @@ export function readDataset({ config, scores, students }) {
 
   if (errors.length) return { dataset: null, errors, warnings }
 
+  // An absent student has no score: anything recorded for them is ignored.
+  const withScores = scoresResult.students.filter((s) => absent[s.id] && Object.keys(s.scores).length)
+  if (withScores.length) {
+    warnings.push(`Student details: ${withScores.length} student(s) marked absent have scores, which are ignored (counted as zero): ${withScores.map((s) => s.id).join(', ')}`)
+  }
+
   return {
     dataset: {
       questions: configResult.questions,
-      students: scoresResult.students.map((s) => ({
-        id: s.id,
-        name: names?.[s.id] ?? s.id,
-        section: sections[s.id] ?? null,
-        absent: absent[s.id] ?? false,
-        scores: s.scores,
-        ...(s.answers ? { answers: s.answers } : {}),
-      })),
+      students: scoresResult.students.map((s) => {
+        const isAbsent = absent[s.id] ?? false
+        return {
+          id: s.id,
+          name: names?.[s.id] ?? s.id,
+          section: sections[s.id] ?? null,
+          absent: isAbsent,
+          scores: isAbsent ? {} : s.scores,
+          ...(s.answers && !isAbsent ? { answers: s.answers } : {}),
+        }
+      }),
     },
     errors: [],
     warnings,
