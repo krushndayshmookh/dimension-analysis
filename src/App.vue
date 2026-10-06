@@ -200,22 +200,24 @@
             {{ dataset.questions.length }} questions · {{ num(profiles.totalMarks) }} marks · {{ profiles.students.length }} students
           </p>
         </div>
+        <button type="button" class="btn-secondary no-print" @click="printPage">Print</button>
       </div>
 
       <div class="stat-cards-grid">
         <div class="stat-card">
           <span class="stat-label">Lowest mean mastery, by dimension</span>
           <span class="stat-value">{{ paper.summary.lowestDimension?.name ?? '—' }}</span>
-          <span class="stat-desc">{{ pct(paper.summary.lowestDimension?.meanPct) }}</span>
+          <span class="stat-desc">{{ pct(paper.summary.lowestDimension?.meanPct) }} <VerdictTag :verdict="V.masteryVerdict(paper.summary.lowestDimension?.meanPct, settings)" /></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Highest mean mastery, by dimension</span>
           <span class="stat-value">{{ paper.summary.highestDimension?.name ?? '—' }}</span>
-          <span class="stat-desc">{{ pct(paper.summary.highestDimension?.meanPct) }}</span>
+          <span class="stat-desc">{{ pct(paper.summary.highestDimension?.meanPct) }} <VerdictTag :verdict="V.masteryVerdict(paper.summary.highestDimension?.meanPct, settings)" /></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Spread between those dimensions</span>
           <span class="stat-value">{{ num(paper.summary.dimensionSpreadPp) }} pp</span>
+          <span class="stat-desc"><VerdictTag :verdict="V.spreadVerdict(paper.summary.dimensionSpreadPp, settings)" /></span>
         </div>
         <div class="stat-card">
           <span class="stat-label">Lowest mean mastery, by difficulty tier</span>
@@ -224,6 +226,20 @@
             {{ pct(paper.summary.lowestDifficulty?.meanPct) }} ·
             {{ num(paper.summary.lowestDifficulty?.availableMarks) }} marks ·
             {{ paper.summary.lowestDifficulty?.questionCount ?? 0 }} questions
+            <VerdictTag :verdict="V.masteryVerdict(paper.summary.lowestDifficulty?.meanPct, settings)" />
+          </span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Paper difficulty (cohort mean)</span>
+          <span class="stat-value">{{ pct(paper.overall.pct.mean) }}</span>
+          <span class="stat-desc"><VerdictTag :verdict="V.difficultyVerdict(paper.overall.pct.mean, settings)" /></span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Reliability (Cronbach's alpha)</span>
+          <span class="stat-value">{{ num(paper.reliability.alpha, 2) }}</span>
+          <span class="stat-desc">
+            standard error of measurement {{ num(paper.reliability.sem, 2) }} marks
+            <VerdictTag :verdict="V.reliabilityVerdict(paper.reliability.alpha, settings)" />
           </span>
         </div>
       </div>
@@ -242,7 +258,7 @@
           <div class="stat-card"><span class="stat-label">Max</span><span class="stat-value">{{ pct(paper.overall.pct.max) }}</span></div>
           <div class="stat-card"><span class="stat-label">Std deviation</span><span class="stat-value">{{ num(paper.overall.pct.stdDev) }} pp</span></div>
         </div>
-        <DataTable :columns="binColumns(overallBinMode)" :rows="binRows(paper.overall, overallBinMode, overallStudentValue)" row-key="label" :searchable="false">
+        <DataTable :columns="binColumns(overallBinMode)" :rows="binRows(paper.overall, overallBinMode, overallStudentValue)" row-key="label" :searchable="false" export-name="overall-distribution">
           <template #cell-bar="{ row }"><Bar :value="row.percentage" /></template>
           <template #cell-students="{ row }"><StudentChips :students="row.students" @select="openStudent" /></template>
         </DataTable>
@@ -264,7 +280,10 @@
           </div>
         </div>
         <div v-for="dist in visibleDimensionDistributions" :key="dist.dimension" class="sub-card">
-          <h4><span class="badge" :class="dimClass(dist.dimension)">{{ dist.dimension }}</span></h4>
+          <h4>
+            <span class="badge" :class="dimClass(dist.dimension)">{{ dist.dimension }}</span>
+            <VerdictTag :verdict="V.masteryVerdict(dist.pct.mean, settings)" />
+          </h4>
           <p class="stats-line">
             {{ num(dist.availableMarks) }} marks · {{ dist.questionCount }} questions · mean {{ pct(dist.pct.mean) }} ·
             median {{ pct(dist.pct.median) }} · min {{ pct(dist.pct.min) }} · max {{ pct(dist.pct.max) }} ·
@@ -275,8 +294,9 @@
             :rows="binRows(dist, dimBinMode, (s) => dimensionStudentValue(s, dist.dimension))"
             row-key="label"
             :searchable="false"
+            :export-name="`distribution-${dist.dimension.toLowerCase()}`"
           >
-            <template #cell-bar="{ row }"><Bar :value="row.percentage" /></template>
+            <template #cell-bar="{ row }"><Bar :value="row.percentage" :color="dimensionColor(dist.dimension)" /></template>
             <template #cell-students="{ row }"><StudentChips :students="row.students" @select="openStudent" /></template>
           </DataTable>
         </div>
@@ -285,9 +305,15 @@
       <!-- Difficulty tiers -->
       <div class="card-box">
         <h3>Difficulty tiers</h3>
-        <DataTable :columns="tierColumns" :rows="tierRows" row-key="difficulty" :searchable="false">
+        <DataTable :columns="tierColumns" :rows="tierRows" row-key="difficulty" :searchable="false" export-name="difficulty-tiers">
           <template #cell-difficulty="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
           <template #cell-bar="{ row }"><Bar :value="row.meanPct" /></template>
+        </DataTable>
+        <h4>Tier order</h4>
+        <p class="hint">Each tier compared with the next easier tier that has questions. Change = harder tier mean minus easier tier mean.</p>
+        <DataTable :columns="progressionColumns" :rows="progressionRows" row-key="harder" :searchable="false" export-name="tier-order">
+          <template #cell-easier="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
+          <template #cell-harder="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
         </DataTable>
       </div>
 
@@ -341,10 +367,43 @@
       <!-- Topics -->
       <div class="card-box">
         <h3>Topics</h3>
-        <DataTable :columns="topicColumns" :rows="paper.topics" row-key="topic" :default-sort="{ key: 'topic', dir: 'asc' }">
+        <DataTable :columns="topicColumns" :rows="paper.topics" row-key="topic" :default-sort="{ key: 'topic', dir: 'asc' }" export-name="topics">
           <template #cell-bar="{ row }"><Bar :value="row.masteryPct" /></template>
         </DataTable>
         <p class="hint">Marks of a multi-topic question are split equally across its topics.</p>
+      </div>
+
+      <!-- Blueprint -->
+      <div class="card-box">
+        <h3>Share of marks by dimension and tier</h3>
+        <p class="hint">
+          Each row's share of the exam's marks.
+          <template v-if="hasBlueprintTargets">Targets and tolerance are set in Settings.</template>
+          <template v-else>Set target shares in Settings (Paper blueprint) to compare them with the actual shares.</template>
+        </p>
+        <DataTable :columns="blueprintColumns" :rows="blueprintRows" row-key="key" :searchable="false" export-name="marks-share">
+          <template #cell-name="{ row }">
+            <span v-if="row.kind === 'Dimension'" class="badge" :class="dimClass(row.name)">{{ row.name }}</span>
+            <span v-else class="badge badge-tier">{{ row.name }}</span>
+          </template>
+        </DataTable>
+      </div>
+
+      <!-- Quartiles -->
+      <div v-if="paper.quartiles" class="card-box">
+        <h3>Top and bottom quarter of students</h3>
+        <p class="hint">
+          Mean mastery of the {{ paper.quartiles.groupSize }} highest and {{ paper.quartiles.groupSize }} lowest scoring
+          students overall. A large separation means that dimension or tier sets the strong students apart.
+        </p>
+        <DataTable :columns="quartileColumns('Dimension')" :rows="paper.quartiles.dimensions" row-key="dimension" :searchable="false" export-name="quartiles-dimensions">
+          <template #cell-dimension="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
+          <template #cell-bars="{ row }"><PairBar :first="row.bottomMeanPct" :second="row.topMeanPct" first-label="Bottom" second-label="Top" :color="dimensionColor(row.dimension)" /></template>
+        </DataTable>
+        <DataTable :columns="quartileColumns('Tier')" :rows="paper.quartiles.difficulties" row-key="difficulty" :searchable="false" export-name="quartiles-tiers">
+          <template #cell-difficulty="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
+          <template #cell-bars="{ row }"><PairBar :first="row.bottomMeanPct" :second="row.topMeanPct" first-label="Bottom" second-label="Top" /></template>
+        </DataTable>
       </div>
 
       <!-- Question solve rates -->
@@ -358,6 +417,12 @@
         <div class="stat-cards-grid compact">
           <div class="stat-card"><span class="stat-label">Mean absolute deviation</span><span class="stat-value">{{ num(paper.questions.summary.meanAbsDeviationPct) }} pp</span></div>
           <div class="stat-card">
+            <span class="stat-label">Questions by deviation level</span>
+            <span class="stat-desc">
+              <span v-for="l in deviationCounts" :key="l.label"><VerdictTag :verdict="l" /> {{ l.count }}&nbsp;&nbsp;</span>
+            </span>
+          </div>
+          <div class="stat-card">
             <span class="stat-label">Largest negative deviation</span>
             <span class="stat-value">{{ paper.questions.summary.largestNegative?.id ?? '—' }}</span>
             <span class="stat-desc">{{ signed(paper.questions.summary.largestNegative?.deviationPct, ' pp') }}</span>
@@ -368,7 +433,7 @@
             <span class="stat-desc">{{ signed(paper.questions.summary.largestPositive?.deviationPct, ' pp') }}</span>
           </div>
         </div>
-        <DataTable :columns="questionColumns" :rows="paper.questions.rows" row-key="id">
+        <DataTable :columns="questionColumns" :rows="paper.questions.rows" row-key="id" export-name="questions">
           <template #cell-dimensions="{ row }">
             <span v-for="d in row.dimensions" :key="d" class="badge" :class="dimClass(d)">{{ d }}</span>
           </template>
@@ -704,11 +769,16 @@ const Bar = defineComponent({
 })
 
 const PairBar = defineComponent({
-  props: { first: Number, second: Number, firstLabel: String, secondLabel: String },
+  props: { first: Number, second: Number, firstLabel: String, secondLabel: String, color: { type: String, default: null } },
   setup: (props) => () =>
     h('div', { class: 'pair-bar', title: `${props.firstLabel}: ${pct(props.first)} · ${props.secondLabel}: ${pct(props.second)}` }, [
       h('div', { class: 'bar' }, [h('div', { class: 'bar-fill first', style: { width: `${clampPct(props.first)}%` } })]),
-      h('div', { class: 'bar' }, [h('div', { class: 'bar-fill second', style: { width: `${clampPct(props.second)}%` } })]),
+      h('div', { class: 'bar' }, [
+        h('div', {
+          class: ['bar-fill', props.color ? 'tinted' : 'second'],
+          style: { width: `${clampPct(props.second)}%`, ...(props.color ? { '--bar-color': props.color } : {}) },
+        }),
+      ]),
     ]),
 })
 
@@ -1079,12 +1149,15 @@ const tierRows = computed(() =>
     stdDevPct: t.pct.stdDev,
   }))
 )
+const printPage = () => window.print()
+
 const tierColumns = [
   { key: 'difficulty', label: 'Tier', type: 'text' },
   { key: 'questionCount', label: 'Questions', type: 'number' },
   { key: 'availableMarks', label: 'Marks', type: 'number', format: (v) => num(v) },
   { key: 'shareOfExamPct', label: '% of exam', type: 'number', format: (v) => pct(v) },
   { key: 'meanPct', label: 'Mean mastery', type: 'number', format: (v) => pct(v) },
+  { key: 'level', label: 'Level', type: 'text', verdict: (r) => V.masteryVerdict(r.meanPct, settings.value) },
   { key: 'medianPct', label: 'Median', type: 'number', format: (v) => pct(v) },
   { key: 'minPct', label: 'Min', type: 'number', format: (v) => pct(v) },
   { key: 'maxPct', label: 'Max', type: 'number', format: (v) => pct(v) },
@@ -1098,7 +1171,58 @@ const topicColumns = [
   { key: 'availableMarks', label: 'Marks', type: 'number', format: (v) => num(v) },
   { key: 'meanEarned', label: 'Avg earned', type: 'number', format: (v) => num(v) },
   { key: 'masteryPct', label: 'Mastery', type: 'number', format: (v) => pct(v) },
-  { key: 'bar', label: '', type: 'number', value: (r) => r.masteryPct, filterable: false, sortable: false },
+  { key: 'level', label: 'Level', type: 'text', verdict: masteryLevel },
+  { key: 'bar', label: '', type: 'number', value: (r) => r.masteryPct, filterable: false, sortable: false, exportable: false },
+]
+
+// Tier order: each tier against the next easier tier that has questions.
+const progressionRows = computed(() => V.tierProgression(paper.value.difficulties, settings.value))
+const progressionColumns = [
+  { key: 'easier', label: 'Easier tier', type: 'text' },
+  { key: 'harder', label: 'Harder tier', type: 'text' },
+  { key: 'easierMeanPct', label: 'Easier mean', type: 'number', format: (v) => pct(v) },
+  { key: 'harderMeanPct', label: 'Harder mean', type: 'number', format: (v) => pct(v) },
+  { key: 'changePp', label: 'Change', type: 'number', format: (v) => signed(v, ' pp') },
+  {
+    key: 'status',
+    label: 'Order',
+    type: 'text',
+    verdict: (r) => (r.inverted ? { label: 'Out of order', tone: 'warn' } : { label: 'In order', tone: 'good' }),
+  },
+]
+
+// Share of marks by dimension and tier, against optional targets from Settings.
+const blueprintRows = computed(() => {
+  const target = (group, name) => settings.value.blueprint[group][name] ?? null
+  const row = (kind, group, name, actualPct) => ({
+    key: `${kind}-${name}`,
+    kind,
+    name,
+    actualPct,
+    targetPct: target(group, name),
+    diffPp: target(group, name) == null || actualPct == null ? null : Math.round((actualPct - target(group, name)) * 100) / 100,
+  })
+  return [
+    ...paper.value.dimensions.map((d) => row('Dimension', 'dimensions', d.dimension, d.shareOfExamPct)),
+    ...paper.value.difficulties.map((d) => row('Tier', 'difficulties', d.difficulty, d.shareOfExamPct)),
+  ]
+})
+const hasBlueprintTargets = computed(() => blueprintRows.value.some((r) => r.targetPct != null))
+const blueprintColumns = [
+  { key: 'kind', label: 'Kind', type: 'text' },
+  { key: 'name', label: 'Name', type: 'text' },
+  { key: 'actualPct', label: 'Actual share', type: 'number', format: (v) => pct(v) },
+  { key: 'targetPct', label: 'Target', type: 'number', format: (v) => pct(v) },
+  { key: 'diffPp', label: 'Actual − target', type: 'number', format: (v) => signed(v, ' pp') },
+  { key: 'status', label: 'Status', type: 'text', verdict: (r) => V.blueprintVerdict(r.actualPct, r.targetPct, settings.value) },
+]
+
+const quartileColumns = (label) => [
+  { key: label === 'Dimension' ? 'dimension' : 'difficulty', label, type: 'text' },
+  { key: 'topMeanPct', label: 'Top quarter mean', type: 'number', format: (v) => pct(v) },
+  { key: 'bottomMeanPct', label: 'Bottom quarter mean', type: 'number', format: (v) => pct(v) },
+  { key: 'separationPp', label: 'Separation', type: 'number', format: (v) => signed(v, ' pp') },
+  { key: 'bars', label: 'Bottom / top', type: 'number', value: (r) => r.topMeanPct, filterable: false, sortable: false, exportable: false },
 ]
 
 const questionColumns = [
@@ -1113,10 +1237,29 @@ const questionColumns = [
   { key: 'solveRatePct', label: 'Actual', type: 'number', format: (v) => pct(v) },
   { key: 'solvedCount', label: 'Solved', type: 'number', format: (v, r) => `${v} / ${r.studentCount}` },
   { key: 'attemptedSolveRatePct', label: 'Of attempted', type: 'number', format: (v) => pct(v) },
+  { key: 'attemptRatePct', label: 'Attempted by', type: 'number', format: (v) => pct(v) },
   { key: 'meanScorePct', label: 'Mean score', type: 'number', format: (v) => pct(v) },
   { key: 'deviationPct', label: 'Deviation', type: 'number' },
-  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.solveRatePct, filterable: false, sortable: false },
+  { key: 'deviationLevel', label: 'Deviation level', type: 'text', verdict: (r) => V.deviationVerdict(r.deviationPct, settings.value) },
+  { key: 'discriminationIndex', label: 'Discrimination', type: 'number', format: (v) => num(v, 2) },
+  { key: 'discriminationLevel', label: 'Discrimination level', type: 'text', verdict: (r) => V.discriminationVerdict(r.discriminationIndex, settings.value) },
+  { key: 'itemRestCorrelation', label: 'Item-rest r', type: 'number', format: (v) => num(v, 2) },
+  { key: 'alphaIfRemoved', label: 'Alpha if removed', type: 'number', format: (v) => num(v, 2) },
+  { key: 'flags', label: 'Flags', type: 'text', verdict: (r) => V.questionFlags(r, settings.value) },
+  { key: 'bars', label: 'Expected / actual', type: 'number', value: (r) => r.solveRatePct, filterable: false, sortable: false, exportable: false },
 ]
+
+const DEVIATION_LEVELS = [
+  { level: 'low', label: 'Low', tone: 'good' },
+  { level: 'medium', label: 'Medium', tone: 'warn' },
+  { level: 'high', label: 'High', tone: 'bad' },
+]
+const deviationCounts = computed(() =>
+  DEVIATION_LEVELS.map((l) => ({
+    ...l,
+    count: paper.value.questions.rows.filter((r) => V.deviationVerdict(r.deviationPct, settings.value)?.level === l.level).length,
+  }))
+)
 
 // ---- simulation tab ---------------------------------------------------------------
 
