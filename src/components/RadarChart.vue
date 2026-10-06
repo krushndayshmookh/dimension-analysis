@@ -7,171 +7,68 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import Chart from 'chart.js/auto'
+import { DIMENSIONS } from '../lib/constants.js'
 
+// values / referenceValues: { [dimension]: percentage | null }
 const props = defineProps({
-  studentData: {
-    type: [Object, Array],
-    required: true,
-    default: () => ({})
-  },
-  cohortData: {
-    type: [Object, Array, null],
-    default: null
-  },
-  metricName: {
-    type: String,
-    default: 'Overall Mastery %'
-  },
-  studentLabel: {
-    type: String,
-    default: 'Student'
-  }
+  values: { type: Object, required: true },
+  label: { type: String, default: 'Value' },
+  referenceValues: { type: Object, default: null },
+  referenceLabel: { type: String, default: 'Cohort' },
 })
 
 const canvasRef = ref(null)
-let chartInstance = null
+let chart = null
 
-const DIMENSIONS = ['Recall', 'Comprehend', 'Solve', 'Build', 'Evaluate']
+const series = (values) => DIMENSIONS.map((d) => values?.[d] ?? null)
 
-function extractValues(data) {
-  if (!data) return [0, 0, 0, 0, 0]
-  if (Array.isArray(data)) {
-    return data.slice(0, 5).map((v) => (Number.isFinite(Number(v)) ? Number(v) : 0))
-  }
-  return DIMENSIONS.map((dim) => {
-    const val = data[dim] ?? data[dim.toLowerCase()] ?? data[dim.toUpperCase()]
-    if (typeof val === 'object' && val !== null) {
-      const num = props.metricName.toLowerCase().includes('accuracy')
-        ? (val.accuracy ?? val.pct ?? 0)
-        : (val.pct ?? val.accuracy ?? 0)
-      return Number.isFinite(Number(num)) ? Number(num) : 0
-    }
-    return Number.isFinite(Number(val)) ? Number(val) : 0
-  })
-}
-
-function buildDatasets() {
-  const datasets = [
+function datasets() {
+  const list = [
     {
-      label: `${props.studentLabel} (${props.metricName})`,
-      data: extractValues(props.studentData),
-      backgroundColor: 'rgba(54, 162, 235, 0.25)',
-      borderColor: 'rgba(54, 162, 235, 1)',
+      label: props.label,
+      data: series(props.values),
+      backgroundColor: 'rgba(37, 99, 235, 0.2)',
+      borderColor: 'rgb(37, 99, 235)',
+      pointBackgroundColor: 'rgb(37, 99, 235)',
       borderWidth: 2,
-      pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-      pointBorderColor: '#ffffff',
-      pointHoverBackgroundColor: '#ffffff',
-      pointHoverBorderColor: 'rgba(54, 162, 235, 1)',
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      fill: true
-    }
+      spanGaps: false,
+    },
   ]
-
-  if (props.cohortData) {
-    datasets.push({
-      label: `Cohort Average (${props.metricName})`,
-      data: extractValues(props.cohortData),
-      backgroundColor: 'rgba(255, 99, 132, 0.15)',
-      borderColor: 'rgba(255, 99, 132, 0.9)',
+  if (props.referenceValues) {
+    list.push({
+      label: props.referenceLabel,
+      data: series(props.referenceValues),
+      backgroundColor: 'rgba(100, 116, 139, 0.12)',
+      borderColor: 'rgb(100, 116, 139)',
+      pointBackgroundColor: 'rgb(100, 116, 139)',
       borderWidth: 2,
       borderDash: [5, 5],
-      pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-      pointBorderColor: '#ffffff',
-      pointHoverBackgroundColor: '#ffffff',
-      pointHoverBorderColor: 'rgba(255, 99, 132, 1)',
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      fill: true
+      spanGaps: false,
     })
   }
-
-  return datasets
+  return list
 }
 
-function initChart() {
-  if (!canvasRef.value) return
-  if (chartInstance) {
-    chartInstance.destroy()
-    chartInstance = null
-  }
-
-  chartInstance = new Chart(canvasRef.value, {
+function render() {
+  if (chart) chart.destroy()
+  chart = new Chart(canvasRef.value, {
     type: 'radar',
-    data: {
-      labels: DIMENSIONS,
-      datasets: buildDatasets()
-    },
+    data: { labels: DIMENSIONS, datasets: datasets() },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        r: {
-          min: 0,
-          max: 100,
-          ticks: {
-            stepSize: 20,
-            backdropColor: 'transparent',
-            callback: (value) => `${value}%`
-          },
-          pointLabels: {
-            font: {
-              size: 13,
-              weight: '600'
-            },
-            color: '#2c3e50'
-          },
-          grid: {
-            color: '#e2e8f0'
-          },
-          angleLines: {
-            color: '#cbd5e1'
-          }
-        }
+        r: { min: 0, max: 100, ticks: { stepSize: 20, backdropColor: 'transparent', callback: (v) => `${v}%` } },
       },
       plugins: {
-        legend: {
-          position: 'top',
-          labels: {
-            boxWidth: 14,
-            font: { size: 12 }
-          }
-        },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw}%`
-          }
-        }
-      }
-    }
+        legend: { position: 'top' },
+        tooltip: { callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.raw == null ? '—' : `${ctx.raw}%`}` } },
+      },
+    },
   })
 }
 
-function updateChart() {
-  if (!chartInstance) {
-    initChart()
-    return
-  }
-  chartInstance.data.datasets = buildDatasets()
-  chartInstance.update()
-}
-
-onMounted(() => {
-  initChart()
-})
-
-onBeforeUnmount(() => {
-  if (chartInstance) {
-    chartInstance.destroy()
-    chartInstance = null
-  }
-})
-
-watch(
-  () => [props.studentData, props.cohortData, props.metricName, props.studentLabel],
-  () => {
-    updateChart()
-  },
-  { deep: true }
-)
+onMounted(render)
+onBeforeUnmount(() => chart?.destroy())
+watch(() => [props.values, props.referenceValues, props.label, props.referenceLabel], render, { deep: true })
 </script>
