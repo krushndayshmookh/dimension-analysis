@@ -11,3 +11,6 @@ export const DIMENSION_COLORS = {
 
 export const dimensionColor = (dimension) => DIMENSION_COLORS[dimension] ?? '#64748b'
 
+
+// CSS class for a dimension badge.
+export const dimensionClass = (dimension) => `badge-dim-${String(dimension).toLowerCase()}`

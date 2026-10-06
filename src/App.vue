@@ -10,9 +10,21 @@
       </div>
     </header>
 
-    <nav class="tab-nav" aria-label="Main navigation">
+    <div class="group-nav" role="tablist" aria-label="Sections">
       <button
-        v-for="t in tabs"
+        v-for="g in TAB_GROUPS"
+        :key="g.id"
+        type="button"
+        class="group-btn"
+        :class="{ active: activeGroup.id === g.id }"
+        @click="chooseGroup(g)"
+      >
+        {{ g.label }}
+      </button>
+    </div>
+    <nav class="tab-nav" aria-label="Pages">
+      <button
+        v-for="t in activeGroup.tabs"
         :key="t.id"
         type="button"
         class="tab-btn"
@@ -573,17 +585,13 @@
     </section>
 
     <!-- STUDENT -->
-    <section v-if="tab === 'student' && exam" class="view-panel">
+    <section v-if="tab === 'student' && exam" class="with-sidebar">
+      <StudentSidebar v-model="selectedStudentId" :items="studentItems" />
+      <div class="view-panel">
       <div class="view-header">
         <div>
           <h2 class="view-title">Student profile</h2>
         </div>
-        <label class="controls">
-          Student
-          <select v-model="selectedStudentId">
-            <option v-for="s in profiles.students" :key="s.id" :value="s.id">{{ s.id }} — {{ s.name }}</option>
-          </select>
-        </label>
       </div>
 
       <template v-if="student">
@@ -660,29 +668,26 @@
           </DataTable>
         </div>
       </template>
+      </div>
     </section>
 
     <!-- HISTORY -->
-    <section v-if="tab === 'history'" class="view-panel">
-      <div class="view-header">
-        <div>
-          <h2 class="view-title">Longitudinal history</h2>
-          <p class="view-desc">A student's results across all saved exams. Students are matched by student_id.</p>
+    <section v-if="tab === 'history'" class="with-sidebar">
+      <StudentSidebar v-model="historyStudentId" :items="historyItems" />
+      <div class="view-panel">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Longitudinal history</h2>
+            <p class="view-desc">A student's results across all saved exams. Students are matched by student_id.</p>
+          </div>
         </div>
-        <label class="controls">
-          Student
-          <select v-model="historyStudentId" :disabled="!historyStudents.length" @change="loadHistory">
-            <option value="" disabled>Select a student</option>
-            <option v-for="s in historyStudents" :key="s.id" :value="s.id">{{ s.id }} — {{ s.name }} ({{ s.examCount }})</option>
-          </select>
-        </label>
-      </div>
-      <div v-if="history" class="card-box">
-        <h3>{{ history.name }} ({{ history.id }})</h3>
-        <DataTable :columns="historyColumns" :rows="historyRows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" export-name="student-history" />
-      </div>
-      <div v-else class="empty-state">
-        <p>{{ historyStudents.length ? 'Select a student.' : 'No saved exams yet. Upload an exam to start a history.' }}</p>
+        <div v-if="history" class="card-box">
+          <h3>{{ history.name }} ({{ history.id }})</h3>
+          <DataTable :columns="historyColumns" :rows="historyRows" row-key="examId" :default-sort="{ key: 'examDate', dir: 'asc' }" export-name="student-history" />
+        </div>
+        <div v-else class="empty-state">
+          <p>{{ historyStudents.length ? 'Select a student.' : 'No saved exams yet. Upload an exam to start a history.' }}</p>
+        </div>
       </div>
     </section>
 
@@ -772,6 +777,9 @@
       <div v-else class="empty-state"><p>No saved exams.</p></div>
     </section>
 
+    <!-- TOOLS -->
+    <component :is="activeTool.component" v-if="activeTool && exam" :key="`${exam.id ?? 'new'}-${activeTool.id}`" @open-student="openStudent" />
+
     <!-- SETTINGS -->
     <section v-if="tab === 'settings'" class="view-panel">
       <div class="view-header">
@@ -833,10 +841,17 @@
 </template>
 
 <script setup>
-import { computed, defineComponent, h, onMounted, provide, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, onMounted, provide, reactive, ref, shallowRef, watch } from 'vue'
 import RadarChart from './components/RadarChart.vue'
 import DataTable from './components/DataTable.vue'
 import VerdictTag from './components/VerdictTag.vue'
+import Bar from './components/Bar.vue'
+import PairBar from './components/PairBar.vue'
+import BinModeToggle from './components/BinModeToggle.vue'
+import StudentChips from './components/StudentChips.vue'
+import StudentSidebar from './components/StudentSidebar.vue'
+import { TOOLS } from './tools/index.js'
+import { questionSummaries } from './lib/reuse.js'
 import { parseCsv } from './lib/csv.js'
 import { readDataset } from './lib/input.js'
 import { analyzeDataset } from './lib/analysis.js'
@@ -846,77 +861,13 @@ import { formatNumber as num, formatPct as pct, formatSigned as signed, clampPct
 import { DEFAULT_SETTINGS, SETTINGS_SCHEMA, mergeSettings, validateSettings, getPath, setPath, cloneSettings } from './lib/settings.js'
 import * as V from './lib/verdicts.js'
 import { compareExams, historyDeltas } from './lib/compare.js'
-import { dimensionColor } from './lib/colors.js'
+import { dimensionColor, dimensionClass } from './lib/colors.js'
 import * as api from './api.js'
 
-// ---- small presentational helpers -------------------------------------------------
-
-const Bar = defineComponent({
-  props: { value: { type: Number, default: null }, color: { type: String, default: null } },
-  setup: (props) => () =>
-    h('div', { class: 'bar' }, [
-      h('div', {
-        class: ['bar-fill', { tinted: props.color }],
-        style: { width: `${clampPct(props.value)}%`, ...(props.color ? { '--bar-color': props.color } : {}) },
-      }),
-    ]),
-})
-
-const PairBar = defineComponent({
-  props: { first: Number, second: Number, firstLabel: String, secondLabel: String, color: { type: String, default: null } },
-  setup: (props) => () =>
-    h('div', { class: 'pair-bar', title: `${props.firstLabel}: ${pct(props.first)} · ${props.secondLabel}: ${pct(props.second)}` }, [
-      h('div', { class: 'bar' }, [h('div', { class: 'bar-fill first', style: { width: `${clampPct(props.first)}%` } })]),
-      h('div', { class: 'bar' }, [
-        h('div', {
-          class: ['bar-fill', props.color ? 'tinted' : 'second'],
-          style: { width: `${clampPct(props.second)}%`, ...(props.color ? { '--bar-color': props.color } : {}) },
-        }),
-      ]),
-    ]),
-})
-
-const BinModeToggle = defineComponent({
-  props: { modelValue: String, name: String },
-  emits: ['update:modelValue'],
-  setup: (props, { emit }) => () =>
-    h('div', { class: 'radio-group' },
-      [['percentage', 'Percentage bins'], ['raw', 'Marks bins']].map(([value, text]) =>
-        h('label', [
-          h('input', { type: 'radio', name: props.name, value, checked: props.modelValue === value, onChange: () => emit('update:modelValue', value) }),
-          ` ${text}`,
-        ])
-      )),
-})
-
-const StudentChips = defineComponent({
-  props: { students: Array },
-  emits: ['select'],
-  setup: (props, { emit }) => () =>
-    props.students.length
-      ? h('details', { class: 'chips' }, [
-          h('summary', `${props.students.length} student${props.students.length === 1 ? '' : 's'}`),
-          h('div', { class: 'chip-list' },
-            props.students.map((s) => h('button', { type: 'button', class: 'chip', onClick: () => emit('select', s.id) }, s.label))),
-        ])
-      : h('span', { class: 'muted' }, '—'),
-})
-
-const dimClass = (dim) => `badge-dim-${String(dim).toLowerCase()}`
+const dimClass = dimensionClass
 
 // ---- state ------------------------------------------------------------------------
 
-const tabs = [
-  { id: 'upload', label: 'Upload', needsExam: false },
-  { id: 'cohort', label: 'Cohort', needsExam: true },
-  { id: 'paper', label: 'Paper analysis', needsExam: true },
-  { id: 'simulation', label: 'Simulation', needsExam: true },
-  { id: 'student', label: 'Student profile', needsExam: true },
-  { id: 'history', label: 'History', needsExam: false },
-  { id: 'compare', label: 'Compare exams', needsExam: false },
-  { id: 'saved', label: 'Saved exams', needsExam: false },
-  { id: 'settings', label: 'Settings', needsExam: false },
-]
 
 const tab = ref('upload')
 const notice = ref(null)
@@ -938,6 +889,46 @@ const profiles = computed(() => exam.value?.profiles)
 const paper = computed(() => exam.value?.paper)
 
 const savedExams = ref([])
+provide('exam', exam)
+provide('savedExams', savedExams)
+
+const TAB_GROUPS = [
+  {
+    id: 'analysis',
+    label: 'Analysis',
+    tabs: [
+      { id: 'cohort', label: 'Cohort', needsExam: true },
+      { id: 'paper', label: 'Paper analysis', needsExam: true },
+      { id: 'simulation', label: 'Simulation', needsExam: true },
+      { id: 'student', label: 'Student profile', needsExam: true },
+    ],
+  },
+  { id: 'tools', label: 'Tools', tabs: TOOLS.map((t) => ({ id: t.id, label: t.label, needsExam: true })) },
+  {
+    id: 'library',
+    label: 'Library',
+    tabs: [
+      { id: 'upload', label: 'Upload', needsExam: false },
+      { id: 'history', label: 'History', needsExam: false },
+      { id: 'compare', label: 'Compare exams', needsExam: false },
+      { id: 'saved', label: 'Saved exams', needsExam: false },
+      { id: 'settings', label: 'Settings', needsExam: false },
+    ],
+  },
+].filter((g) => g.tabs.length)
+
+const activeGroup = computed(() => TAB_GROUPS.find((g) => g.tabs.some((t) => t.id === tab.value)) ?? TAB_GROUPS[0])
+const lastTabOfGroup = {}
+const activeTool = computed(() => TOOLS.find((t) => t.id === tab.value) ?? null)
+
+function chooseGroup(group) {
+  const usable = (t) => !(t.needsExam && !exam.value)
+  tab.value = lastTabOfGroup[group.id] ?? group.tabs.find(usable)?.id ?? group.tabs[0].id
+}
+watch(() => tab.value, (id) => {
+  const group = TAB_GROUPS.find((g) => g.tabs.some((t) => t.id === id))
+  if (group) lastTabOfGroup[group.id] = id
+})
 const historyStudents = ref([])
 const historyStudentId = ref('')
 const history = ref(null)
@@ -992,7 +983,12 @@ async function analyze() {
     }
     openExam({ ...meta, dataset: result.dataset })
     try {
-      const { id } = await api.saveExam({ ...meta, dataset: result.dataset, analysis: exam.value.profiles })
+      const { id } = await api.saveExam({
+        ...meta,
+        dataset: result.dataset,
+        analysis: exam.value.profiles,
+        questionSummaries: questionSummaries(exam.value.paper),
+      })
       exam.value = { ...exam.value, id }
       notice.value = { kind: 'info', text: 'Exam analyzed and saved.' }
     } catch (err) {
@@ -1060,11 +1056,12 @@ async function loadHistory() {
 }
 
 async function openHistory(studentId) {
+  await refreshHistoryStudents()
   historyStudentId.value = studentId
   tab.value = 'history'
-  await refreshHistoryStudents()
-  await loadHistory()
 }
+
+watch(historyStudentId, loadHistory)
 
 // ---- settings ---------------------------------------------------------------------
 
@@ -1445,6 +1442,19 @@ const gapColumns = (key, label) => [
 // ---- student tab ------------------------------------------------------------------
 
 const student = computed(() => studentById.value.get(selectedStudentId.value) ?? null)
+
+const studentItems = computed(() =>
+  profiles.value.students.map((s) => ({
+    id: s.id,
+    name: s.name,
+    section: s.section,
+    detail: pct(s.masteryPct),
+    tone: V.masteryVerdict(s.masteryPct, settings.value)?.tone ?? null,
+  }))
+)
+const historyItems = computed(() =>
+  historyStudents.value.map((s) => ({ id: s.id, name: s.name, detail: `${s.examCount} exam${s.examCount === 1 ? '' : 's'}` }))
+)
 
 const metricKey = computed(() => (studentMetric.value === 'accuracy' ? 'accuracyPct' : 'masteryPct'))
 const radarOf = (breakdowns) =>
