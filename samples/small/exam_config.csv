@@ -1,21 +1,21 @@
 question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate
-Q01,MCQ,beginner,Recall,Data Structures,2,85
-Q02,MCQ,beginner,Recall,Networking,2,85
-Q03,Code,easy,Comprehend,Algorithms,4,75
-Q04,Code,medium,Recall;Comprehend,Data Structures,6,60
-Q05,MCQ,beginner,Recall,System Design,3,80
-Q06,MCQ,easy,Comprehend,Networking,3,75
-Q07,Code,medium,Solve,Algorithms,5,55
-Q08,Code,hard,Comprehend;Solve,Data Structures,6,35
-Q09,MCQ,beginner,Comprehend,System Design,3,80
-Q10,MCQ,easy,Solve,Networking,4,70
-Q11,Code,medium,Solve,Algorithms,5,55
-Q12,Code,hard,Solve;Build,Data Structures,6,35
-Q13,MCQ,easy,Build,Networking,4,70
-Q14,Design,medium,Build,System Design,6,50
-Q15,Code,hard,Build,Algorithms,7,35
-Q16,Design,challenge,Build;Evaluate,System Design,8,20
-Q17,Design,hard,Evaluate,Networking,6,30
-Q18,Code,challenge,Evaluate,Algorithms,8,20
-Q19,Design,challenge,Evaluate,System Design,6,20
-Q20,Design,challenge,Solve;Evaluate,Data Structures,6,20
+Q01,assessment,beginner,Recall,Data Structures,2,85
+Q02,assessment,beginner,Recall,Networking,2,85
+Q03,assignment,easy,Comprehend,Algorithms,4,75
+Q04,assignment,medium,Recall;Comprehend,Data Structures,6,60
+Q05,assessment,beginner,Recall,System Design,3,80
+Q06,assessment,easy,Comprehend,Networking,3,75
+Q07,assignment,medium,Solve,Algorithms,5,55
+Q08,assignment,hard,Comprehend;Solve,Data Structures,6,35
+Q09,assessment,beginner,Comprehend,System Design,3,80
+Q10,assessment,easy,Solve,Networking,4,70
+Q11,assignment,medium,Solve,Algorithms,5,55
+Q12,assignment,hard,Solve;Build,Data Structures,6,35
+Q13,assessment,easy,Build,Networking,4,70
+Q14,assignment,medium,Build,System Design,6,50
+Q15,assignment,hard,Build,Algorithms,7,35
+Q16,assignment,challenge,Build;Evaluate,System Design,8,20
+Q17,assignment,hard,Evaluate,Networking,6,30
+Q18,assignment,challenge,Evaluate,Algorithms,8,20
+Q19,assignment,challenge,Evaluate,System Design,6,20
+Q20,assignment,challenge,Solve;Evaluate,Data Structures,6,20

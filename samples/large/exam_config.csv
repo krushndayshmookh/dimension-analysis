@@ -1,26 +1,26 @@
-question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate
-Q01,MCQ,beginner,Recall,Data Structures,2,85
-Q02,MCQ,beginner,Recall,Computer Networks,2,85
-Q03,MCQ,beginner,Comprehend,Operating Systems,2,80
-Q04,MCQ,easy,Recall,Databases,2,75
-Q05,MCQ,easy,Comprehend,Algorithms,2,75
-Q06,MCQ,easy,Comprehend,Data Structures,3,70
-Q07,MCQ,easy,Recall;Comprehend,Operating Systems,3,70
-Q08,MCQ,medium,Comprehend,Databases,3,60
-Q09,MCQ,medium,Solve,Algorithms,3,55
-Q10,MCQ,medium,Solve,Data Structures,3,55
-Q11,MCQ,medium,Comprehend;Solve,Computer Networks,3,55
-Q12,MCQ,medium,Evaluate,Operating Systems,3,50
-Q13,MCQ,hard,Solve,Algorithms,3,35
-Q14,MCQ,hard,Solve;Evaluate,Databases,3,35
-Q15,MCQ,hard,Evaluate,Computer Networks,3,30
-Q16,MCQ,medium,Recall;Comprehend,Computer Networks,4,55
-Q17,MCQ,hard,Solve,Data Structures,4,35
-Q18,MCQ,hard,Solve;Evaluate,Algorithms,4,30
-Q19,MCQ,challenge,Evaluate,Operating Systems,4,20
-Q20,MCQ,challenge,Comprehend;Evaluate,Databases,4,20
-Q21,Coding,medium,Solve;Build,Tree Structures,10,50
-Q22,Coding,medium,Build,Concurrency,12,45
-Q23,Coding,hard,Build;Solve,Graph Algorithms,15,30
-Q24,Coding,hard,Build;Solve;Evaluate,Dynamic Programming,18,25
-Q25,Coding,challenge,Build;Evaluate,System Architecture,20,15
+question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option
+Q01,assessment,beginner,Recall,Data Structures,2,85,C
+Q02,assessment,beginner,Recall,Computer Networks,2,85,B
+Q03,assessment,beginner,Comprehend,Operating Systems,2,80,A
+Q04,assessment,easy,Recall,Databases,2,75,D
+Q05,assessment,easy,Comprehend,Algorithms,2,75,C
+Q06,assessment,easy,Comprehend,Data Structures,3,70,B
+Q07,assessment,easy,Recall;Comprehend,Operating Systems,3,70,A
+Q08,assessment,medium,Comprehend,Databases,3,60,D
+Q09,assessment,medium,Solve,Algorithms,3,55,C
+Q10,assessment,medium,Solve,Data Structures,3,55,B
+Q11,assessment,medium,Comprehend;Solve,Computer Networks,3,55,A
+Q12,assessment,medium,Evaluate,Operating Systems,3,50,D
+Q13,assessment,hard,Solve,Algorithms,3,35,C
+Q14,assessment,hard,Solve;Evaluate,Databases,3,35,B
+Q15,assessment,hard,Evaluate,Computer Networks,3,30,A
+Q16,assessment,medium,Recall;Comprehend,Computer Networks,4,55,D
+Q17,assessment,hard,Solve,Data Structures,4,35,C
+Q18,assessment,hard,Solve;Evaluate,Algorithms,4,30,B
+Q19,assessment,challenge,Evaluate,Operating Systems,4,20,A
+Q20,assessment,challenge,Comprehend;Evaluate,Databases,4,20,D
+Q21,assignment,medium,Solve;Build,Tree Structures,10,50,
+Q22,assignment,medium,Build,Concurrency,12,45,
+Q23,assignment,hard,Build;Solve,Graph Algorithms,15,30,
+Q24,assignment,hard,Build;Solve;Evaluate,Dynamic Programming,18,25,
+Q25,assignment,challenge,Build;Evaluate,System Architecture,20,15,

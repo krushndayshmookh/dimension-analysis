@@ -18,6 +18,13 @@ describe('buildProfiles', () => {
     assert.deepEqual(profiles.topics, ['Arrays', 'Sorting'])
   })
 
+  it('carries each student’s section, null when there is none', async () => {
+    assert.deepEqual(profiles.students.map((s) => s.section), ['A', 'A', 'B'])
+    const dataset = await loadDataset()
+    delete dataset.students[0].section
+    assert.equal(buildProfiles(dataset).students[0].section, null)
+  })
+
   it('keeps students in input order with their names', () => {
     assert.deepEqual(profiles.students.map((s) => [s.id, s.name]), [['S1', 'Alice'], ['S2', 'Bob'], ['S3', 'Cara']])
   })

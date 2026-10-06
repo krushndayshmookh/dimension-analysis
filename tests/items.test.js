@@ -6,7 +6,7 @@ import { closeTo } from './fixtures.js'
 // Three 1-mark items, four students; totals are 3, 2, 1, 0.
 const dataset = (rows) => ({
   questions: Object.keys(rows[0].scores).map((id) => ({
-    id, type: 'MCQ', difficulty: 'easy', dimensions: ['Recall'], topics: ['T'], marks: 1, expectedSolveRate: null,
+    id, type: 'assessment', difficulty: 'easy', dimensions: ['Recall'], topics: ['T'], marks: 1, expectedSolveRate: null,
   })),
   students: rows.map((r) => ({ id: r.id, name: r.id, scores: r.scores })),
 })

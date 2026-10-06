@@ -117,11 +117,16 @@ function generateStudents(count = 300) {
     const emailUser = name.toLowerCase().replace(/[^a-z0-9]+/g, '.')
     const email = `${emailUser}@university.edu`
 
-    students.push({ id, name, email })
+    // Sections are assigned in rotation; their ability offsets (below) give the
+    // sections slightly different results.
+    students.push({ id, name, email, section: SECTIONS[(i - 1) % SECTIONS.length] })
   }
 
   return students
 }
+
+const SECTIONS = ['A', 'B', 'C', 'D']
+const SECTION_ABILITY_OFFSET = { A: 0.15, B: 0.0, C: -0.1, D: -0.2 }
 
 // 3. Monte Carlo Simulation Engine
 function simulateContestScores(students, questions) {
@@ -130,7 +135,7 @@ function simulateContestScores(students, questions) {
 
   for (const stu of students) {
     // Latent general ability theta ~ N(0, 1)
-    const thetaGeneral = randomNormal(0, 1.0)
+    const thetaGeneral = randomNormal(0, 1.0) + (SECTION_ABILITY_OFFSET[stu.section] ?? 0)
 
     // Dimension affinities delta_d ~ N(0, 0.4)
     const dimAbilities = {}
@@ -207,19 +212,25 @@ function simulateContestScores(students, questions) {
   return scoresByStudent
 }
 
+// Deterministic answer key (A-D) for a multiple-choice question id.
+const answerKey = (id) => 'ABCD'[(Number(id.replace(/\D/g, '')) * 7 + 3) % 4]
+
 // 4. Generate CSV Strings
 function generateExamConfigCsv(questions) {
-  const header = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate'
+  const header = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option'
   const rows = questions.map((q) => {
     const dimensions = q.dimension.split(',').map((d) => d.trim()).join(';')
-    return `${q.id},${q.type},${q.difficulty},${dimensions},${q.topic},${q.marks},${q.expectedSolveRate ?? 50}`
+    // MCQs are assessments with an answer key; coding questions are assignments.
+    const type = q.type === 'MCQ' ? 'assessment' : 'assignment'
+    const key = q.type === 'MCQ' ? answerKey(q.id) : ''
+    return `${q.id},${type},${q.difficulty},${dimensions},${q.topic},${q.marks},${q.expectedSolveRate ?? 50},${key}`
   })
   return [header, ...rows].join('\n')
 }
 
 function generateStudentsCsv(students) {
-  const header = 'student_id,student_name'
-  const rows = students.map((s) => `${s.id},${s.name}`)
+  const header = 'student_id,student_name,section'
+  const rows = students.map((s) => `${s.id},${s.name},${s.section}`)
   return [header, ...rows].join('\n')
 }
 

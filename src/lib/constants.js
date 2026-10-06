@@ -1,5 +1,8 @@
 // Canonical vocabulary. Input CSVs must use exactly these names.
 export const DIMENSIONS = ['Recall', 'Comprehend', 'Solve', 'Build', 'Evaluate']
+// A question is either an assignment or an assessment; reuse across exams is
+// matched on (type, id).
+export const QUESTION_TYPES = ['assignment', 'assessment']
 export const DIFFICULTIES = ['beginner', 'easy', 'medium', 'hard', 'challenge']
 
 // Used only for questions whose CSV row has no expected_solve_rate.

@@ -83,6 +83,7 @@ export function buildProfiles(dataset) {
     const profile = {
       id: student.id,
       name: student.name,
+      section: student.section ?? null,
       earned: round(earned),
       totalMarks: round(totalMarks),
       attemptedMarks: round(attemptedMarks),

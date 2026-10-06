@@ -1,13 +1,13 @@
-student_id,student_name
-S101,Alice Chen
-S102,Bob Martinez
-S103,Charlie Kim
-S104,Diana Prince
-S105,Evan Wright
-S106,Fiona Gallagher
-S107,George Clark
-S108,Hannah Abbott
-S109,Ian Malcolm
-S110,Julia Roberts
-S111,Kevin Bacon
-S112,Laura Croft
+student_id,student_name,section
+S101,Alice Chen,A
+S102,Bob Martinez,A
+S103,Charlie Kim,A
+S104,Diana Prince,A
+S105,Evan Wright,A
+S106,Fiona Gallagher,A
+S107,George Clark,B
+S108,Hannah Abbott,B
+S109,Ian Malcolm,B
+S110,Julia Roberts,B
+S111,Kevin Bacon,B
+S112,Laura Croft,B

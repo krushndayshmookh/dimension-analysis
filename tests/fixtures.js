@@ -11,9 +11,9 @@ import { analyzePaper } from '../src/lib/paper.js'
 // Q3 hard   Solve                10 marks topics Sorting           expected 30
 // Total 16 marks.
 export const CONFIG_CSV = `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate
-Q1,MCQ,easy,Recall,Arrays,2,80
-Q2,MCQ,medium,Recall;Comprehend,Arrays;Sorting,4,
-Q3,Coding,hard,Solve,Sorting,10,30
+Q1,assessment,easy,Recall,Arrays,2,80
+Q2,assessment,medium,Recall;Comprehend,Arrays;Sorting,4,
+Q3,assignment,hard,Solve,Sorting,10,30
 `
 
 export const SCORES_CSV = `student_id,Q1,Q2,Q3
@@ -22,10 +22,10 @@ S2,2,0,5
 S3,0,,0
 `
 
-export const STUDENTS_CSV = `student_id,student_name
-S1,Alice
-S2,Bob
-S3,Cara
+export const STUDENTS_CSV = `student_id,student_name,section
+S1,Alice,A
+S2,Bob,A
+S3,Cara,B
 `
 
 export const parse = (text) => parseCsv(text)

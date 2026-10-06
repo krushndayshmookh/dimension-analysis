@@ -4,7 +4,7 @@ import { readExamConfig, readScores, readStudentNames, readDataset } from '../sr
 import { CONFIG_CSV, SCORES_CSV, STUDENTS_CSV, parse } from './fixtures.js'
 
 const configWith = (rows) =>
-  `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate\n${rows}\n`
+  `question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate,correct_option\n${rows}\n`
 
 const readConfig = async (text) => readExamConfig(await parse(text))
 const hasError = (result, fragment) =>
@@ -17,25 +17,26 @@ describe('readExamConfig', () => {
     assert.equal(questions.length, 3)
     assert.deepEqual(questions[1], {
       id: 'Q2',
-      type: 'MCQ',
+      type: 'assessment',
       difficulty: 'medium',
       dimensions: ['Recall', 'Comprehend'],
       topics: ['Arrays', 'Sorting'],
       marks: 4,
       expectedSolveRate: null,
+      correctOption: null,
     })
     assert.equal(questions[0].expectedSolveRate, 80)
   })
 
   it('accepts a file without the optional expected_solve_rate column', async () => {
-    const text = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks\nQ1,MCQ,easy,Recall,Arrays,2\n'
+    const text = 'question_id,question_type,question_difficulty,question_dimension,question_topics,marks\nQ1,assessment,easy,Recall,Arrays,2\n'
     const { questions, errors } = await readConfig(text)
     assert.deepEqual(errors, [])
     assert.equal(questions[0].expectedSolveRate, null)
   })
 
   it('matches column headers and enumerated values case-insensitively', async () => {
-    const text = 'Question_ID, Question_Type ,QUESTION_DIFFICULTY,question_dimension,question_topics,marks\nQ1,MCQ,Easy,recall,Arrays,2\n'
+    const text = 'Question_ID, Question_Type ,QUESTION_DIFFICULTY,question_dimension,question_topics,marks\nQ1,Assessment,Easy,recall,Arrays,2\n'
     const { questions, errors } = await readConfig(text)
     assert.deepEqual(errors, [])
     assert.equal(questions[0].difficulty, 'easy')
@@ -43,48 +44,64 @@ describe('readExamConfig', () => {
   })
 
   it('rejects a file missing a required column', async () => {
-    const text = 'question_id,question_type,question_difficulty,question_dimension,marks\nQ1,MCQ,easy,Recall,2\n'
+    const text = 'question_id,question_type,question_difficulty,question_dimension,marks\nQ1,assessment,easy,Recall,2\n'
     const result = await readConfig(text)
     assert.ok(hasError(result, 'question_topics'))
   })
 
   it('rejects abbreviated or unknown dimensions', async () => {
     for (const dim of ['R', 'Banana', 'Recall;Xyz']) {
-      const result = await readConfig(configWith(`Q1,MCQ,easy,${dim},Arrays,2,`))
+      const result = await readConfig(configWith(`Q1,assessment,easy,${dim},Arrays,2,`))
       assert.ok(hasError(result, 'dimension'), `expected dimension error for ${dim}`)
     }
   })
 
   it('rejects a repeated dimension within one question', async () => {
-    const result = await readConfig(configWith('Q1,MCQ,easy,Recall;Recall,Arrays,2,'))
+    const result = await readConfig(configWith('Q1,assessment,easy,Recall;Recall,Arrays,2,'))
     assert.ok(hasError(result, 'dimension'))
   })
 
   it('rejects an unknown difficulty', async () => {
-    const result = await readConfig(configWith('Q1,MCQ,impossible,Recall,Arrays,2,'))
+    const result = await readConfig(configWith('Q1,assessment,impossible,Recall,Arrays,2,'))
     assert.ok(hasError(result, 'difficulty'))
   })
 
   it('rejects invalid marks', async () => {
     for (const marks of ['0', '-1', 'abc', '']) {
-      const result = await readConfig(configWith(`Q1,MCQ,easy,Recall,Arrays,${marks},`))
+      const result = await readConfig(configWith(`Q1,assessment,easy,Recall,Arrays,${marks},`))
       assert.ok(hasError(result, 'marks'), `expected marks error for "${marks}"`)
     }
   })
 
   it('requires expected_solve_rate to be a percentage between 0 and 100 when present', async () => {
     for (const rate of ['120', '-5', 'high']) {
-      const result = await readConfig(configWith(`Q1,MCQ,easy,Recall,Arrays,2,${rate}`))
+      const result = await readConfig(configWith(`Q1,assessment,easy,Recall,Arrays,2,${rate}`))
       assert.ok(hasError(result, 'expected_solve_rate'), `expected rate error for "${rate}"`)
     }
-    const fraction = await readConfig(configWith('Q1,MCQ,easy,Recall,Arrays,2,0.5'))
+    const fraction = await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,0.5'))
     assert.equal(fraction.questions[0].expectedSolveRate, 0.5, 'values are percentages, never rescaled')
   })
 
-  it('rejects empty topics, empty type and duplicate question ids', async () => {
-    assert.ok(hasError(await readConfig(configWith('Q1,MCQ,easy,Recall,,2,')), 'question_topics'))
-    assert.ok(hasError(await readConfig(configWith('Q1,,easy,Recall,Arrays,2,')), 'question_type'))
-    assert.ok(hasError(await readConfig(configWith('Q1,MCQ,easy,Recall,Arrays,2,\nq1,MCQ,easy,Recall,Arrays,2,')), 'duplicate'))
+  it('only accepts the question types assignment and assessment, case-insensitively', async () => {
+    for (const type of ['assignment', 'assessment', 'Assignment', 'ASSESSMENT']) {
+      const { questions, errors } = await readConfig(configWith(`Q1,${type},easy,Recall,Arrays,2,,`))
+      assert.deepEqual(errors, [], type)
+      assert.equal(questions[0].type, type.toLowerCase())
+    }
+    for (const type of ['MCQ', 'Coding', 'quiz', '']) {
+      assert.ok(hasError(await readConfig(configWith(`Q1,${type},easy,Recall,Arrays,2,,`)), 'question_type'), `rejects "${type}"`)
+    }
+  })
+
+  it('reads the optional correct_option answer key, normalised to upper case', async () => {
+    const { questions, errors } = await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,,b\nQ2,assessment,easy,Recall,Arrays,2,,'))
+    assert.deepEqual(errors, [])
+    assert.deepEqual(questions.map((q) => q.correctOption), ['B', null])
+  })
+
+  it('rejects empty topics and duplicate question ids', async () => {
+    assert.ok(hasError(await readConfig(configWith('Q1,assessment,easy,Recall,,2,')), 'question_topics'))
+    assert.ok(hasError(await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,\nq1,assessment,easy,Recall,Arrays,2,')), 'duplicate'))
   })
 
   it('rejects a file with no questions', async () => {
@@ -93,7 +110,7 @@ describe('readExamConfig', () => {
   })
 
   it('reports the data row number of the offending row', async () => {
-    const result = await readConfig(configWith('Q1,MCQ,easy,Recall,Arrays,2,\nQ2,MCQ,easy,Bad,Arrays,2,'))
+    const result = await readConfig(configWith('Q1,assessment,easy,Recall,Arrays,2,\nQ2,assessment,easy,Bad,Arrays,2,'))
     assert.ok(result.errors.some((e) => e.includes('row 2')))
   })
 })
@@ -188,6 +205,19 @@ describe('readStudentNames', () => {
     assert.deepEqual(errors, [])
     assert.equal(names.S1, 'Alice')
     assert.ok(warnings.some((w) => w.includes('email')))
+    assert.ok(!warnings.some((w) => w.includes('section')))
+  })
+
+  it('reads the optional section column; blank means no section', async () => {
+    const { names, sections, errors } = readStudentNames(await parse('student_id,student_name,section\nS1,Alice, A \nS2,Bob,\n'))
+    assert.deepEqual(errors, [])
+    assert.deepEqual(names, { S1: 'Alice', S2: 'Bob' })
+    assert.deepEqual(sections, { S1: 'A', S2: null })
+  })
+
+  it('has no sections when the column is absent', async () => {
+    const { sections } = readStudentNames(await parse('student_id,student_name\nS1,Alice\n'))
+    assert.deepEqual(sections, { S1: null })
   })
 })
 
@@ -200,13 +230,14 @@ describe('readDataset', () => {
     })
     assert.deepEqual(errors, [])
     assert.equal(dataset.questions.length, 3)
-    assert.deepEqual(dataset.students.map((s) => [s.id, s.name]), [['S1', 'Alice'], ['S2', 'Bob'], ['S3', 'Cara']])
+    assert.deepEqual(dataset.students.map((s) => [s.id, s.name, s.section]), [['S1', 'Alice', 'A'], ['S2', 'Bob', 'A'], ['S3', 'Cara', 'B']])
     assert.deepEqual(dataset.students[0].scores, { Q1: 2, Q2: 4, Q3: 10 })
   })
 
   it('uses the student id as the name when no student file is given', async () => {
     const { dataset } = readDataset({ config: await parse(CONFIG_CSV), scores: await parse(SCORES_CSV), students: null })
     assert.equal(dataset.students[0].name, 'S1')
+    assert.equal(dataset.students[0].section, null)
   })
 
   it('rejects when a scored student is missing from the student file', async () => {
@@ -223,7 +254,7 @@ describe('readDataset', () => {
     const result = readDataset({
       config: await parse(CONFIG_CSV),
       scores: await parse(SCORES_CSV),
-      students: await parse(`${STUDENTS_CSV}S9,Zed\n`),
+      students: await parse(`${STUDENTS_CSV}S9,Zed,C\n`),
     })
     assert.deepEqual(result.errors, [])
     assert.ok(result.warnings.some((w) => w.includes('S9')))
@@ -231,7 +262,7 @@ describe('readDataset', () => {
 
   it('returns no dataset and the errors of every file when any file is invalid', async () => {
     const result = readDataset({
-      config: await parse(configWith('Q1,MCQ,easy,Bad,Arrays,2,')),
+      config: await parse(configWith('Q1,assessment,easy,Bad,Arrays,2,')),
       scores: await parse('student_id,Q1\nS1,1\n'),
       students: null,
     })

@@ -1,4 +1,4 @@
-import { DIMENSIONS, DIFFICULTIES, LIST_SEPARATOR } from './constants.js'
+import { DIMENSIONS, DIFFICULTIES, QUESTION_TYPES, LIST_SEPARATOR } from './constants.js'
 
 // Strict readers for the three input files. Anything that does not follow the
 // documented format is reported in `errors`; callers must reject the upload
@@ -56,7 +56,7 @@ function parseList(value) {
 }
 
 const CONFIG_REQUIRED = ['question_id', 'question_type', 'question_difficulty', 'question_dimension', 'question_topics', 'marks']
-const CONFIG_OPTIONAL = ['expected_solve_rate']
+const CONFIG_OPTIONAL = ['expected_solve_rate', 'correct_option']
 
 export function readExamConfig(parsed) {
   const label = 'Exam config'
@@ -82,7 +82,10 @@ export function readExamConfig(parsed) {
       else if (seenIds.has(id.toLowerCase())) fail(`duplicate question_id "${id}"`)
       else seenIds.add(id.toLowerCase())
 
-      if (!row.question_type) fail('question_type is empty')
+      const type = row.question_type.toLowerCase()
+      if (!QUESTION_TYPES.includes(type)) {
+        fail(`question_type "${row.question_type}" must be one of: ${QUESTION_TYPES.join(', ')}`)
+      }
 
       const difficulty = row.question_difficulty.toLowerCase()
       if (!DIFFICULTIES.includes(difficulty)) {
@@ -117,7 +120,7 @@ export function readExamConfig(parsed) {
       }
 
       if (valid) {
-        questions.push({ id, type: row.question_type, difficulty, dimensions, topics, marks, expectedSolveRate })
+        questions.push({ id, type, difficulty, dimensions, topics, marks, expectedSolveRate, correctOption: row.correct_option ? row.correct_option.toUpperCase() : null })
       }
     })
     if (!(parsed.data ?? []).length) out.add(`${label}: the file has no question rows`)
@@ -190,7 +193,8 @@ export function readStudentNames(parsed) {
   const out = collector()
   const warnings = []
   const names = {}
-  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], [], out)
+  const sections = {}
+  const { missing, extra } = checkStructure(label, parsed, ['student_id', 'student_name'], ['section'], out)
   if (extra.length) warnings.push(`${label}: ignoring unknown column(s): ${extra.join(', ')}`)
 
   if (!missing.length) {
@@ -200,11 +204,14 @@ export function readStudentNames(parsed) {
       if (!row.student_id) out.add(`${where}: student_id is empty`)
       else if (row.student_id in names) out.add(`${where}: duplicate student_id "${row.student_id}"`)
       else if (!row.student_name) out.add(`${where}: student_name is empty`)
-      else names[row.student_id] = row.student_name
+      else {
+        names[row.student_id] = row.student_name
+        sections[row.student_id] = row.section || null
+      }
     })
   }
 
-  return { names, errors: out.finish(), warnings }
+  return { names, sections, errors: out.finish(), warnings }
 }
 
 // config and scores are required; students (names) is optional.
@@ -221,11 +228,13 @@ export function readDataset({ config, scores, students }) {
   warnings.push(...scoresResult.warnings)
 
   let names = null
+  let sections = {}
   if (students) {
     const namesResult = readStudentNames(students)
     errors.push(...namesResult.errors)
     warnings.push(...namesResult.warnings)
     names = namesResult.names
+    sections = namesResult.sections
   }
 
   if (names && !errors.length) {
@@ -241,7 +250,7 @@ export function readDataset({ config, scores, students }) {
   return {
     dataset: {
       questions: configResult.questions,
-      students: scoresResult.students.map((s) => ({ id: s.id, name: names?.[s.id] ?? s.id, scores: s.scores })),
+      students: scoresResult.students.map((s) => ({ id: s.id, name: names?.[s.id] ?? s.id, section: sections[s.id] ?? null, scores: s.scores })),
     },
     errors: [],
     warnings,
