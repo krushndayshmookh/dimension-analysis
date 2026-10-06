@@ -1,0 +1,201 @@
+import { describe, it, beforeEach, afterEach } from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import {
+  saveExam,
+  getExam,
+  getIndex,
+  deleteExam,
+  listStudents,
+  getStudentHistory,
+} from '../server/storage.js'
+import { createApp } from '../server/server.js'
+import { loadDataset } from './fixtures.js'
+import { buildProfiles } from '../src/lib/profiles.js'
+
+let dataDir
+let dataset
+let analysis
+
+beforeEach(async () => {
+  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dimension-analysis-'))
+  dataset = await loadDataset()
+  analysis = buildProfiles(dataset)
+})
+
+afterEach(() => {
+  fs.rmSync(dataDir, { recursive: true, force: true })
+})
+
+const payload = (overrides = {}) => ({
+  courseName: 'CS101',
+  examTitle: 'Midterm',
+  examDate: '2026-03-01',
+  dataset,
+  analysis,
+  ...overrides,
+})
+
+describe('storage', () => {
+  it('saves an exam and returns its id', () => {
+    const { id } = saveExam(payload(), dataDir)
+    assert.ok(id)
+    const exam = getExam(id, dataDir)
+    assert.equal(exam.courseName, 'CS101')
+    assert.equal(exam.dataset.students.length, 3)
+    assert.deepEqual(exam.analysis.cohort, analysis.cohort)
+  })
+
+  it('trusts the analysis sent by the client rather than recomputing it', () => {
+    const custom = { ...analysis, cohort: { ...analysis.cohort, masteryPct: 12.34 } }
+    const { id } = saveExam(payload({ analysis: custom }), dataDir)
+    assert.equal(getExam(id, dataDir).analysis.cohort.masteryPct, 12.34)
+  })
+
+  it('maintains an index with summary fields', () => {
+    const { id } = saveExam(payload(), dataDir)
+    const [entry] = getIndex(dataDir)
+    assert.equal(entry.id, id)
+    assert.equal(entry.studentCount, 3)
+    assert.equal(entry.questionCount, 3)
+    assert.equal(entry.avgMasteryPct, analysis.cohort.masteryPct)
+    assert.equal(entry.examTitle, 'Midterm')
+  })
+
+  it('replaces the index entry when saving an existing id', () => {
+    const { id } = saveExam(payload(), dataDir)
+    saveExam(payload({ id, examTitle: 'Renamed' }), dataDir)
+    const index = getIndex(dataDir)
+    assert.equal(index.length, 1)
+    assert.equal(index[0].examTitle, 'Renamed')
+  })
+
+  it('lists newest first', () => {
+    const a = saveExam(payload({ id: 'a' }), dataDir)
+    const b = saveExam(payload({ id: 'b' }), dataDir)
+    assert.deepEqual(getIndex(dataDir).map((e) => e.id), [b.id, a.id])
+  })
+
+  it('rejects a payload without a dataset or analysis', () => {
+    assert.throws(() => saveExam({ courseName: 'x' }, dataDir), /dataset/)
+    assert.throws(() => saveExam(payload({ analysis: null }), dataDir), /analysis/)
+  })
+
+  it('returns null for a missing exam', () => {
+    assert.equal(getExam('nope', dataDir), null)
+  })
+
+  it('does not reset the index when it is corrupt', () => {
+    saveExam(payload(), dataDir)
+    fs.writeFileSync(path.join(dataDir, 'index.json'), '{not json')
+    assert.throws(() => getIndex(dataDir), /index/i)
+  })
+
+  it('writes atomically, leaving no temporary files behind', () => {
+    saveExam(payload(), dataDir)
+    const leftovers = fs.readdirSync(dataDir, { recursive: true }).filter((f) => String(f).endsWith('.tmp'))
+    assert.deepEqual(leftovers, [])
+  })
+
+  it('handles student ids that are not safe file names', async () => {
+    const odd = structuredClone(dataset)
+    odd.students[0].id = 'a/b c'
+    const oddAnalysis = buildProfiles(odd)
+    saveExam(payload({ dataset: odd, analysis: oddAnalysis }), dataDir)
+    assert.ok(getStudentHistory('a/b c', dataDir))
+  })
+})
+
+describe('student history', () => {
+  it('records one entry per exam per student across exams', () => {
+    saveExam(payload({ id: 'e1', examDate: '2026-02-01' }), dataDir)
+    saveExam(payload({ id: 'e2', examDate: '2026-04-01', examTitle: 'Final' }), dataDir)
+    const history = getStudentHistory('S1', dataDir)
+    assert.equal(history.name, 'Alice')
+    assert.deepEqual(history.exams.map((e) => e.examId), ['e1', 'e2'])
+    const entry = history.exams[1]
+    assert.equal(entry.examTitle, 'Final')
+    assert.equal(entry.masteryPct, 100)
+    assert.equal(entry.totalMarks, 16)
+    assert.equal(entry.dimensions.Recall.masteryPct, 100)
+  })
+
+  it('returns exams ordered by exam date, not save order', () => {
+    saveExam(payload({ id: 'late', examDate: '2026-09-01' }), dataDir)
+    saveExam(payload({ id: 'early', examDate: '2026-01-01' }), dataDir)
+    assert.deepEqual(getStudentHistory('S1', dataDir).exams.map((e) => e.examId), ['early', 'late'])
+  })
+
+  it('does not duplicate an exam entry when the exam is saved again', () => {
+    saveExam(payload({ id: 'e1' }), dataDir)
+    saveExam(payload({ id: 'e1' }), dataDir)
+    assert.equal(getStudentHistory('S1', dataDir).exams.length, 1)
+  })
+
+  it('lists students with exam counts, sorted by name', () => {
+    saveExam(payload({ id: 'e1' }), dataDir)
+    const students = listStudents(dataDir)
+    assert.deepEqual(students.map((s) => [s.id, s.name, s.examCount]), [['S1', 'Alice', 1], ['S2', 'Bob', 1], ['S3', 'Cara', 1]])
+  })
+
+  it('removes an exam from the index and from student histories when deleted', () => {
+    saveExam(payload({ id: 'e1' }), dataDir)
+    saveExam(payload({ id: 'e2' }), dataDir)
+    deleteExam('e1', dataDir)
+    assert.equal(getExam('e1', dataDir), null)
+    assert.deepEqual(getIndex(dataDir).map((e) => e.id), ['e2'])
+    assert.deepEqual(getStudentHistory('S1', dataDir).exams.map((e) => e.examId), ['e2'])
+  })
+
+  it('returns null for an unknown student', () => {
+    assert.equal(getStudentHistory('ghost', dataDir), null)
+  })
+})
+
+describe('http api', () => {
+  let server
+  let base
+
+  beforeEach(async () => {
+    server = createApp({ dataDir }).listen(0)
+    await new Promise((resolve) => server.once('listening', resolve))
+    base = `http://127.0.0.1:${server.address().port}`
+  })
+
+  afterEach(() => new Promise((resolve) => server.close(resolve)))
+
+  const post = (body) =>
+    fetch(`${base}/api/exams`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+
+  it('saves, lists, loads and deletes exams', async () => {
+    const created = await post(payload())
+    assert.equal(created.status, 201)
+    const { id } = await created.json()
+
+    const list = await (await fetch(`${base}/api/exams`)).json()
+    assert.equal(list.length, 1)
+
+    const exam = await (await fetch(`${base}/api/exams/${id}`)).json()
+    assert.equal(exam.examTitle, 'Midterm')
+
+    const students = await (await fetch(`${base}/api/students`)).json()
+    assert.equal(students.length, 3)
+    const history = await (await fetch(`${base}/api/students/S1/history`)).json()
+    assert.equal(history.exams.length, 1)
+
+    assert.equal((await fetch(`${base}/api/exams/${id}`, { method: 'DELETE' })).status, 200)
+    assert.equal((await fetch(`${base}/api/exams/${id}`)).status, 404)
+  })
+
+  it('responds 400 to an invalid payload and 404 to unknown resources', async () => {
+    assert.equal((await post({ courseName: 'x' })).status, 400)
+    assert.equal((await fetch(`${base}/api/exams/missing`, { method: 'DELETE' })).status, 404)
+    assert.equal((await fetch(`${base}/api/students/missing/history`)).status, 404)
+  })
+
+  it('no longer serves sample data', async () => {
+    assert.equal((await fetch(`${base}/api/samples`)).status, 404)
+  })
+})
