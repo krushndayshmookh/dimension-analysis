@@ -8,8 +8,8 @@
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import Bar from '@/components/data/Bar.vue'
-import DataTable from '@/components/data/DataTable.vue'
+import Bar from '@/components/display/Bar.vue'
+import DataTable from '@/components/display/DataTable.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
 import { formatNumber as num, formatPct as pct } from '@/lib/format.js'
 import * as V from '@/lib/verdicts.js'

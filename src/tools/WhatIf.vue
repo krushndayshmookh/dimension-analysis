@@ -1,58 +1,38 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">What-if adjustments</h2>
-        <p class="view-desc">
-          Try rescoring questions and see what would change, before deciding anything. Nothing here is saved or changes
-          the exam.
-        </p>
-      </div>
-      <button type="button" class="btn-secondary" :disabled="!activeCount" @click="reset">Reset all</button>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader
+      title="What-if adjustments"
+      description="Try rescoring questions and see what would change, before deciding anything. Nothing here is saved or changes the exam."
+    >
+      <template #actions><Button variant="outline" :disabled="!activeCount" @click="reset">Reset all</Button></template>
+    </PageHeader>
 
-    <div class="card-box">
-      <h3>Adjust questions</h3>
-      <p class="hint">
-        <strong>Drop</strong> removes the question from the paper (total marks fall).
-        <strong>Full marks to everyone</strong> awards every student the question's marks, including blanks.
-        <strong>Full marks to those who attempted</strong> leaves blanks blank.
-      </p>
+    <SectionCard title="Adjust questions">
+      <template #description>
+        <strong>Drop</strong> removes the question from the paper (total marks fall). <strong>Full marks to everyone</strong>
+        awards every student the question's marks, including blanks. <strong>Full marks to those who attempted</strong> leaves
+        blanks blank.
+      </template>
       <DataTable :columns="questionColumns" :rows="questionRows" row-key="id" export-name="what-if-questions">
         <template #cell-action="{ row }">
-          <select :value="adjustments[row.id] ?? 'none'" :aria-label="`Adjustment for ${row.id}`" @change="setAction(row.id, $event.target.value)">
-            <option value="none">No change</option>
-            <option value="drop">Drop the question</option>
-            <option value="full-all">Full marks to everyone</option>
-            <option value="full-attempted">Full marks to those who attempted</option>
-          </select>
+          <SelectField :model-value="adjustments[row.id] ?? 'none'" :options="actionOptions" :aria-label="`Adjustment for ${row.id}`" trigger-class="w-56" @update:model-value="(v) => setAction(row.id, v)" />
         </template>
-        <template #cell-flags="{ row }">
-          <span v-for="r in row.flags" :key="r.id" class="tag" :class="settings.showVerdicts ? `tag-${r.tone}` : 'tag-neutral'">{{ r.label }}</span>
-        </template>
+        <template #cell-flags="{ row }"><ReasonTags :reasons="row.flags" /></template>
       </DataTable>
-    </div>
+    </SectionCard>
 
-    <div v-if="error" class="notice notice-error">{{ error }}</div>
-    <div v-else-if="!activeCount" class="empty-state"><p>Choose an adjustment above to see its effect.</p></div>
+    <NoticeAlert v-if="error" kind="error">{{ error }}</NoticeAlert>
+    <EmptyState v-else-if="!activeCount">Choose an adjustment above to see its effect.</EmptyState>
 
     <template v-else-if="scenario">
-      <div class="stat-cards-grid">
-        <div v-for="c in changeCards" :key="c.label" class="stat-card">
-          <span class="stat-label">{{ c.label }}</span>
-          <span class="stat-value">{{ c.before }} → {{ c.after }}</span>
-          <span class="stat-desc">{{ c.change }} <VerdictTag v-if="c.verdict" :verdict="c.verdict" /></span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Crossing the pass mark ({{ settings.attainment.passMark }}%)</span>
-          <span class="stat-value">+{{ crossing.gained }} / −{{ crossing.lost }}</span>
-          <span class="stat-desc">students gaining / losing a pass</span>
-        </div>
-      </div>
+      <StatGrid>
+        <StatCard v-for="c in changeCards" :key="c.label" :label="c.label" :value="`${c.before} → ${c.after}`">
+          <template #description>{{ c.change }} <VerdictTag v-if="c.verdict" :verdict="c.verdict" /></template>
+        </StatCard>
+        <StatCard :label="`Crossing the pass mark (${settings.attainment.passMark}%)`" :value="`+${crossing.gained} / −${crossing.lost}`" description="students gaining / losing a pass" />
+      </StatGrid>
 
-      <div class="card-box">
-        <h3>Score distribution</h3>
-        <p class="hint">Share of students in each decile of mastery, before and after.</p>
+      <SectionCard title="Score distribution" description="Share of students in each decile of mastery, before and after.">
         <LineChart
           :labels="scenario.summary.decileShare.map((b) => b.label)"
           :series="[
@@ -61,11 +41,9 @@
           ]"
           y-label="% of students"
         />
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Students</h3>
-        <p class="hint">Rank change is positive when the student moves up. Pass and distinction marks come from Settings.</p>
+      <SectionCard title="Students" description="Rank change is positive when the student moves up. Pass and distinction marks come from Settings.">
         <DataTable
           :columns="studentColumns"
           :rows="scenario.students"
@@ -73,30 +51,49 @@
           clickable
           :default-sort="{ key: 'deltaPp', dir: 'desc' }"
           export-name="what-if-students"
-          @row-click="$emit('open-student', $event.id)"
+          @row-click="openStudent($event.id)"
         />
-      </div>
+      </SectionCard>
     </template>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject, reactive } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import VerdictTag from '../components/VerdictTag.vue'
-import LineChart from '../components/charts/LineChart.vue'
-import { runScenario } from '../lib/whatif.js'
-import { analyzeAttempts, buildReviewQueue } from '../lib/review.js'
-import { findReuse } from '../lib/reuse.js'
-import * as V from '../lib/verdicts.js'
-import { formatNumber as num, formatPct as pct, formatSigned as signed } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import { Button } from '@/components/ui/button'
+import NoticeAlert from '@/components/common/NoticeAlert.vue'
+import SelectField from '@/components/common/SelectField.vue'
+import ReasonTags from '@/components/display/ReasonTags.vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed, reactive } from 'vue'
+import DataTable from '@/components/display/DataTable.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
+import { runScenario } from '@/lib/whatif.js'
+import { analyzeAttempts, buildReviewQueue } from '@/lib/review.js'
+import { findReuse } from '@/lib/reuse.js'
+import * as V from '@/lib/verdicts.js'
+import { formatNumber as num, formatPct as pct, formatSigned as signed } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam, savedExams } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const savedExams = inject('savedExams')
-const settings = inject('settings')
 
+const actionOptions = [
+  { value: 'none', label: 'No change' },
+  { value: 'drop', label: 'Drop the question' },
+  { value: 'full-all', label: 'Full marks to everyone' },
+  { value: 'full-attempted', label: 'Full marks to those who attempted' },
+]
 const adjustments = reactive({})
 const activeCount = computed(() => Object.values(adjustments).filter((a) => a !== 'none').length)
 const setAction = (id, action) => {

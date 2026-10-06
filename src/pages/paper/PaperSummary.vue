@@ -31,7 +31,7 @@
 
 <script setup>
 import { storeToRefs } from 'pinia'
-import VerdictTag from '@/components/data/VerdictTag.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
 import StatCard from '@/components/common/StatCard.vue'
 import StatGrid from '@/components/common/StatGrid.vue'
 import { formatNumber as num, formatPct as pct } from '@/lib/format.js'

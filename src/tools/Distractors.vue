@@ -1,79 +1,77 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">Distractors</h2>
-        <p class="view-desc">
-          For multiple-choice questions: how often each option was chosen, overall and by the top and bottom 27% of
-          students (by total score).
-        </p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader
+      title="Distractors"
+      description="For multiple-choice questions: how often each option was chosen, overall and by the top and bottom 27% of students (by total score)."
+    />
 
-    <div v-if="!analysis.available" class="empty-state">
-      <p>
-        Distractor analysis applies to multiple-choice questions: assessments with <code>question_subtype</code>
-        <code>mcq</code> and a <code>correct_option</code> in the exam config, where the scores file holds the option each
-        student chose. This exam has none.
-      </p>
-    </div>
+    <EmptyState v-if="!analysis.available">
+      Distractor analysis applies to multiple-choice questions: assessments with <code class="rounded bg-muted px-1">question_subtype</code>
+      <code class="rounded bg-muted px-1">mcq</code> and a <code class="rounded bg-muted px-1">correct_option</code> in the exam config, where the
+      scores file holds the option each student chose. This exam has none.
+    </EmptyState>
 
     <template v-else>
-      <div class="stat-cards-grid">
-        <div class="stat-card"><span class="stat-label">Multiple-choice questions</span><span class="stat-value">{{ analysis.questions.length }}</span></div>
-        <div class="stat-card">
-          <span class="stat-label">With a flag</span>
-          <span class="stat-value">{{ flaggedCount }}</span>
-          <span class="stat-desc">rarely chosen options, a wrong option preferred by top students, or a wrong option chosen more than the key</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Group size</span>
-          <span class="stat-value">{{ analysis.questions[0]?.groupSize }}</span>
-          <span class="stat-desc">students in each of the top and bottom groups</span>
-        </div>
-      </div>
+      <StatGrid>
+        <StatCard label="Multiple-choice questions" :value="analysis.questions.length" />
+        <StatCard
+          label="With a flag"
+          :value="flaggedCount"
+          description="rarely chosen options, a wrong option preferred by top students, or a wrong option chosen more than the key"
+        />
+        <StatCard label="Group size" :value="analysis.questions[0]?.groupSize" description="students in each of the top and bottom groups" />
+      </StatGrid>
 
-      <div class="card-box">
-        <h3>Questions</h3>
-        <p class="hint">Select a question to see its options.</p>
+      <SectionCard title="Questions" description="Select a question to see its options.">
         <DataTable :columns="questionColumns" :rows="questionRows" row-key="id" clickable export-name="distractor-questions" @row-click="selectedId = $event.id">
-          <template #cell-flags="{ row }">
-            <span v-for="f in row.flags" :key="f.id" class="tag" :class="settings.showVerdicts ? `tag-${f.tone}` : 'tag-neutral'">{{ f.label }}</span>
-          </template>
+          <template #cell-flags="{ row }"><ReasonTags :reasons="row.flags" /></template>
         </DataTable>
-      </div>
+      </SectionCard>
 
-      <div v-if="selected" class="card-box">
-        <h3>{{ selected.id }} — options</h3>
-        <p class="hint">
+      <SectionCard v-if="selected" :title="`${selected.id} — options`">
+        <template #description>
           Key: <strong>{{ selected.correctOption }}</strong> · {{ selected.answered }} answered, {{ selected.blank }} left blank.
           Percentages are of the students who answered.
-        </p>
+        </template>
         <DataTable :columns="optionColumns" :rows="selected.options" row-key="option" :searchable="false" export-name="distractor-options">
           <template #cell-option="{ row }">
-            <strong>{{ row.option }}</strong> <span v-if="row.isCorrect" class="tag tag-good">Key</span>
+            <span class="inline-flex items-center gap-1.5">
+              <strong>{{ row.option }}</strong>
+              <VerdictTag v-if="row.isCorrect" :verdict="{ label: 'Key', tone: 'good' }" />
+            </span>
           </template>
           <template #cell-bar="{ row }"><Bar :value="row.pctOfAnswered" :color="row.isCorrect ? '#16a34a' : null" /></template>
           <template #cell-groups="{ row }"><PairBar :first="row.pctBottom" :second="row.pctTop" first-label="Bottom group" second-label="Top group" /></template>
         </DataTable>
-      </div>
+      </SectionCard>
     </template>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject, ref } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import Bar from '../components/Bar.vue'
-import PairBar from '../components/PairBar.vue'
-import { analyzeDistractors } from '../lib/distractors.js'
-import { distractorFlags } from '../lib/verdicts.js'
-import { formatPct as pct } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import ReasonTags from '@/components/display/ReasonTags.vue'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed, ref } from 'vue'
+import DataTable from '@/components/display/DataTable.vue'
+import Bar from '@/components/display/Bar.vue'
+import PairBar from '@/components/display/PairBar.vue'
+import { analyzeDistractors } from '@/lib/distractors.js'
+import { distractorFlags } from '@/lib/verdicts.js'
+import { formatPct as pct } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const settings = inject('settings')
 
 const analysis = computed(() => analyzeDistractors(exam.value.dataset))
 

@@ -39,8 +39,20 @@ be switched off. Every table has search, per-column filters, sorting and CSV exp
 
 ## Code layout
 
+The UI is Vue 3 with [shadcn-vue](https://www.shadcn-vue.com/) (Tailwind CSS v4, reka-ui) and Pinia.
+
 - `src/lib/` pure analysis code, all unit tested: input validation, profiles, paper analysis, items, simulation,
   verdicts, settings, and one module per tool.
-- `src/tools/` one component per tool page; `src/components/` shared components; `src/App.vue` the remaining pages.
+- `src/stores/` Pinia stores: `session` (open exam, saved exams, current page), `settings`, `notice`, `simulation`.
+- `src/pages/` one component per page (`CohortPage`, `PaperPage`, `SimulationPage`, ...), with sub-components in
+  `pages/paper/`, `pages/simulation/` and `pages/settings/`; `pages/index.js` is the page registry used by the navigation.
+- `src/tools/` one component per tool page, registered in `tools/index.js`.
+- `src/components/`
+  - `ui/` shadcn-vue components as generated (default styles);
+  - `common/` page header, section and stat cards, field, alert, select, confirm dialog, badges;
+  - `display/` data table, verdict tag, bars, student sidebar, band editor;
+  - `charts/` Chart.js and SVG charts; `feedback/` the printable feedback sheet; `layout/` header and navigation.
+- Colors for verdict tones and the five dimensions are theme tokens in `src/style.css`; everything else uses the
+  default shadcn theme.
 - `server/` file storage (exams, student histories, settings, backup).
 - `tests/` node:test specs; `scripts/generate_large_sample.js` regenerates `samples/large`.

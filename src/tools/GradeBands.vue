@@ -1,92 +1,91 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">Grade bands</h2>
-        <p class="view-desc">
-          Count students per band, see how many pass at any cutoff, and find students just below a cutoff. Changes on
-          this page are for exploring only; the default bands are in Settings.
-        </p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader
+      title="Grade bands"
+      description="Count students per band, see how many pass at any cutoff, and find students just below a cutoff. Changes on this page are for exploring only; the default bands are in Settings."
+    />
 
-    <div class="card-box">
-      <h3>Bands</h3>
-      <div class="bands-editor">
-        <div v-for="(b, i) in bands" :key="i" class="band-row">
-          <input v-model="b.label" type="text" aria-label="Band label" />
-          <span class="unit">from</span>
-          <input v-model.number="b.from" type="number" min="0" max="100" step="1" aria-label="Band lower limit" />
-          <span class="unit">%</span>
-          <button type="button" class="btn-sm btn-secondary" :disabled="bands.length <= 2" @click="bands.splice(i, 1)">Remove</button>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn-sm btn-secondary" @click="addBand">Add band</button>
-          <button type="button" class="btn-sm btn-secondary" @click="resetBands">Reset to settings</button>
-        </div>
+    <SectionCard title="Bands">
+      <BandsEditor v-model="bands" />
+      <div>
+        <Button variant="outline" size="sm" @click="resetBands">Reset to settings</Button>
       </div>
-      <div v-if="bandProblems.length" class="notice notice-error"><ul><li v-for="(p, i) in bandProblems" :key="i">{{ p }}</li></ul></div>
-    </div>
+      <NoticeAlert v-if="bandProblems.length" kind="error">
+        <ul class="list-disc pl-5"><li v-for="(p, i) in bandProblems" :key="i">{{ p }}</li></ul>
+      </NoticeAlert>
+    </SectionCard>
 
     <template v-if="!bandProblems.length">
-      <div class="card-box">
-        <h3>Students per band</h3>
+      <SectionCard title="Students per band">
         <DataTable :columns="distributionColumns" :rows="distributionRows" row-key="label" :searchable="false" export-name="grade-bands">
-          <template #cell-label="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
+          <template #cell-label="{ value }"><TierBadge :tier="value" class="normal-case" /></template>
           <template #cell-bar="{ row }"><Bar :value="row.percentage" /></template>
-          <template #cell-who="{ row }"><StudentChips :students="row.chips" @select="$emit('open-student', $event)" /></template>
+          <template #cell-who="{ row }"><StudentChips :students="row.chips" @select="openStudent" /></template>
         </DataTable>
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Cutoff explorer</h3>
-        <div class="range-row">
-          <label for="cutoff"><strong>Cutoff</strong></label>
-          <input id="cutoff" v-model.number="cutoff" type="range" min="0" max="100" step="1" />
-          <input v-model.number="cutoff" type="number" min="0" max="100" step="1" aria-label="Cutoff percentage" />
-          <span>%</span>
-          <button type="button" class="btn-sm btn-secondary" @click="cutoff = settings.attainment.passMark">Pass mark ({{ settings.attainment.passMark }}%)</button>
-          <button type="button" class="btn-sm btn-secondary" @click="cutoff = settings.attainment.distinctionMark">Distinction mark ({{ settings.attainment.distinctionMark }}%)</button>
+      <SectionCard title="Cutoff explorer">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-semibold">Cutoff</span>
+          <Slider :model-value="[cutoffClamped]" :min="0" :max="100" :step="1" class="min-w-56 flex-1" aria-label="Cutoff percentage" @update:model-value="(v) => (cutoff = v[0])" />
+          <NumberInput v-model="cutoff" :min="0" :max="100" :step="1" class="w-20" aria-label="Cutoff percentage value" />
+          <span class="text-sm">%</span>
+          <Button variant="outline" size="sm" @click="cutoff = settings.attainment.passMark">Pass mark ({{ settings.attainment.passMark }}%)</Button>
+          <Button variant="outline" size="sm" @click="cutoff = settings.attainment.distinctionMark">Distinction mark ({{ settings.attainment.distinctionMark }}%)</Button>
         </div>
-        <div class="stat-cards-grid compact">
-          <div class="stat-card"><span class="stat-label">At or above {{ cutoffClamped }}%</span><span class="stat-value">{{ atCutoff.count }}</span><span class="stat-desc">{{ pct(atCutoff.ratePct) }} of students</span></div>
-          <div class="stat-card"><span class="stat-label">Below {{ cutoffClamped }}%</span><span class="stat-value">{{ students.length - atCutoff.count }}</span><span class="stat-desc">{{ pct(atCutoff.ratePct == null ? null : 100 - atCutoff.ratePct) }} of students</span></div>
-        </div>
+        <StatGrid compact>
+          <StatCard :label="`At or above ${cutoffClamped}%`" :value="atCutoff.count" :description="`${pct(atCutoff.ratePct)} of students`" />
+          <StatCard :label="`Below ${cutoffClamped}%`" :value="students.length - atCutoff.count" :description="`${pct(atCutoff.ratePct == null ? null : 100 - atCutoff.ratePct)} of students`" />
+        </StatGrid>
         <LineChart :labels="curve.map((c) => String(c.cutoff))" :series="[{ label: 'Students at or above the cutoff (%)', data: curve.map((c) => c.ratePct), color: '#2563eb' }]" y-label="% of students" />
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Students just below the cutoff</h3>
-        <div class="range-row">
+      <SectionCard title="Students just below the cutoff">
+        <div class="flex flex-wrap items-center gap-2 text-sm">
           <label for="within">Within</label>
-          <input id="within" v-model.number="within" type="number" min="0" max="100" step="1" />
+          <NumberInput id="within" v-model="within" :min="0" :max="100" :step="1" class="w-20" />
           <span>points below {{ cutoffClamped }}%</span>
         </div>
-        <DataTable :columns="borderlineColumns" :rows="borderline" row-key="id" clickable export-name="borderline-students" empty-text="No students in this range." @row-click="$emit('open-student', $event.id)" />
-      </div>
+        <DataTable :columns="borderlineColumns" :rows="borderline" row-key="id" clickable export-name="borderline-students" empty-text="No students in this range." @row-click="openStudent($event.id)" />
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Students</h3>
-        <DataTable :columns="studentColumns" :rows="studentRows" row-key="id" clickable export-name="students-bands" @row-click="$emit('open-student', $event.id)" />
-      </div>
+      <SectionCard title="Students">
+        <DataTable :columns="studentColumns" :rows="studentRows" row-key="id" clickable export-name="students-bands" @row-click="openStudent($event.id)" />
+      </SectionCard>
     </template>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject, reactive, ref, watch } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import Bar from '../components/Bar.vue'
-import StudentChips from '../components/StudentChips.vue'
-import LineChart from '../components/charts/LineChart.vue'
-import { assignBand, bandDistribution, borderlineStudents, cutoffCurve } from '../lib/bands.js'
-import { cloneSettings, validateSettings, setPath } from '../lib/settings.js'
-import { formatNumber as num, formatPct as pct } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import { Button } from '@/components/ui/button'
+import { Slider } from '@/components/ui/slider'
+import BandsEditor from '@/components/display/BandsEditor.vue'
+import NoticeAlert from '@/components/common/NoticeAlert.vue'
+import NumberInput from '@/components/common/NumberInput.vue'
+import TierBadge from '@/components/common/TierBadge.vue'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed, reactive, ref, watch } from 'vue'
+import DataTable from '@/components/display/DataTable.vue'
+import Bar from '@/components/display/Bar.vue'
+import StudentChips from '@/components/display/StudentChips.vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import { assignBand, bandDistribution, borderlineStudents, cutoffCurve } from '@/lib/bands.js'
+import { cloneSettings, validateSettings, setPath } from '@/lib/settings.js'
+import { formatNumber as num, formatPct as pct } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const settings = inject('settings')
 
 const students = computed(() => exam.value.profiles.students)
 

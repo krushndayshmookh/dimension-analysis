@@ -1,103 +1,107 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">Correlations</h2>
-        <p class="view-desc">
-          How students' mastery in one {{ unit }} relates to their mastery in another. A positive coefficient means students
-          who do well in one tend to do well in the other.
-        </p>
-      </div>
-      <label class="controls">
-        Compare
-        <select v-model="group">
-          <option value="dimensions">Dimensions</option>
-          <option value="difficulties">Difficulty tiers</option>
-          <option value="topics">Topics</option>
-        </select>
-      </label>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader
+      title="Correlations"
+      :description="`How students' mastery in one ${unit} relates to their mastery in another. A positive coefficient means students who do well in one tend to do well in the other.`"
+    >
+      <template #actions>
+        <SelectField v-model="group" :options="groupOptions" aria-label="Compare" trigger-class="w-44" />
+      </template>
+    </PageHeader>
 
-    <div v-if="result.names.length < 2" class="empty-state"><p>At least two {{ unit }}s are needed.</p></div>
+    <EmptyState v-if="result.names.length < 2">At least two {{ unit }}s are needed.</EmptyState>
 
     <template v-else>
-      <div v-if="result.studentCount < settings.correlation.minStudents" class="notice notice-info">
-        <span>
-          Based on {{ result.studentCount }} students. Correlations from fewer than {{ settings.correlation.minStudents }}
-          students change a lot when a few students change; read them as indicative.
-        </span>
-      </div>
+      <NoticeAlert v-if="result.studentCount < settings.correlation.minStudents" kind="info">
+        Based on {{ result.studentCount }} students. Correlations from fewer than {{ settings.correlation.minStudents }} students
+        change a lot when a few students change; read them as indicative.
+      </NoticeAlert>
 
-      <div class="card-box">
-        <h3>Correlation matrix</h3>
-        <p class="hint">
-          Pearson correlation of mastery percentages, from −1 to +1. Blue is positive, orange is negative; hover a cell for
-          the number of students behind it. Select a cell to see the scatter.
-        </p>
-        <div class="table-responsive">
-          <table class="matrix">
-            <thead>
-              <tr>
-                <th></th>
-                <th v-for="name in result.names" :key="name">{{ name }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(rowName, i) in result.names" :key="rowName">
-                <td><strong>{{ rowName }}</strong></td>
-                <td
+      <SectionCard title="Correlation matrix">
+        <template #description>
+          Pearson correlation of mastery percentages, from −1 to +1. Blue is positive, orange is negative; hover a cell for the
+          number of students behind it. Select a cell to see the scatter.
+        </template>
+        <div class="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead></TableHead>
+                <TableHead v-for="name in result.names" :key="name" class="text-center">{{ name }}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="(rowName, i) in result.names" :key="rowName">
+                <TableCell class="font-medium">{{ rowName }}</TableCell>
+                <TableCell
                   v-for="(colName, j) in result.names"
                   :key="colName"
-                  class="matrix-cell corr-cell"
-                  :class="{ selected: i !== j && isSelected(rowName, colName) }"
+                  class="min-w-20 cursor-pointer text-center tabular-nums"
+                  :class="i !== j && isSelected(rowName, colName) ? 'outline-2 -outline-offset-2 outline-foreground' : ''"
                   :style="shade(result.matrix[i][j])"
                   :title="`${rowName} / ${colName}: r = ${result.matrix[i][j] ?? '—'} (${result.counts[i][j]} students)`"
                   @click="i !== j && select(rowName, colName)"
                 >
-                  <span class="matrix-pct">{{ result.matrix[i][j] == null ? '—' : result.matrix[i][j].toFixed(2) }}</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  <span class="font-semibold">{{ result.matrix[i][j] == null ? '—' : result.matrix[i][j].toFixed(2) }}</span>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
-        <p class="hint">
-          Marks of a question with several {{ unit }}s are shared between them, so related {{ unit }}s can correlate partly
-          because they draw on the same questions.
+        <p class="text-xs text-muted-foreground">
+          Marks of a question with several {{ unit }}s are shared between them, so related {{ unit }}s can correlate partly because
+          they draw on the same questions.
         </p>
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Pairs, strongest first</h3>
+      <SectionCard title="Pairs, strongest first">
         <DataTable :columns="pairColumns" :rows="pairRows" row-key="key" clickable export-name="correlation-pairs" @row-click="select($event.a, $event.b)" />
-      </div>
+      </SectionCard>
 
-      <div v-if="selected" class="card-box">
-        <h3>{{ selected.a }} vs {{ selected.b }}</h3>
-        <p class="hint">
+      <SectionCard v-if="selected" :title="`${selected.a} vs ${selected.b}`">
+        <template #description>
           One point per student ({{ points.length }}). r = {{ selectedPair?.r ?? '—' }}
           <VerdictTag :verdict="V.correlationVerdict(selectedPair?.r, settings)" />
-        </p>
+        </template>
         <ScatterChart :points="points" :x-label="`${selected.a} mastery (%)`" :y-label="`${selected.b} mastery (%)`" />
-      </div>
+      </SectionCard>
     </template>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject, ref, watch } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import VerdictTag from '../components/VerdictTag.vue'
-import ScatterChart from '../components/charts/ScatterChart.vue'
-import { correlationMatrix, scatterPoints } from '../lib/correlations.js'
-import * as V from '../lib/verdicts.js'
-import { formatNumber as num } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import NoticeAlert from '@/components/common/NoticeAlert.vue'
+import SelectField from '@/components/common/SelectField.vue'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed, ref, watch } from 'vue'
+import DataTable from '@/components/display/DataTable.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
+import ScatterChart from '@/components/charts/ScatterChart.vue'
+import { correlationMatrix, scatterPoints } from '@/lib/correlations.js'
+import * as V from '@/lib/verdicts.js'
+import { formatNumber as num } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const settings = inject('settings')
 
 const group = ref('dimensions')
+const groupOptions = [
+  { value: 'dimensions', label: 'Dimensions' },
+  { value: 'difficulties', label: 'Difficulty tiers' },
+  { value: 'topics', label: 'Topics' },
+]
 const unit = computed(() => ({ dimensions: 'dimension', difficulties: 'tier', topics: 'topic' })[group.value])
 const result = computed(() => correlationMatrix(exam.value.profiles, group.value))
 

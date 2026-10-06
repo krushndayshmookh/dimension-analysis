@@ -1,63 +1,34 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">Question review</h2>
-        <p class="view-desc">
-          Which questions deserve a second look, whether they were used before, and how students attempted them.
-          Thresholds are set in Settings.
-        </p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader
+      title="Question review"
+      description="Which questions deserve a second look, whether they were used before, and how students attempted them. Thresholds are set in Settings."
+    />
 
-    <div class="stat-cards-grid">
-      <div class="stat-card">
-        <span class="stat-label">Questions to review</span>
-        <span class="stat-value">{{ queue.length }} / {{ rows.length }}</span>
-        <span class="stat-desc">with at least one reason below</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Reused from earlier exams</span>
-        <span class="stat-value">{{ reuseTotals.reusedCount }} / {{ reuseTotals.questionCount }}</span>
-        <span class="stat-desc">
-          {{ pct(reuseTotals.reusedPct) }} · {{ reuseTotals.examCount }} earlier exam{{ reuseTotals.examCount === 1 ? '' : 's' }}
-        </span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Average attempt rate (students)</span>
-        <span class="stat-value">{{ pct(attempts.totals.meanStudentAttemptRatePct) }}</span>
-        <span class="stat-desc">share of questions a student attempted</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Marks left unattempted</span>
-        <span class="stat-value">{{ pct(attempts.totals.skippedMarksPct) }}</span>
-        <span class="stat-desc">{{ num(attempts.totals.skippedMarks) }} marks across all students</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Reliability (Cronbach's alpha)</span>
-        <span class="stat-value">{{ num(paper.reliability.alpha, 2) }}</span>
-        <span class="stat-desc"><VerdictTag :verdict="V.reliabilityVerdict(paper.reliability.alpha, settings)" /></span>
-      </div>
-    </div>
+    <StatGrid>
+      <StatCard label="Questions to review" :value="`${queue.length} / ${rows.length}`" description="with at least one reason below" />
+      <StatCard
+        label="Reused from earlier exams"
+        :value="`${reuseTotals.reusedCount} / ${reuseTotals.questionCount}`"
+        :description="`${pct(reuseTotals.reusedPct)} · ${reuseTotals.examCount} earlier exam${reuseTotals.examCount === 1 ? '' : 's'}`"
+      />
+      <StatCard label="Average attempt rate (students)" :value="pct(attempts.totals.meanStudentAttemptRatePct)" description="share of questions a student attempted" />
+      <StatCard label="Marks left unattempted" :value="pct(attempts.totals.skippedMarksPct)" :description="`${num(attempts.totals.skippedMarks)} marks across all students`" />
+      <StatCard label="Reliability (Cronbach's alpha)" :value="num(paper.reliability.alpha, 2)">
+        <template #description><VerdictTag :verdict="V.reliabilityVerdict(paper.reliability.alpha, settings)" /></template>
+      </StatCard>
+    </StatGrid>
 
-    <!-- Review queue -->
-    <div class="card-box">
-      <h3>Review queue</h3>
-      <p class="hint">Most severe first. Severity adds up the reasons; negative discrimination and a high deviation weigh most.</p>
+    <SectionCard title="Review queue" description="Most severe first. Severity adds up the reasons; negative discrimination and a high deviation weigh most.">
       <DataTable :columns="queueColumns" :rows="queueRows" row-key="id" export-name="question-review-queue" empty-text="No question has a reason to be reviewed.">
-        <template #cell-reasons="{ row }">
-          <span v-for="r in row.reasons" :key="r.id" class="tag" :class="settings.showVerdicts ? `tag-${r.tone}` : 'tag-neutral'">{{ r.label }}</span>
-        </template>
+        <template #cell-reasons="{ row }"><ReasonTags :reasons="row.reasons" /></template>
       </DataTable>
-    </div>
+    </SectionCard>
 
-    <!-- Reuse -->
-    <div class="card-box">
-      <h3>Reuse across exams</h3>
-      <p class="hint">
-        A question counts as reused when an earlier saved exam has a question with the same type and id. Keep question ids
-        stable across exams for this to work.
-      </p>
+    <SectionCard
+      title="Reuse across exams"
+      description="A question counts as reused when an earlier saved exam has a question with the same type and id. Keep question ids stable across exams for this to work."
+    >
       <DataTable
         :columns="reuseColumns"
         :rows="reuseRows"
@@ -67,15 +38,12 @@
       >
         <template #cell-changePp="{ value }">{{ signed(value, ' pp') }}</template>
       </DataTable>
-    </div>
+    </SectionCard>
 
-    <!-- Attempt behaviour -->
-    <div class="card-box">
-      <h3>Attempt behaviour</h3>
-      <p class="hint">
-        A question is unattempted when its score cell is blank. "Skippers vs attempters" compares the overall mastery of
-        students who left the question blank with those who attempted it.
-      </p>
+    <SectionCard
+      title="Attempt behaviour"
+      description="A question is unattempted when its score cell is blank. “Skippers vs attempters” compares the overall mastery of students who left the question blank with those who attempted it."
+    >
       <LineChart
         :labels="rows.map((r) => r.id)"
         :series="[
@@ -85,7 +53,7 @@
         y-label="% of students, in paper order"
       />
       <DataTable :columns="attemptColumns" :rows="attempts.questions" row-key="id" export-name="question-attempts" />
-      <h4>Students who left questions blank</h4>
+      <h4 class="text-sm font-semibold">Students who left questions blank</h4>
       <DataTable
         :columns="skipperColumns"
         :rows="skippingStudents"
@@ -93,45 +61,52 @@
         clickable
         export-name="students-skipping"
         empty-text="Every student attempted every question."
-        @row-click="$emit('open-student', $event.id)"
+        @row-click="openStudent($event.id)"
       />
-    </div>
+    </SectionCard>
 
-    <!-- Charts -->
-    <div class="card-box">
-      <h3>Charts</h3>
-      <div class="charts-pair">
-        <div>
-          <h4>Expected vs actual solve rate</h4>
-          <p class="hint">Points on the dashed line behaved as expected; above it the question was easier than expected.</p>
+    <SectionCard title="Charts">
+      <div class="grid gap-6 lg:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <h4 class="text-sm font-semibold">Expected vs actual solve rate</h4>
+          <p class="text-xs text-muted-foreground">Points on the dashed line behaved as expected; above it the question was easier than expected.</p>
           <ScatterChart :points="expectedActualPoints" x-label="Expected solve rate (%)" y-label="Actual solve rate (%)" diagonal />
         </div>
-        <div>
-          <h4>Solve rate vs discrimination</h4>
-          <p class="hint">Discrimination below zero means weaker students did better than stronger ones.</p>
+        <div class="flex flex-col gap-1">
+          <h4 class="text-sm font-semibold">Solve rate vs discrimination</h4>
+          <p class="text-xs text-muted-foreground">Discrimination below zero means weaker students did better than stronger ones.</p>
           <ScatterChart :points="discriminationPoints" x-label="Solve rate (%)" y-label="Discrimination index" :y-min="-1" :y-max="1" />
         </div>
       </div>
-    </div>
-  </section>
+    </SectionCard>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import VerdictTag from '../components/VerdictTag.vue'
-import LineChart from '../components/charts/LineChart.vue'
-import ScatterChart from '../components/charts/ScatterChart.vue'
-import { analyzeAttempts, buildReviewQueue } from '../lib/review.js'
-import { findReuse, reuseSummary } from '../lib/reuse.js'
-import * as V from '../lib/verdicts.js'
-import { formatNumber as num, formatPct as pct, formatSigned as signed } from '../lib/format.js'
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import ReasonTags from '@/components/display/ReasonTags.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import DataTable from '@/components/display/DataTable.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import ScatterChart from '@/components/charts/ScatterChart.vue'
+import { analyzeAttempts, buildReviewQueue } from '@/lib/review.js'
+import { findReuse, reuseSummary } from '@/lib/reuse.js'
+import * as V from '@/lib/verdicts.js'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { formatNumber as num, formatPct as pct, formatSigned as signed } from '@/lib/format.js'
 
-defineEmits(['open-student'])
-
-const exam = inject('exam')
-const savedExams = inject('savedExams')
-const settings = inject('settings')
+const sessionStore = useSessionStore()
+const { exam, savedExams } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
 const paper = computed(() => exam.value.paper)
 const rows = computed(() => paper.value.questions.rows)

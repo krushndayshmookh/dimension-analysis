@@ -17,7 +17,7 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
-import DataTable from '@/components/data/DataTable.vue'
+import DataTable from '@/components/display/DataTable.vue'
 import DimensionBadge from '@/components/common/DimensionBadge.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
 import TierBadge from '@/components/common/TierBadge.vue'

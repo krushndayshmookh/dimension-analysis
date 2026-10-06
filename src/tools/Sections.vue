@@ -1,114 +1,100 @@
 <template>
-  <section class="view-panel">
-    <div class="view-header">
-      <div>
-        <h2 class="view-title">Sections</h2>
-        <p class="view-desc">
-          Compare sections (batches) on every measure. Sections come from the optional <code>section</code> column of the
-          student file.
-        </p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-6">
+    <PageHeader title="Sections">
+      <template #description>
+        Compare sections (batches) on every measure. Sections come from the optional <code class="rounded bg-muted px-1">section</code> column of the student file.
+      </template>
+    </PageHeader>
 
-    <div v-if="!analysis.hasSections" class="empty-state">
-      <p>No student in this exam has a section. Add a <code>section</code> column to the student details file and upload again.</p>
-    </div>
+    <EmptyState v-if="!analysis.hasSections">
+      No student in this exam has a section. Add a <code class="rounded bg-muted px-1">section</code> column to the student details file and upload again.
+    </EmptyState>
 
     <template v-else>
-      <div class="stat-cards-grid">
-        <div class="stat-card">
-          <span class="stat-label">Sections</span>
-          <span class="stat-value">{{ analysis.sections.length }}</span>
-          <span class="stat-desc">{{ profiles.students.length }} students</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Highest section mean</span>
-          <span class="stat-value">{{ highest?.name ?? '—' }}</span>
-          <span class="stat-desc">{{ pct(highest?.mastery.mean) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Lowest section mean</span>
-          <span class="stat-value">{{ lowest?.name ?? '—' }}</span>
-          <span class="stat-desc">{{ pct(lowest?.mastery.mean) }}</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Spread between them</span>
-          <span class="stat-value">{{ num(spread) }} pp</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">Do sections differ? (ANOVA)</span>
-          <span class="stat-value">{{ analysis.anova ? `p = ${analysis.anova.p}` : '—' }}</span>
-          <span class="stat-desc">
+      <StatGrid>
+        <StatCard label="Sections" :value="analysis.sections.length" :description="`${profiles.students.length} students`" />
+        <StatCard label="Highest section mean" :value="highest?.name ?? '—'" :description="pct(highest?.mastery.mean)" />
+        <StatCard label="Lowest section mean" :value="lowest?.name ?? '—'" :description="pct(lowest?.mastery.mean)" />
+        <StatCard label="Spread between them" :value="`${num(spread)} pp`" />
+        <StatCard label="Do sections differ? (ANOVA)" :value="analysis.anova ? `p = ${analysis.anova.p}` : '—'">
+          <template #description>
             <template v-if="analysis.anova">F({{ analysis.anova.df1 }}, {{ analysis.anova.df2 }}) = {{ analysis.anova.f }}</template>
             <template v-else>not enough data for the test</template>
             <VerdictTag :verdict="V.differenceVerdict(analysis.anova?.p, settings)" />
-          </span>
-        </div>
-      </div>
+          </template>
+        </StatCard>
+      </StatGrid>
 
-      <div class="card-box">
-        <h3>Overall</h3>
-        <p class="hint">
-          Difference from cohort = section mean minus cohort mean. Effect size is Cohen's d against all other students
-          (about 0.2 small, 0.5 medium, 0.8 large). Pass and distinction marks come from Settings.
-        </p>
+      <SectionCard title="Overall">
+        <template #description>
+          Difference from cohort = section mean minus cohort mean. Effect size is Cohen's d against all other students (about 0.2
+          small, 0.5 medium, 0.8 large). Pass and distinction marks come from Settings.
+        </template>
         <DataTable :columns="overviewColumns" :rows="overviewRows" row-key="name" :searchable="false" export-name="sections-overview">
-          <template #cell-name="{ row }"><span class="swatch" :style="{ background: colorOf(row.name) }"></span>{{ row.name }}</template>
+          <template #cell-name="{ row }">
+            <span class="inline-flex items-center gap-2"><span class="size-2.5 rounded-sm" :style="{ background: colorOf(row.name) }"></span>{{ row.name }}</span>
+          </template>
         </DataTable>
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Dimension balance by section</h3>
+      <SectionCard title="Dimension balance by section">
         <RadarChart :series="radarSeries" />
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Score distribution by section</h3>
-        <p class="hint">Share of each section's students in each decile of mastery.</p>
+      <SectionCard title="Score distribution by section" description="Share of each section's students in each decile of mastery.">
         <LineChart :labels="decileLabels" :series="distributionSeries" y-label="% of the section's students" :y-max="100" />
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Mean mastery by dimension</h3>
-        <p class="hint">
-          The p-value tests whether the sections' means for that dimension differ (one-way ANOVA). With few students per
-          section treat it as indicative only.
-        </p>
+      <SectionCard title="Mean mastery by dimension">
+        <template #description>
+          The p-value tests whether the sections' means for that dimension differ (one-way ANOVA). With few students per section
+          treat it as indicative only.
+        </template>
         <DataTable :columns="dimensionColumns" :rows="dimensionRows" row-key="name" :searchable="false" export-name="sections-dimensions">
-          <template #cell-name="{ value }"><span class="badge" :class="dimClass(value)">{{ value }}</span></template>
+          <template #cell-name="{ value }"><DimensionBadge :dimension="value" /></template>
         </DataTable>
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Mean mastery by difficulty tier</h3>
+      <SectionCard title="Mean mastery by difficulty tier">
         <DataTable :columns="tierColumns" :rows="tierRows" row-key="name" :searchable="false" export-name="sections-tiers">
-          <template #cell-name="{ value }"><span class="badge badge-tier">{{ value }}</span></template>
+          <template #cell-name="{ value }"><TierBadge :tier="value" /></template>
         </DataTable>
-      </div>
+      </SectionCard>
 
-      <div class="card-box">
-        <h3>Students</h3>
-        <DataTable :columns="studentColumns" :rows="profiles.students" row-key="id" clickable export-name="students-by-section" @row-click="$emit('open-student', $event.id)" />
-      </div>
+      <SectionCard title="Students">
+        <DataTable :columns="studentColumns" :rows="profiles.students" row-key="id" clickable export-name="students-by-section" @row-click="openStudent($event.id)" />
+      </SectionCard>
     </template>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed, inject } from 'vue'
-import DataTable from '../components/DataTable.vue'
-import VerdictTag from '../components/VerdictTag.vue'
-import RadarChart from '../components/charts/RadarChart.vue'
-import LineChart from '../components/charts/LineChart.vue'
-import { analyzeSections } from '../lib/sections.js'
-import * as V from '../lib/verdicts.js'
-import { dimensionClass as dimClass } from '../lib/colors.js'
-import { formatNumber as num, formatPct as pct, formatSigned as signed } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import DimensionBadge from '@/components/common/DimensionBadge.vue'
+import TierBadge from '@/components/common/TierBadge.vue'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed } from 'vue'
+import DataTable from '@/components/display/DataTable.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
+import RadarChart from '@/components/charts/RadarChart.vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import { analyzeSections } from '@/lib/sections.js'
+import * as V from '@/lib/verdicts.js'
+import { dimensionClass as dimClass } from '@/lib/colors.js'
+import { formatNumber as num, formatPct as pct, formatSigned as signed } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const settings = inject('settings')
 
 const profiles = computed(() => exam.value.profiles)
 const analysis = computed(() => analyzeSections(profiles.value))

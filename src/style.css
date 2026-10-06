@@ -150,9 +150,13 @@
     @apply font-sans;
     }
 }
-/* Print: only the analysis, without navigation or controls. */
+/* Print: only the analysis, without navigation or controls. Feedback sheets are
+   rendered into .print-area, which is hidden except while printing them. */
+.print-area { display: none; }
 @media print {
   .no-print { display: none !important; }
   body { background: #fff; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.printing-sheets .feedback-screen { display: none !important; }
+  body.printing-sheets .print-area { display: block !important; }
 }

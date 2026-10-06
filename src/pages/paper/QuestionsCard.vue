@@ -31,9 +31,9 @@
 <script setup>
 import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
-import DataTable from '@/components/data/DataTable.vue'
-import PairBar from '@/components/data/PairBar.vue'
-import VerdictTag from '@/components/data/VerdictTag.vue'
+import DataTable from '@/components/display/DataTable.vue'
+import PairBar from '@/components/display/PairBar.vue'
+import VerdictTag from '@/components/display/VerdictTag.vue'
 import DimensionBadge from '@/components/common/DimensionBadge.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
 import StatCard from '@/components/common/StatCard.vue'

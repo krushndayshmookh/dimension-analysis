@@ -1,61 +1,50 @@
 <template>
-  <div class="feedback-page">
-    <section class="with-sidebar feedback-screen">
+  <div>
+    <div class="feedback-screen grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <StudentSidebar v-model="selectedIds" :items="items" multiple />
 
-      <div class="view-panel">
-        <div class="view-header">
-          <div>
-            <h2 class="view-title">Feedback sheets</h2>
-            <p class="view-desc">
-              One page per student: marks, dimensions, lowest topics and (optionally) marks per question. Choose the
-              students in the sidebar, then print or save as PDF, or download as HTML.
-            </p>
-          </div>
-        </div>
+      <div class="flex min-w-0 flex-col gap-6">
+        <PageHeader
+          title="Feedback sheets"
+          description="One page per student: marks, dimensions, lowest topics and (optionally) marks per question. Choose the students in the sidebar, then print or save as PDF, or download as HTML."
+        />
 
-        <fieldset>
-          <legend>Contents</legend>
-          <div class="form-grid">
-            <label class="check"><input v-model="options.showQuestionMarks" type="checkbox" /> Marks per question</label>
-            <label class="check"><input v-model="options.showCohortAverage" type="checkbox" /> Cohort average</label>
-            <label class="check"><input v-model="options.showRank" type="checkbox" /> Rank</label>
-            <label class="check"><input v-model="options.showPercentile" type="checkbox" /> Percentile</label>
-            <label class="check"><input v-model="options.showLevels" type="checkbox" /> Level tags (Weak / Average / Strong)</label>
-            <div class="form-group">
-              <label for="fs-topics">Lowest topics to list</label>
-              <input id="fs-topics" v-model.number="options.lowestTopics" type="number" min="0" max="20" step="1" />
-            </div>
+        <SectionCard title="Contents" description="These start from the Feedback sheets settings. Changing them here affects only this page.">
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <label v-for="o in toggles" :key="o.key" class="flex items-center gap-2 text-sm">
+              <Checkbox :model-value="options[o.key]" @update:model-value="(v) => (options[o.key] = Boolean(v))" />
+              {{ o.label }}
+            </label>
+            <Field label="Lowest topics to list" html-for="fs-topics">
+              <NumberInput id="fs-topics" v-model="options.lowestTopics" :min="0" :max="20" :step="1" />
+            </Field>
           </div>
-          <div class="form-group">
-            <label for="fs-note">Note for every sheet (optional)</label>
-            <textarea id="fs-note" v-model="generalNote" rows="2" placeholder="Shown at the bottom of each sheet under Comments"></textarea>
+          <Field label="Note for every sheet (optional)" html-for="fs-note">
+            <Textarea id="fs-note" v-model="generalNote" rows="2" placeholder="Shown at the bottom of each sheet under Comments" />
+          </Field>
+          <div class="flex flex-wrap gap-2">
+            <Button :disabled="!selectedIds.length" @click="printSheets">
+              <PrinterIcon /> Print / save as PDF ({{ selectedIds.length }} sheet{{ selectedIds.length === 1 ? '' : 's' }})
+            </Button>
+            <Button variant="outline" :disabled="!previewId" @click="downloadOne"><DownloadIcon /> Download this sheet (HTML)</Button>
+            <Button variant="outline" :disabled="!selectedIds.length" @click="downloadAll"><DownloadIcon /> Download all (one HTML file)</Button>
           </div>
-          <p class="hint">These start from the Feedback sheets settings. Changing them here affects only this page.</p>
-          <div class="form-actions">
-            <button type="button" class="btn-primary" :disabled="!selectedIds.length" @click="printSheets">
-              Print / save as PDF ({{ selectedIds.length }} sheet{{ selectedIds.length === 1 ? '' : 's' }})
-            </button>
-            <button type="button" class="btn-secondary" :disabled="!previewId" @click="downloadOne">Download this sheet (HTML)</button>
-            <button type="button" class="btn-secondary" :disabled="!selectedIds.length" @click="downloadAll">Download all (one HTML file)</button>
-          </div>
-        </fieldset>
+        </SectionCard>
 
-        <div v-if="!previewId" class="empty-state"><p>Select at least one student in the sidebar.</p></div>
+        <EmptyState v-if="!previewId">Select at least one student in the sidebar.</EmptyState>
         <template v-else>
-          <div class="preview-nav">
-            <button type="button" class="btn-sm btn-secondary" :disabled="previewIndex <= 0" @click="step(-1)">← Previous</button>
-            <span>Sheet {{ previewIndex + 1 }} of {{ selectedIds.length }}</span>
-            <button type="button" class="btn-sm btn-secondary" :disabled="previewIndex >= selectedIds.length - 1" @click="step(1)">Next →</button>
+          <div class="flex items-center gap-3">
+            <Button variant="outline" size="sm" :disabled="previewIndex <= 0" @click="step(-1)"><ChevronLeftIcon /> Previous</Button>
+            <span class="text-sm">Sheet {{ previewIndex + 1 }} of {{ selectedIds.length }}</span>
+            <Button variant="outline" size="sm" :disabled="previewIndex >= selectedIds.length - 1" @click="step(1)">Next <ChevronRightIcon /></Button>
           </div>
-          <div class="form-group">
-            <label for="fs-student-note">Comment for {{ previewSheet.header.studentName }} (optional)</label>
-            <textarea id="fs-student-note" v-model="comments[previewId]" rows="2" placeholder="Shown on this student's sheet only"></textarea>
-          </div>
+          <Field :label="`Comment for ${previewSheet.header.studentName} (optional)`" html-for="fs-student-note">
+            <Textarea id="fs-student-note" v-model="comments[previewId]" rows="2" placeholder="Shown on this student's sheet only" />
+          </Field>
           <div ref="previewEl"><FeedbackSheet :sheet="previewSheet" :levels="options.showLevels" /></div>
         </template>
       </div>
-    </section>
+    </div>
 
     <!-- Rendered only while printing or downloading all sheets. -->
     <div v-if="renderAll" ref="allEl" class="print-area">
@@ -65,18 +54,34 @@
 </template>
 
 <script setup>
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import StudentSidebar from '../components/StudentSidebar.vue'
-import FeedbackSheet from '../components/FeedbackSheet.vue'
-import { buildFeedback, DEFAULT_FEEDBACK_OPTIONS, feedbackFileName } from '../lib/feedback.js'
-import { downloadText, htmlDocument, pageCss } from '../lib/download.js'
-import * as V from '../lib/verdicts.js'
-import { formatPct as pct } from '../lib/format.js'
+import PageHeader from '@/components/common/PageHeader.vue'
+import SectionCard from '@/components/common/SectionCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
+import StatGrid from '@/components/common/StatGrid.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, PrinterIcon } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Textarea } from '@/components/ui/textarea'
+import Field from '@/components/common/Field.vue'
+import NumberInput from '@/components/common/NumberInput.vue'
+import { storeToRefs } from 'pinia'
+import { useSessionStore } from '@/stores/session.js'
+import { useSettingsStore } from '@/stores/settings.js'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import StudentSidebar from '@/components/display/StudentSidebar.vue'
+import FeedbackSheet from '@/components/feedback/FeedbackSheet.vue'
+import { buildFeedback, DEFAULT_FEEDBACK_OPTIONS, feedbackFileName } from '@/lib/feedback.js'
+import { downloadText, htmlDocument, pageCss } from '@/lib/download.js'
+import * as V from '@/lib/verdicts.js'
+import { formatPct as pct } from '@/lib/format.js'
 
-defineEmits(['open-student'])
+const sessionStore = useSessionStore()
+const { exam } = storeToRefs(sessionStore)
+const { openStudent } = sessionStore
+const settingsStore = useSettingsStore()
+const { settings } = storeToRefs(settingsStore)
 
-const exam = inject('exam')
-const settings = inject('settings')
 
 const profiles = computed(() => exam.value.profiles)
 const items = computed(() =>
@@ -89,6 +94,13 @@ const items = computed(() =>
   }))
 )
 
+const toggles = [
+  { key: 'showQuestionMarks', label: 'Marks per question' },
+  { key: 'showCohortAverage', label: 'Cohort average' },
+  { key: 'showRank', label: 'Rank' },
+  { key: 'showPercentile', label: 'Percentile' },
+  { key: 'showLevels', label: 'Level tags (Weak / Average / Strong)' },
+]
 const options = reactive({ ...DEFAULT_FEEDBACK_OPTIONS, ...settings.value.feedback })
 const generalNote = ref('')
 const comments = reactive({})

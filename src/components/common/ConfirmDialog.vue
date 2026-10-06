@@ -1,13 +1,13 @@
 <template>
-  <AlertDialog :open="state.open" @update:open="(open) => !open && answer(false)">
+  <AlertDialog :open="state.open" @update:open="onOpenChange">
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{{ state.title }}</AlertDialogTitle>
         <AlertDialogDescription v-if="state.description">{{ state.description }}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel @click="answer(false)">Cancel</AlertDialogCancel>
-        <AlertDialogAction :variant="state.destructive ? 'destructive' : 'default'" @click="answer(true)">{{ state.confirmLabel }}</AlertDialogAction>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction :variant="state.destructive ? 'destructive' : 'default'" @click="confirmed = true">{{ state.confirmLabel }}</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
@@ -27,4 +27,16 @@ import {
 import { useConfirm } from '@/composables/useConfirm.js'
 
 const { state, answer } = useConfirm()
+
+// The dialog closes itself on either button, possibly before the button's own click
+// handler runs, so the answer is read after the close from a flag the Confirm
+// button sets, not from the order of events.
+let confirmed = false
+function onOpenChange(open) {
+  if (open) return
+  setTimeout(() => {
+    answer(confirmed)
+    confirmed = false
+  })
+}
 </script>

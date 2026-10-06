@@ -12,6 +12,8 @@ export const useSessionStore = defineStore('session', () => {
   // { id, courseName, examTitle, examDate, dataset, profiles, paper }. Shallow: the
   // analysis is large and never mutated, so it is not made deeply reactive.
   const exam = shallowRef(null)
+  // Changes whenever an exam is opened (not when its id is filled in after saving).
+  const examKey = ref(0)
   const savedExams = ref([])
   const selectedStudentId = ref('')
   const historyStudents = ref([])
@@ -24,6 +26,7 @@ export const useSessionStore = defineStore('session', () => {
   function openExam({ id = null, courseName, examTitle, examDate, dataset: data }) {
     const { profiles: p, paper: pa } = analyzeDataset(data)
     exam.value = { id, courseName, examTitle, examDate, dataset: data, profiles: p, paper: pa }
+    examKey.value++
     selectedStudentId.value = p.students[0]?.id ?? ''
   }
 
@@ -81,6 +84,7 @@ export const useSessionStore = defineStore('session', () => {
   return {
     tab,
     exam,
+    examKey,
     dataset,
     profiles,
     paper,

@@ -13,7 +13,7 @@ export const useSimulationStore = defineStore('simulation', () => {
   const comparison = shallowRef(null)
   const errors = ref([])
   const dirty = ref(false)
-  let ranFor = null
+  let ranForKey = null
 
   // flush: 'sync' so programmatic changes made before a run cannot re-flag it afterwards.
   watch(form, () => {
@@ -30,11 +30,11 @@ export const useSimulationStore = defineStore('simulation', () => {
     result.value = simulateMany(exam.dataset, params)
     comparison.value = compareToActual(result.value, exam.profiles, exam.paper)
     dirty.value = false
-    ranFor = exam
+    ranForKey = session.examKey
   }
 
   function ensure() {
-    if (session.exam && ranFor !== session.exam) run(false)
+    if (session.exam && ranForKey !== session.examKey) run(false)
   }
 
   function reset() {
