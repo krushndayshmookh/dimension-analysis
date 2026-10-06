@@ -7,8 +7,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import Chart from 'chart.js/auto'
-import { DIMENSIONS } from '../lib/constants.js'
-import { dimensionColor } from '../lib/colors.js'
+import { DIMENSIONS } from '@/lib/constants.js'
+import { dimensionColor } from '@/lib/colors.js'
 
 // values / referenceValues: { [dimension]: percentage | null }
 const props = defineProps({

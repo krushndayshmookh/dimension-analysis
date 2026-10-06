@@ -91,7 +91,7 @@
 
 <script setup>
 import { computed, inject } from 'vue'
-import RadarSvg from './RadarSvg.vue'
+import RadarSvg from './charts/RadarSvg.vue'
 import VerdictTag from './VerdictTag.vue'
 import * as V from '../lib/verdicts.js'
 import { dimensionClass } from '../lib/colors.js'

@@ -22,8 +22,8 @@
 </template>
 
 <script setup>
-import { DIMENSIONS } from '../lib/constants.js'
-import { dimensionColor } from '../lib/colors.js'
+import { DIMENSIONS } from '@/lib/constants.js'
+import { dimensionColor } from '@/lib/colors.js'
 
 // A light, print-friendly radar (plain SVG, no canvas). values / reference:
 // { [dimension]: percentage | null }.
