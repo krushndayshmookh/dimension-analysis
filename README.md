@@ -29,8 +29,10 @@ Environment: `DATA_DIR` (where data lives, default `./data`), `PORT`, `TRUST_PRO
 (so the session cookie gets the `Secure` flag; serve it over HTTPS), `SESSION_SECRET` (optional; otherwise one is
 generated in `data/auth/secret`), `HOST` (default `127.0.0.1`, so the app is reachable only through the tunnel/proxy).
 
-With a Cloudflare Tunnel, point it at `http://127.0.0.1:3001` and run the server with `TRUST_PROXY=1`. That makes the
-`Secure` cookie flag and the per-client login throttling work; without it every visitor looks like the tunnel's own address.
+Behind a proxy that does not pass `X-Forwarded-Proto` (Traefik does not trust it from the tunnel by default), set
+`COOKIE_SECURE=true` so the session cookie is always `Secure`, and `CLIENT_IP_HEADER=CF-Connecting-IP` so the login
+throttle counts each visitor separately instead of the proxy's address. Only use the latter when every request comes
+through Cloudflare. See [Deploying to Kubernetes](#deploying-to-kubernetes).
 
 ## Input files
 
@@ -83,3 +85,43 @@ The UI is Vue 3 with [shadcn-vue](https://www.shadcn-vue.com/) (Tailwind CSS v4,
   default shadcn theme.
 - `server/` file storage (exams, student histories, settings, backup).
 - `tests/` node:test specs; `scripts/generate_large_sample.js` regenerates `samples/large`.
+
+## Deploying to Kubernetes
+
+The app runs as one container: the Express server serves the built app and the API, and keeps all data as files on a
+volume. Manifests are in [k8s/](k8s/) (namespace, volume claim, deployment, service, Traefik ingress for
+`dimension.dayshmookh.work`) and tie together with Kustomize. Traffic path: Cloudflare Tunnel → Traefik → service → pod.
+
+1. **Build and push the image** to a registry your cluster can pull from:
+   ```bash
+   docker build -t <registry>/dimension-analysis:1 .
+   docker push <registry>/dimension-analysis:1
+   ```
+   On Apple silicon, build for the cluster's architecture, e.g. `docker buildx build --platform linux/amd64 ...`.
+2. **Set the image** under `images:` in [k8s/kustomization.yaml](k8s/kustomization.yaml) (`newName`, `newTag`). Add an
+   image pull secret to the deployment if the registry is private. Set `storageClassName` in
+   [k8s/pvc.yaml](k8s/pvc.yaml) if the cluster has no default, and change the host in
+   [k8s/ingress.yaml](k8s/ingress.yaml) if needed.
+3. **Apply:**
+   ```bash
+   kubectl apply -k k8s
+   kubectl -n dimension-analysis rollout status deploy/dimension-analysis
+   ```
+4. **Create the accounts.** Nobody can sign in until you do; run once per person (it asks for the password):
+   ```bash
+   kubectl -n dimension-analysis exec -it deploy/dimension-analysis -- node scripts/users.js add <username>
+   ```
+   `passwd`, `remove` and `list` work the same way. New accounts take effect immediately; no restart.
+5. **Open** `https://dimension.dayshmookh.work` and sign in.
+
+Notes:
+- **One replica, `Recreate` strategy.** Storage is plain files without locking, so never scale beyond 1.
+- **Data lives on the volume** at `/data` (`/data/users/<username>/` per account, `/data/auth/` for logins and the
+  session key). Back it up: snapshot the PVC, or have each user download a backup from Settings.
+- **Moving existing local data in:** with the pod running, copy a local `data/users/<username>` folder to the same
+  path (`kubectl -n dimension-analysis cp data/users/<username> <pod>:/data/users/<username>`; the folder must belong to
+  uid 1000, so `exec` a `chown -R 1000:1000 /data/users` afterwards if needed), or restore a backup from Settings.
+- **Cloudflare/Traefik:** the tunnel must pass the original `Host` header (the default) because state-changing requests
+  from another origin are refused by comparing `Origin` to `Host`.
+- **Upgrading:** push a new tag, change `newTag`, run `kubectl apply -k k8s`. Data is untouched.
+- **Request size:** uploads go up to 100 MB in the app; Cloudflare's own request limit (100 MB on free plans) applies first.

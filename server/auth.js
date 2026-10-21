@@ -152,8 +152,17 @@ function parseCookies(header = '') {
 
 function cookieFor(req, value, maxAgeMs) {
   const attrs = [`${COOKIE}=${value}`, 'Path=/', 'HttpOnly', 'SameSite=Strict', `Max-Age=${Math.floor(maxAgeMs / 1000)}`]
-  if (req.secure) attrs.push('Secure')
+  if (req.secure || process.env.COOKIE_SECURE === 'true') attrs.push('Secure')
   return attrs.join('; ')
+}
+
+// The address used to throttle logins. Behind Cloudflare, CLIENT_IP_HEADER=CF-Connecting-IP
+// names the header Cloudflare sets with the visitor's address; only use it when every request
+// reaches the app through Cloudflare.
+function clientAddress(req) {
+  const header = process.env.CLIENT_IP_HEADER
+  const value = header && req.headers[header.toLowerCase()]
+  return typeof value === 'string' && value ? value.trim() : req.ip
 }
 
 // ---- throttling -----------------------------------------------------------------
@@ -206,7 +215,7 @@ export function createAuth(dataDir) {
         return res.status(400).json({ error: 'Enter a username and password' })
       }
       const name = username.trim().toLowerCase()
-      const ipKey = `ip:${req.ip}`
+      const ipKey = `ip:${clientAddress(req)}`
       const userKey = `user:${name}`
       if (throttle.blocked(ipKey, userKey)) {
         return res.status(429).json({ error: 'Too many failed attempts. Try again in a few minutes.' })

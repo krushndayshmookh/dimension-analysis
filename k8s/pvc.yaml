@@ -1,0 +1,12 @@
+# Everything the app stores (accounts, exams, cohorts) lives on this volume.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: dimension-analysis-data
+  namespace: dimension-analysis
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 5Gi
+  # storageClassName: <your class>   # omit to use the cluster default
