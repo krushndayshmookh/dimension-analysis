@@ -123,5 +123,7 @@ Notes:
   uid 1000, so `exec` a `chown -R 1000:1000 /data/users` afterwards if needed), or restore a backup from Settings.
 - **Cloudflare/Traefik:** the tunnel must pass the original `Host` header (the default) because state-changing requests
   from another origin are refused by comparing `Origin` to `Host`.
-- **Upgrading:** push a new tag, change `newTag`, run `kubectl apply -k k8s`. Data is untouched.
+- **Upgrading:** on the server, `git pull && npm run deploy` ([scripts/deploy.sh](scripts/deploy.sh)) rebuilds the image,
+  pushes it to `localhost:30500`, applies the manifests and restarts the pod. Data is untouched. Override the image
+  with `IMAGE=...` if the registry changes.
 - **Request size:** uploads go up to 100 MB in the app; Cloudflare's own request limit (100 MB on free plans) applies first.

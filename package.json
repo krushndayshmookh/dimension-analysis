@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "server": "node server/server.js",
     "users": "node scripts/users.js",
+    "deploy": "sh scripts/deploy.sh",
     "test": "node --test \"tests/**/*.test.js\"",
     "samples:large": "node scripts/generate_large_sample.js",
     "client": "vite"
