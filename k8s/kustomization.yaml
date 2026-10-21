@@ -10,4 +10,4 @@ resources:
 images:
   - name: dimension-analysis
     newName: localhost:30500/dimension-analysis
-    newTag: "1"
+    newTag: "latest"
