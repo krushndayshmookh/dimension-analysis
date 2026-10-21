@@ -1,5 +1,6 @@
 <template>
-  <div class="mx-auto flex max-w-[110rem] flex-col gap-4 p-4 pb-10">
+  <LoginPage v-if="auth.checked && !auth.user" />
+  <div v-else-if="auth.user" class="mx-auto flex max-w-[110rem] flex-col gap-4 p-4 pb-10">
     <AppHeader />
     <MainNav />
 
@@ -24,11 +25,14 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import MainNav from '@/components/layout/MainNav.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import NoticeAlert from '@/components/common/NoticeAlert.vue'
+import LoginPage from '@/pages/LoginPage.vue'
 import { PAGES } from '@/pages/index.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { useNoticeStore } from '@/stores/notice.js'
 import { useSessionStore } from '@/stores/session.js'
 import { useSettingsStore } from '@/stores/settings.js'
 
+const auth = useAuthStore()
 const sessionStore = useSessionStore()
 const { tab, exam, examKey } = storeToRefs(sessionStore)
 const { openStudent, refreshSaved, refreshHistoryStudents, refreshCohorts } = sessionStore
@@ -39,7 +43,9 @@ const { dismiss } = noticeStore
 
 const page = computed(() => PAGES.find((p) => p.id === tab.value))
 
-onMounted(() => {
+onMounted(async () => {
+  await auth.init()
+  if (!auth.user) return
   settingsStore.load()
   refreshSaved()
   refreshCohorts()

@@ -13,7 +13,7 @@ import {
   saveExam,
   updateCohort,
 } from '../server/storage.js'
-import { createApp } from '../server/server.js'
+import { startServer } from './http.js'
 import { loadDataset } from './fixtures.js'
 import { buildProfiles } from '../src/lib/profiles.js'
 
@@ -149,9 +149,7 @@ describe('backup with cohorts', () => {
 
 describe('cohorts over http', () => {
   it('creates, merges, lists and deletes', async () => {
-    const server = createApp({ dataDir }).listen(0)
-    await new Promise((r) => server.once('listening', r))
-    const base = `http://127.0.0.1:${server.address().port}`
+    const { base, fetch, close } = await startServer(dataDir)
     const send = (method, url, body) => fetch(`${base}${url}`, { method, headers: { 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) })
     try {
       const created = await send('POST', '/api/cohorts', { name: 'Batch', students: students('S1', 'S2') })
@@ -169,7 +167,7 @@ describe('cohorts over http', () => {
       assert.equal((await send('DELETE', `/api/cohorts/${id}`)).status, 200)
       assert.equal((await send('DELETE', `/api/cohorts/${id}`)).status, 404)
     } finally {
-      await new Promise((r) => server.close(r))
+      await close()
     }
   })
 })

@@ -4,7 +4,7 @@ import { randomBytes } from 'crypto'
 import { fileURLToPath } from 'url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-export const DEFAULT_DATA_DIR = path.resolve(__dirname, '..', 'data')
+export const DEFAULT_DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.resolve(__dirname, '..', 'data')
 
 // The client is the application: it sends the dataset and its analysis and
 // storage keeps them as given. Only the shape needed to index them is checked.

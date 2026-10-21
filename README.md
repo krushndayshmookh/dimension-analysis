@@ -12,6 +12,23 @@ npm test           # unit tests
 Data is stored as JSON files in `data/` (git-ignored). `npm run build` followed by `npm run server` serves the built
 app from the storage server alone.
 
+## Accounts
+
+Everything behind `/api` needs a signed-in user, and each user's data is kept apart in `data/users/<username>/`.
+Accounts are managed on the server:
+
+```bash
+npm run users -- add <username>             # asks for a password (10+ characters)
+npm run users -- passwd <username>          # also signs that user out everywhere
+npm run users -- remove <username>          # removes the login, keeps the data folder
+npm run users -- list
+npm run users -- import-legacy <username>   # move data from the old single-user layout into an account
+```
+
+Environment: `DATA_DIR` (where data lives, default `./data`), `PORT`, `TRUST_PROXY=1` when running behind nginx/Caddy
+(so the session cookie gets the `Secure` flag; serve it over HTTPS), `SESSION_SECRET` (optional; otherwise one is
+generated in `data/auth/secret`).
+
 ## Input files
 
 Students are added once to a named cohort, and exams are uploaded for a cohort. Strict CSV formats, documented in [templates/README.md](templates/README.md) with header-plus-example files in

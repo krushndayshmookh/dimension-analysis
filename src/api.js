@@ -1,5 +1,11 @@
-// Thin wrapper over the local storage server. Every call throws an Error with
+// Thin wrapper over the storage server. Every call throws an Error with
 // the server's message when the request fails.
+let onSignedOut = () => {}
+// Called when the server says the session is gone, so the app can show the sign-in page.
+export const setSignedOutHandler = (fn) => {
+  onSignedOut = fn
+}
+
 async function request(url, options) {
   let response
   try {
@@ -7,6 +13,7 @@ async function request(url, options) {
   } catch {
     throw new Error('The storage server is not reachable. Start it with "npm run dev" or "npm run server".')
   }
+  if (response.status === 401 && !url.startsWith('/api/auth/')) onSignedOut()
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
     throw new Error(body.error || `Request failed (${response.status})`)
@@ -35,3 +42,7 @@ export const getSettings = () => request('/api/settings')
 export const saveSettings = (settings) => request('/api/settings', json('PUT', settings))
 export const getBackup = () => request('/api/backup')
 export const restoreBackup = (backup) => request('/api/restore', json('POST', backup))
+
+export const getCurrentUser = () => request('/api/auth/me')
+export const signIn = (username, password) => request('/api/auth/login', json('POST', { username, password }))
+export const signOut = () => request('/api/auth/logout', { method: 'POST' })

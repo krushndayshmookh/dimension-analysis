@@ -14,7 +14,7 @@ import {
   saveSettings,
   createCohort,
 } from '../server/storage.js'
-import { createApp } from '../server/server.js'
+import { startServer } from './http.js'
 import { loadDataset } from './fixtures.js'
 import { buildProfiles } from '../src/lib/profiles.js'
 
@@ -178,16 +178,19 @@ describe('student history', () => {
 })
 
 describe('http api', () => {
-  let server
+  let app
   let base
+  let fetch
 
   beforeEach(async () => {
-    server = createApp({ dataDir }).listen(0)
-    await new Promise((resolve) => server.once('listening', resolve))
-    base = `http://127.0.0.1:${server.address().port}`
+    app = await startServer(dataDir)
+    base = app.base
+    fetch = app.fetch
+    // The exam is saved into the signed-in user's own folder, so the cohort goes there too.
+    cohortId = createCohort({ name: 'Batch 1', students: dataset.students.map((s) => ({ id: s.id, name: s.name, section: s.section })) }, app.userDir).id
   })
 
-  afterEach(() => new Promise((resolve) => server.close(resolve)))
+  afterEach(() => app.close())
 
   const post = (body) =>
     fetch(`${base}/api/exams`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
@@ -238,9 +241,7 @@ describe('settings storage', () => {
   })
 
   it('is served over http', async () => {
-    const server = createApp({ dataDir }).listen(0)
-    await new Promise((r) => server.once('listening', r))
-    const base = `http://127.0.0.1:${server.address().port}`
+    const { base, fetch, close } = await startServer(dataDir)
     try {
       assert.deepEqual(await (await fetch(`${base}/api/settings`)).json(), {})
       const put = await fetch(`${base}/api/settings`, {
@@ -251,7 +252,7 @@ describe('settings storage', () => {
       const bad = await fetch(`${base}/api/settings`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: '[1]' })
       assert.equal(bad.status, 400)
     } finally {
-      await new Promise((r) => server.close(r))
+      await close()
     }
   })
 })
@@ -308,11 +309,10 @@ describe('backup and restore', () => {
   })
 
   it('is served over http', async () => {
-    saveExam(payload({ id: 'e1' }), dataDir)
-    const server = createApp({ dataDir }).listen(0)
-    await new Promise((r) => server.once('listening', r))
-    const base = `http://127.0.0.1:${server.address().port}`
+    const { base, fetch, close, userDir } = await startServer(dataDir)
     try {
+      cohortId = createCohort({ name: 'Batch 1', students: dataset.students.map((s) => ({ id: s.id, name: s.name, section: s.section })) }, userDir).id
+      saveExam(payload({ id: 'e1' }), userDir)
       const backup = await (await fetch(`${base}/api/backup`)).json()
       assert.equal(backup.exams.length, 1)
       const restored = await fetch(`${base}/api/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(backup) })
@@ -320,7 +320,7 @@ describe('backup and restore', () => {
       const bad = await fetch(`${base}/api/restore`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"version":9}' })
       assert.equal(bad.status, 400)
     } finally {
-      await new Promise((r) => server.close(r))
+      await close()
     }
   })
 })
