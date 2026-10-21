@@ -259,7 +259,7 @@ export const PAGES = {
       entry('Cohort first', 'Choose the cohort the exam is for. Create it on the Cohorts page by adding its students once.'),
       entry('Convert first, if needed', 'The Sheet converter under Data turns the analytics team’s sheets into the students, exam config, scores and attendance files.'),
       entry('Exam details', 'The cohort, course name, exam title and date identify the exam in saved exams, history and comparisons.'),
-      entry('Format', 'The columns of each file are described in templates/README.md; samples are in the samples folder.'),
+      entry('Format', 'The columns of each file are described in the templates guide (https://github.com/krushndayshmookh/dimension-analysis/tree/main/templates), and example files are in the samples folder (https://github.com/krushndayshmookh/dimension-analysis/tree/main/samples).'),
       entry('Notes', 'After a successful upload, notes mention data that is valid but worth a second look, such as students who attempted nothing. They never block an upload (Settings → Upload checks).'),
     ] }],
   },

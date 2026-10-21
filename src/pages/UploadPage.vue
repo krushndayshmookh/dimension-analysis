@@ -2,9 +2,11 @@
   <div class="flex flex-col gap-6">
     <PageHeader help="page.upload" title="Upload exam data">
       <template #description>
-        An exam is uploaded for a cohort, whose students are added once on the Cohorts page. Files must follow the format in
-        <code class="rounded bg-muted px-1">templates/README.md</code>; files that do not are rejected with the rows that need fixing.
-        Examples to upload are in <code class="rounded bg-muted px-1">samples/</code>.
+        An exam is uploaded for a cohort, whose students are added once on the Cohorts page. Files must follow the format described in the
+        <a href="https://github.com/krushndayshmookh/dimension-analysis/tree/main/templates" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2">templates guide</a>;
+        files that do not are rejected with the rows that need fixing.
+        Examples to upload are in the
+        <a href="https://github.com/krushndayshmookh/dimension-analysis/tree/main/samples" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2">samples folder</a>.
       </template>
     </PageHeader>
 
