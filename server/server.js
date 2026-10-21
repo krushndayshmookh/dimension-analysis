@@ -127,5 +127,7 @@ export function createApp({ dataDir = DEFAULT_DATA_DIR } = {}) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   const port = process.env.PORT || 3001
-  createApp().listen(port, () => console.log(`Dimension Analysis storage listening on port ${port}`))
+  // Loopback only by default: reach it through the tunnel or proxy, not directly from the network.
+  const host = process.env.HOST || '127.0.0.1'
+  createApp().listen(port, host, () => console.log(`Dimension Analysis listening on http://${host}:${port}`))
 }

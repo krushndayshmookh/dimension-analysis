@@ -27,7 +27,10 @@ npm run users -- import-legacy <username>   # move data from the old single-user
 
 Environment: `DATA_DIR` (where data lives, default `./data`), `PORT`, `TRUST_PROXY=1` when running behind nginx/Caddy
 (so the session cookie gets the `Secure` flag; serve it over HTTPS), `SESSION_SECRET` (optional; otherwise one is
-generated in `data/auth/secret`).
+generated in `data/auth/secret`), `HOST` (default `127.0.0.1`, so the app is reachable only through the tunnel/proxy).
+
+With a Cloudflare Tunnel, point it at `http://127.0.0.1:3001` and run the server with `TRUST_PROXY=1`. That makes the
+`Secure` cookie flag and the per-client login throttling work; without it every visitor looks like the tunnel's own address.
 
 ## Input files
 
