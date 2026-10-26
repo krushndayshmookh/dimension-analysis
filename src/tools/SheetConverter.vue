@@ -7,6 +7,38 @@
 
     <SectionCard title="Sheets" help="converter.sheets" description="Choose any of: a question listing or exam_config.csv, one or more coding score files, one or more quiz score files and enrolled students. Each sheet is recognised by its columns; score files of the same type are merged.">
       <FileInput multiple aria-label="Sheets to convert" @change="addFiles" />
+      <div v-if="pending.length" class="flex flex-col gap-4 rounded-lg border p-4">
+        <h3 class="text-sm font-semibold">Map unrecognised columns</h3>
+        <p class="text-xs text-muted-foreground">Choose the sheet type, then map the required fields to the columns in each file. Unmapped columns are ignored.</p>
+        <div v-for="item in pending" :key="item.id" class="flex flex-col gap-3 rounded-lg border p-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-sm font-medium">{{ item.fileName }}</span>
+            <select v-model="item.type" class="h-8 rounded-md border bg-background px-2 text-sm" aria-label="Sheet type" @change="item.mapping = initialColumnMapping(item.type, item.fields)">
+              <option value="">Choose sheet type…</option>
+              <option v-for="(label, type) in SHEET_LABELS" :key="type" :value="type">{{ label }}</option>
+            </select>
+          </div>
+          <div class="flex flex-wrap gap-1">
+            <Badge v-for="field in item.fields" :key="field" variant="outline">{{ field }}</Badge>
+          </div>
+          <div v-if="item.type" class="grid gap-2 md:grid-cols-2">
+            <label v-for="field in mappedFields(item)" :key="field" class="grid gap-1 text-xs">
+              <span>{{ field }}{{ isRequired(item.type, field) ? ' *' : '' }}</span>
+              <select v-model="item.mapping[field]" class="h-8 rounded-md border bg-background px-2 text-sm">
+                <option value="">Not mapped</option>
+                <option v-for="source in item.fields" :key="source" :value="source">{{ source }}</option>
+              </select>
+            </label>
+          </div>
+          <div v-if="item.type" class="grid gap-2 text-xs md:grid-cols-2">
+            <div><span class="font-medium">Mapped columns:</span> {{ mappedSourceFields(item).join(', ') || 'none' }}</div>
+            <div class="text-muted-foreground"><span class="font-medium">Unmapped columns:</span> {{ unmappedSourceFields(item).join(', ') || 'none' }}</div>
+          </div>
+          <div class="flex justify-end">
+            <Button size="sm" :disabled="!mappingReady(item)" @click="applyMapping(item)">Use mapped file</Button>
+          </div>
+        </div>
+      </div>
       <ul v-if="loaded.length" class="flex flex-col gap-1 text-sm">
         <li v-for="item in loaded" :key="item.type" class="flex flex-wrap items-center gap-2">
           <Badge variant="secondary">{{ SHEET_LABELS[item.type] }}</Badge>
@@ -60,7 +92,7 @@ import ExamPreview from '@/tools/converter/ExamPreview.vue'
 import { parseCsv } from '@/lib/csv.js'
 import { assembleExam } from '@/lib/convert/assemble.js'
 import { readCoding } from '@/lib/convert/coding.js'
-import { detectSheet, explainUnrecognizedSheet, SHEET_LABELS } from '@/lib/convert/detect.js'
+import { detectSheet, initialColumnMapping, mapColumns, SHEET_FIELDS, SHEET_LABELS } from '@/lib/convert/detect.js'
 import { readEnrolled } from '@/lib/convert/enrolled.js'
 import { readListing } from '@/lib/convert/listing.js'
 import { readQuiz } from '@/lib/convert/quiz.js'
@@ -77,6 +109,8 @@ const COUNTS = {
 
 const sheets = reactive({ listing: null, coding: null, quiz: null, enrolled: null })
 const rejected = ref([])
+const pending = ref([])
+let pendingId = 0
 const codingMarks = ref(NaN)
 const quizMarks = ref(NaN)
 const combined = ref(false)
@@ -93,7 +127,7 @@ async function addFiles(files) {
   for (const file of files) {
     const parsed = await parseCsv((await file.text()).replace(/^﻿/, ''))
     const type = detectSheet(parsed.meta.fields)
-    if (!type) rejected.value.push(`${file.name}: ${explainUnrecognizedSheet(parsed.meta.fields)}`)
+    if (!type) pending.value.push({ id: ++pendingId, fileName: file.name, parsed, fields: parsed.meta.fields, type: '', mapping: {} })
     else if ((type === 'coding' || type === 'quiz') && sheets[type]) {
       sheets[type] = {
         fileName: `${sheets[type].fileName}, ${file.name}`,
@@ -101,6 +135,25 @@ async function addFiles(files) {
       }
     } else sheets[type] = { fileName: file.name, result: READERS[type](parsed) }
   }
+}
+
+const mappedFields = (item) => item.type ? [...SHEET_FIELDS[item.type].required, ...SHEET_FIELDS[item.type].optional] : []
+const isRequired = (type, field) => SHEET_FIELDS[type].required.includes(field)
+const mappingReady = (item) => Boolean(item.type && SHEET_FIELDS[item.type].required.every((field) => item.mapping[field]))
+const mappedSourceFields = (item) => [...new Set(Object.values(item.mapping).filter(Boolean))]
+const unmappedSourceFields = (item) => item.fields.filter((field) => !mappedSourceFields(item).includes(field))
+
+function applyMapping(item) {
+  const parsed = mapColumns(item.parsed, item.mapping)
+  const result = READERS[item.type](parsed)
+  if (result.issues?.some((entry) => entry.level === 'error')) {
+    rejected.value.push(`${item.fileName}: ${result.issues.filter((entry) => entry.level === 'error').map((entry) => entry.text).join('; ')}`)
+    return
+  }
+  if ((item.type === 'coding' || item.type === 'quiz') && sheets[item.type]) {
+    sheets[item.type] = { fileName: `${sheets[item.type].fileName}, ${item.fileName}`, result: mergeScoreResults(sheets[item.type].result, result) }
+  } else sheets[item.type] = { fileName: item.fileName, result }
+  pending.value = pending.value.filter((candidate) => candidate !== item)
 }
 
 const remove = (type) => {

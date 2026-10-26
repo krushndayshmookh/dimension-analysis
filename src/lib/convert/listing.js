@@ -41,14 +41,14 @@ export function readListing(parsed) {
     else if (seen.has(id)) problems.push(`question id ${id} appears more than once`)
     seen.add(id)
 
-    const typeText = row.type.toLowerCase()
+    const typeText = String(row.type ?? '').toLowerCase()
     const type = TYPES.includes(typeText) ? typeText : ''
     if (!type) problems.push(typeText ? `type "${row.type}" must be Assignment or Assessment` : 'no type')
 
     const set = row.set
     if (!set) problems.push('no set')
 
-    const difficultyText = row.difficulty.toLowerCase()
+    const difficultyText = String(row.difficulty ?? '').toLowerCase()
     const difficulty = DIFFICULTY_ALIASES[difficultyText] ?? difficultyText
     if (!DIFFICULTIES.includes(difficulty)) problems.push(row.difficulty ? `difficulty "${row.difficulty}" is not recognised` : 'no difficulty')
 
