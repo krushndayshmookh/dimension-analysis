@@ -1,11 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { detectSheet } from '../src/lib/convert/detect.js'
+import { detectSheet, explainUnrecognizedSheet } from '../src/lib/convert/detect.js'
 import { readListing } from '../src/lib/convert/listing.js'
 import { readCoding } from '../src/lib/convert/coding.js'
 import { readQuiz } from '../src/lib/convert/quiz.js'
 import { readEnrolled } from '../src/lib/convert/enrolled.js'
-import { cleanId, toCsv } from '../src/lib/convert/common.js'
+import { cleanId, mergeScoreResults, toCsv } from '../src/lib/convert/common.js'
 import { parse } from './fixtures.js'
 
 describe('cleanId', () => {
@@ -20,12 +20,44 @@ describe('toCsv', () => {
   it('writes the columns in order, quoting where needed, with a trailing newline', () => {
     assert.equal(toCsv([{ a: 1, b: 'x,y' }, { a: '', b: null }], ['b', 'a']), 'b,a\n"x,y",1\n,\n')
   })
+
+  describe('mergeScoreResults', () => {
+    it('merges questions, students and scores from multiple score files', () => {
+      const merged = mergeScoreResults(
+        {
+          questions: [{ id: 'Q1' }],
+          students: [{ id: 'S1', name: 'Alice', absent: false }],
+          fractions: { S1: { Q1: 0.5 } },
+          issues: [],
+        },
+        {
+          questions: [{ id: 'Q2' }],
+          students: [{ id: 'S2', name: 'Bob', absent: false }],
+          fractions: { S2: { Q2: 1 } },
+          issues: [],
+        },
+      )
+      assert.deepEqual(merged.questions.map((q) => q.id), ['Q1', 'Q2'])
+      assert.deepEqual(merged.students.map((s) => s.id), ['S1', 'S2'])
+      assert.deepEqual(merged.fractions, { S1: { Q1: 0.5 }, S2: { Q2: 1 } })
+    })
+
+    it('keeps the higher score when a student/question occurs in two files', () => {
+      const merged = mergeScoreResults(
+        { questions: [], students: [], fractions: { S1: { Q1: 0.5 } }, issues: [] },
+        { questions: [], students: [], fractions: { S1: { Q1: 1 } }, issues: [] },
+      )
+      assert.equal(merged.fractions.S1.Q1, 1)
+      assert.ok(merged.issues.some((item) => /more than one file/i.test(item.text)))
+    })
+  })
 })
 
 describe('detectSheet', () => {
   const fields = async (csv) => (await parse(csv)).meta.fields
   it('recognises the four sheets by their columns', async () => {
     assert.equal(detectSheet(await fields('Question ID,Type,Set,Dimensions,Topics\n')), 'listing')
+    assert.equal(detectSheet(await fields('question_id,question_type,question_difficulty,question_dimension,marks\n')), 'listing')
     assert.equal(detectSheet(await fields('user_id,question_id,Total Test Case,partial_marks,Attendance\n')), 'coding')
     assert.equal(detectSheet(await fields('user_id,question_id,question_no,marks_contest,Attendance\n')), 'quiz')
     assert.equal(detectSheet(await fields('student_id,student_name,,,\n')), 'enrolled')
@@ -33,6 +65,17 @@ describe('detectSheet', () => {
   it('does not recognise anything else', async () => {
     assert.equal(detectSheet(await fields('a,b,c\n')), null)
     assert.equal(detectSheet(undefined), null)
+  })
+  it('explains when upload files are dropped into the source-sheet converter', async () => {
+    assert.match(
+      explainUnrecognizedSheet(await fields('question_id,question_type,question_difficulty,question_dimension,marks\n')),
+      /exam config file.*Upload page/i,
+    )
+    assert.match(
+      explainUnrecognizedSheet(await fields('student_id,question_id,marks,assessment_id\n')),
+      /long-form scores file.*Upload page.*matching exam config/i,
+    )
+    assert.match(explainUnrecognizedSheet(await fields('a,b,c\n')), /none of the four source sheets/i)
   })
 })
 
@@ -55,6 +98,13 @@ describe('readListing topics of comprehension questions', () => {
 })
 
 describe('readListing', () => {
+  it('reads the app exam config as listing metadata', async () => {
+    const { questions } = readListing(await parse('question_id,question_type,question_difficulty,question_dimension,question_topics,marks,expected_solve_rate\nQ1,assessment,beginner,Recall,Arrays,2,85\n'))
+    assert.deepEqual(questions.map((q) => [q.id, q.type, q.difficulty, q.dimensions, q.topics, q.expectedSolveRate]), [
+      ['Q1', 'assessment', 'beginner', ['Recall'], ['Arrays'], '85'],
+    ])
+  })
+
   it('maps the sheet vocabulary onto ours', async () => {
     const { questions } = readListing(await parse(LISTING))
     const q = (id) => questions.find((x) => x.id === id)
@@ -180,6 +230,16 @@ describe('readQuiz', () => {
   it('scales to the question’s highest mark when a question is worth different amounts', async () => {
     const csv = 'user_id,question_id,question_no,difficulty_level,question_type,student_name,attempt_count,marks_contest,Attendance\n1,5,1,Easy,MCQ,A,1,4,Present\n2,5,1,Easy,MCQ,B,1,2,Present\n'
     assert.deepEqual([readQuiz(await parse(csv)).fractions['2']['5']], [0.5])
+  })
+
+  it('accepts long-form exports that call the student id student_id', async () => {
+    const result = readQuiz(await parse(`student_id,question_id,question_no,question_type,student_name,attempt_count,marks_contest,Attendance
+S1,177520,1,MCQ,Asha,1,2,Present
+S1,177536,2,MCQ,Asha,1,0,Present
+`))
+    assert.deepEqual(result.questions.map((q) => q.id), ['177520', '177536'])
+    assert.deepEqual(result.students, [{ id: 'S1', name: 'Asha', absent: false }])
+    assert.deepEqual(result.fractions.S1, { 177520: 1, 177536: 0 })
   })
 })
 

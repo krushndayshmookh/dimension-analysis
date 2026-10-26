@@ -42,11 +42,11 @@ Students are added once to a named cohort, and exams are uploaded for a cohort. 
 | file | required | notes |
 | --- | --- | --- |
 | `exam_config.csv` | yes | question type (`assignment` / `assessment`), difficulty, dimensions, topics, marks; optional `expected_solve_rate`, `question_subtype` (`mcq`) with its `correct_option` |
-| `student_scores.csv` | yes | one column per question: marks, or the chosen option for `mcq` questions; blank = unattempted |
+| `student_scores.csv` | yes | wide form: one column per question (marks, or the chosen option for `mcq` questions); long form is also accepted as `student_id,question_id,marks`; blank = unattempted |
 | `students.csv` | for a cohort | the cohort's students: id, name, optional `section`; uploaded once on the Cohorts page |
 | `attendance.csv` | no | per exam: `present` / `absent`; a cohort student with no row in the scores file counts as absent |
 
-Files that do not follow the format are rejected with the rows that need fixing.
+Files that do not follow the format are rejected with the rows that need fixing. In long-form scores, commas and spaces in numeric question IDs are ignored, extra columns are ignored, and each `student_id`/`question_id` pair may occur only once. The config and scores files must contain the same set of question IDs.
 
 ## Pages
 

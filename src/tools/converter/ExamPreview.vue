@@ -18,6 +18,7 @@
           <TableHead class="w-24">Marks</TableHead>
           <TableHead class="w-24">Expected %</TableHead>
           <TableHead class="w-12"><span class="sr-only">Remove</span></TableHead>
+          <TableHead>Info</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -30,25 +31,10 @@
           <TableCell><Input v-model="row.marks" type="number" step="any" class="h-7" :aria-label="`Marks of ${row.question_id}`" /></TableCell>
           <TableCell><Input v-model="row.expected_solve_rate" type="number" class="h-7" :aria-label="`Expected solve rate of ${row.question_id}`" /></TableCell>
           <TableCell><Button variant="ghost" size="icon-sm" :aria-label="`Remove question ${row.question_id}`" @click="removeQuestion(row)"><TrashIcon /></Button></TableCell>
+          <TableCell class="text-xs text-muted-foreground">{{ row.mappingNote }}</TableCell>
         </TableRow>
       </TableBody>
     </Table>
-
-    <template v-if="extras.length">
-      <h4 class="text-sm font-semibold">Listing rows that are not in the exam</h4>
-      <p class="text-xs text-muted-foreground">Add a row to include it as a question. It gets the same marks as the other {{ label.toLowerCase() }} questions; its scores stay blank.</p>
-      <Table>
-        <TableBody>
-          <TableRow v-for="row in extras" :key="row.key">
-            <TableCell class="font-medium">{{ row.question_id || '(no id)' }}</TableCell>
-            <TableCell>{{ row.question_type }}</TableCell>
-            <TableCell>{{ row.question_dimension }}</TableCell>
-            <TableCell class="text-muted-foreground">{{ row.reason }}</TableCell>
-            <TableCell class="text-right"><Button variant="outline" size="xs" @click="addExtra(row)"><PlusIcon /> Add</Button></TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </template>
 
     <h4 class="text-sm font-semibold">Students ({{ students.length }}, {{ absentCount }} absent)</h4>
     <p class="text-xs text-muted-foreground">
@@ -96,14 +82,14 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { DownloadIcon, PlusIcon, TrashIcon } from '@lucide/vue'
+import { DownloadIcon, TrashIcon } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import NoticeAlert from '@/components/common/NoticeAlert.vue'
 import SectionCard from '@/components/common/SectionCard.vue'
-import { attendanceTable, configTable, extraToConfig, scoresTable, studentsTable } from '@/lib/convert/assemble.js'
+import { attendanceTable, configTable, scoresTable, studentsTable } from '@/lib/convert/assemble.js'
 import { toCsv } from '@/lib/convert/common.js'
 import { downloadText } from '@/lib/download.js'
 import { readAttendance, readDataset, readStudentNames } from '@/lib/input.js'
@@ -115,8 +101,13 @@ const props = defineProps({
 })
 
 // The instructor edits copies; the result of the conversion itself is not changed.
-const config = ref(props.exam.config.map((row) => ({ ...row })))
-const extras = ref(props.exam.extras.map((row) => ({ ...row })))
+const config = ref([
+  ...props.exam.config.map((row) => ({ ...row })),
+  ...props.exam.extras.map((row) => ({
+    ...row,
+    mappingNote: 'No answers mapped from the marks file; enter marks and review before downloading.',
+  })),
+])
 const students = ref(props.exam.students.map((s) => ({ section: '', ...s })))
 
 const absentCount = computed(() => students.value.filter((s) => s.absent).length)
@@ -128,12 +119,6 @@ const removeQuestion = (row) => {
 const removeStudent = (student) => {
   students.value = students.value.filter((s) => s !== student)
 }
-function addExtra(extra) {
-  const sibling = config.value.find((r) => r.kind === extra.kind)
-  config.value.push(extraToConfig(extra, sibling?.marks ?? ''))
-  extras.value = extras.value.filter((r) => r !== extra)
-}
-
 const tables = computed(() => ({
   config: configTable(config.value),
   scores: scoresTable(config.value, students.value, props.exam.fractions),

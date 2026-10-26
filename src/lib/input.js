@@ -28,6 +28,7 @@ function collector() {
 }
 
 const normalizeName = (name) => String(name ?? '').trim().toLowerCase()
+const normalizeLongFormId = (value) => String(value ?? '').replace(/[,\s]/g, '')
 
 function normalizeRow(row) {
   const out = {}
@@ -46,6 +47,7 @@ function checkStructure(label, parsed, requiredColumns, optionalColumns, errors)
   }
   for (const e of parsed?.errors ?? []) {
     if (e.type === 'FieldMismatch') errors.add(`${label}: data row ${(e.row ?? 0) + 1}: ${e.message}`)
+    if (e.type === 'LongFormDuplicate') errors.add(`${label}: data row ${(e.row ?? 0) + 1}: ${e.message}`)
   }
   const known = new Set([...requiredColumns, ...optionalColumns])
   const extra = fields.filter((f) => !known.has(f))
@@ -91,9 +93,11 @@ export function readExamConfig(parsed) {
       }
 
       const rawSubtype = (row.question_subtype ?? '').toLowerCase()
+      const inferredNumericAnswerKey = !rawSubtype && type === 'assessment' && /^\d+$/.test(row.correct_option)
+      const effectiveSubtype = inferredNumericAnswerKey ? 'mcq' : rawSubtype
       let subtype = null
-      if (rawSubtype) {
-        if (QUESTION_SUBTYPES.includes(rawSubtype)) subtype = rawSubtype
+      if (effectiveSubtype) {
+        if (QUESTION_SUBTYPES.includes(effectiveSubtype)) subtype = effectiveSubtype
         else fail(`question_subtype "${row.question_subtype}" must be one of: ${QUESTION_SUBTYPES.join(', ')} (or blank)`)
       }
       let correctOption = null
@@ -193,12 +197,13 @@ export function readScores(parsed, questions) {
         if (!q) continue
         const raw = String(row[field] ?? '').trim()
         if (raw === '') continue // blank means unattempted
-        if (q.subtype === 'mcq') {
+        if (q.subtype === 'mcq' && !(parsed.meta?.longForm && NUMBER_PATTERN.test(raw))) {
           // The cell is the chosen option; marks follow from the answer key.
           if (!OPTION_PATTERN.test(raw)) {
             out.add(`${where}, ${field}: "${raw}" is not an option label such as A or B (leave the cell blank if unattempted)`)
             continue
           }
+
           answers[field] = raw.toUpperCase()
           scores[field] = answers[field] === q.correctOption ? q.marks : 0
           continue
@@ -218,6 +223,45 @@ export function readScores(parsed, questions) {
   }
 
   return { students, errors: out.finish(), warnings }
+}
+
+// Accept the analytics export shape: one row per student/question with a
+// numeric marks column. It is converted to the wide shape used by readScores.
+// Other score files are returned unchanged.
+export function normalizeScoresInput(parsed) {
+  const fields = (parsed?.meta?.fields ?? []).map(normalizeName)
+  if (!fields.includes('student_id') || !fields.includes('question_id') || !fields.includes('marks')) return parsed
+
+  const idField = (parsed.meta.fields ?? []).find((field) => normalizeName(field) === 'student_id')
+  const questionField = (parsed.meta.fields ?? []).find((field) => normalizeName(field) === 'question_id')
+  const marksField = (parsed.meta.fields ?? []).find((field) => normalizeName(field) === 'marks')
+  const questionIds = []
+  const questionSet = new Set()
+  const byStudent = new Map()
+  const errors = [...(parsed.errors ?? [])]
+
+  for (const [index, raw] of (parsed.data ?? []).entries()) {
+    const studentId = String(raw[idField] ?? '').trim()
+    const questionId = normalizeLongFormId(raw[questionField])
+    if (!studentId || !questionId) continue
+    if (!questionSet.has(questionId)) {
+      questionSet.add(questionId)
+      questionIds.push(questionId)
+    }
+    const row = byStudent.get(studentId) ?? { student_id: studentId }
+    if (questionId in row) {
+      errors.push({ type: 'LongFormDuplicate', row: index, message: `student_id "${studentId}" has more than one row for question_id "${questionId}"` })
+    } else {
+      row[questionId] = String(raw[marksField] ?? '').trim()
+    }
+    byStudent.set(studentId, row)
+  }
+
+  return {
+    data: [...byStudent.values()],
+    errors,
+    meta: { ...parsed.meta, fields: ['student_id', ...questionIds], longForm: true },
+  }
 }
 
 // The cohort file: one row per student. Returns { students, names, sections, errors, warnings }.

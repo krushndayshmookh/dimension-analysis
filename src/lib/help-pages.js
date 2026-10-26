@@ -254,12 +254,12 @@ export const PAGES = {
 
   'page.upload': {
     title: 'Upload exam data',
-    about: 'Imports an exam for a cohort from its exam config and scores files, checks them and saves the analysis. A file that does not follow the format is rejected with the rows to fix. The same exam can be uploaded more than once; each upload is a separate exam.',
+    about: 'Imports an exam for a cohort from its exam config and scores files, checks them and saves the analysis. Scores may use wide format or long format (one student/question row). A file that does not follow the format is rejected with the rows to fix. The same exam can be uploaded more than once; each upload is a separate exam.',
     parts: [{ heading: 'Steps', entries: [
       entry('Cohort first', 'Choose the cohort the exam is for. Create it on the Cohorts page by adding its students once.'),
       entry('Convert first, if needed', 'The Sheet converter under Data turns the analytics team’s sheets into the students, exam config, scores and attendance files.'),
       entry('Exam details', 'The cohort, course name, exam title and date identify the exam in saved exams, history and comparisons.'),
-      entry('Format', 'The columns of each file are described in the templates guide (https://github.com/krushndayshmookh/dimension-analysis/tree/main/templates), and example files are in the samples folder (https://github.com/krushndayshmookh/dimension-analysis/tree/main/samples).'),
+      entry('Format', 'The columns of each file are described in the templates guide (https://github.com/krushndayshmookh/dimension-analysis/tree/main/templates), including both wide and long-form scores. Example files are in the samples folder (https://github.com/krushndayshmookh/dimension-analysis/tree/main/samples). The config and scores files must cover the same question IDs.'),
       entry('Notes', 'After a successful upload, notes mention data that is valid but worth a second look, such as students who attempted nothing. They never block an upload (Settings → Upload checks).'),
     ] }],
   },
@@ -276,7 +276,7 @@ export const PAGES = {
     about: 'The files that describe an exam. The students come from the cohort.',
     parts: [{ heading: 'Files', entries: [
       entry('Exam config (required)', 'One row per question: id, type (assignment or assessment), difficulty, dimensions, marks and optionally topics, expected solve rate, subtype and correct option.'),
-      entry('Student scores (required)', 'One row per student with a column per question: marks, or the option chosen for multiple-choice questions. A blank cell means unattempted, and 0 means attempted with no marks. A cohort student with no row is counted as absent.'),
+      entry('Student scores (required)', 'Use either wide form (one row per student with one column per question) or long form (student_id, question_id, marks, one row per student/question). In wide form, cells contain marks or the chosen option for multiple-choice questions; in long form, marks are numeric. A blank means unattempted, and 0 means attempted with no marks. Commas and spaces in numeric long-form question IDs are ignored, extra columns are ignored, and duplicate student/question pairs are rejected. Every config question must have score data. A cohort student with no row is counted as absent.'),
       entry('Attendance (optional)', 'student_id and attendance (present or absent) for this exam. Use it to mark absent students who do have a scores row; their scores are ignored. Absent students count in the cohort with zero and are left out of attempt statistics.'),
     ] }],
   },
