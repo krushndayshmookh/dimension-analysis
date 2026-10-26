@@ -7,6 +7,9 @@ cd "$(dirname "$0")/.."
 IMAGE="${IMAGE:-localhost:30500/dimension-analysis:latest}"
 NAMESPACE="${NAMESPACE:-dimension-analysis}"
 
+docker info >/dev/null 2>&1 || { echo "Docker is not running. Start Docker Desktop (or the docker service) and try again." >&2; exit 1; }
+kubectl cluster-info >/dev/null 2>&1 || { echo "kubectl cannot reach the cluster (context: $(kubectl config current-context 2>/dev/null || echo none))." >&2; exit 1; }
+
 docker build -t "$IMAGE" .
 docker push "$IMAGE"
 
