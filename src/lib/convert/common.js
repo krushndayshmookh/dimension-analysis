@@ -11,6 +11,17 @@ export function lowerRow(row) {
   return out
 }
 
+export const normalizedFields = (parsed) => new Set((parsed?.meta?.fields ?? []).map((field) => String(field).trim().toLowerCase()))
+
+export const missingColumns = (parsed, required, aliases = []) => {
+  const fields = normalizedFields(parsed)
+  const missing = required.filter((name, index) => {
+    const accepted = aliases[index] ?? [name]
+    return !accepted.some((alias) => fields.has(alias))
+  })
+  return missing
+}
+
 export const toCsv = (rows, columns) =>
   `${Papa.unparse({ fields: columns, data: rows.map((row) => columns.map((c) => row[c] ?? '')) }, { newline: '\n' })}\n`
 

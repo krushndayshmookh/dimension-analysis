@@ -1,4 +1,4 @@
-import { cleanId, issue, lowerRow } from './common.js'
+import { cleanId, issue, lowerRow, missingColumns } from './common.js'
 
 // The quiz sheet has one row per student per question. Marks can be negative
 // (negative marking); we do not use it, so they count as 0. A question with no
@@ -9,6 +9,15 @@ export function readQuiz(parsed) {
   const cells = [] // { studentId, questionId, marks, attempted }
   const issues = []
   let negative = 0
+  const missing = missingColumns(
+    parsed,
+    ['student id', 'question_id', 'question_no', 'marks_contest'],
+    [['user_id', 'student_id'], ['question_id'], ['question_no'], ['marks_contest']],
+  )
+  if (missing.length) {
+    issues.push(issue('error', `Quiz scores: missing required column(s): ${missing.join(', ')}`))
+    return { questions: [], students: [], fractions: {}, issues }
+  }
 
   for (const raw of parsed.data ?? []) {
     const row = lowerRow(raw)
@@ -19,7 +28,7 @@ export function readQuiz(parsed) {
     if (!questions.has(questionId)) {
       questions.set(questionId, { id: questionId, no: Number(row.question_no) || 0, type: row.question_type, difficulty: row.difficulty_level, maxMarks: 0 })
     }
-    const absent = row.attendance.toLowerCase() === 'absent'
+    const absent = String(row.attendance ?? '').toLowerCase() === 'absent'
     const known = students.get(studentId)
     if (known) known.absent ||= absent
     else students.set(studentId, { id: studentId, name: row.student_name, absent })

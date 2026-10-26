@@ -1,4 +1,4 @@
-import { cleanId, issue, lowerRow } from './common.js'
+import { cleanId, issue, lowerRow, missingColumns } from './common.js'
 
 // The coding sheet has one row per student per question. partial_marks is the
 // share of test cases passed (0 to 1); blank means the question was not attempted.
@@ -9,6 +9,15 @@ export function readCoding(parsed) {
   const fractions = {}
   const issues = []
   const above = []
+  const missing = missingColumns(
+    parsed,
+    ['student id', 'question_id', 'question title', 'difficulty', 'total test cases', 'score'],
+    [['user_id', 'student_id'], ['question_id'], ['question title'], ['difficulty_type'], ['total test case'], ['final_scaled_marks', 'partial_marks']],
+  )
+  if (missing.length) {
+    issues.push(issue('error', `Coding scores: missing required column(s): ${missing.join(', ')}`))
+    return { questions: [], students: [], fractions, issues }
+  }
 
   for (const raw of parsed.data ?? []) {
     const row = lowerRow(raw)
@@ -19,7 +28,7 @@ export function readCoding(parsed) {
     if (!questions.has(questionId)) {
       questions.set(questionId, { id: questionId, title: row['question title'], difficulty: row.difficulty_type, totalCases: Number(row['total test case']) || 0 })
     }
-    const absent = row.attendance.toLowerCase() === 'absent'
+    const absent = String(row.attendance ?? '').toLowerCase() === 'absent'
     const known = students.get(studentId)
     if (known) known.absent ||= absent
     else students.set(studentId, { id: studentId, name: row['student name'], absent })

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { detectSheet, explainUnrecognizedSheet } from '../src/lib/convert/detect.js'
+import { detectSheet, explainUnrecognizedSheet, initialColumnMapping, mapColumns } from '../src/lib/convert/detect.js'
 import { readListing } from '../src/lib/convert/listing.js'
 import { readCoding } from '../src/lib/convert/coding.js'
 import { readQuiz } from '../src/lib/convert/quiz.js'
@@ -76,6 +76,19 @@ describe('detectSheet', () => {
       /long-form scores file.*Upload page.*matching exam config/i,
     )
     assert.match(explainUnrecognizedSheet(await fields('a,b,c\n')), /none of the four source sheets/i)
+  })
+  it('builds and applies a manual mapping for misspelled or aliased headers', async () => {
+    const parsed = await parse('student,question,number,score\nS1,Q1,1,2\n')
+    const mapping = { user_id: 'student', question_id: 'question', question_no: 'number', marks_contest: 'score' }
+    const mapped = mapColumns(parsed, mapping)
+    assert.deepEqual(mapped.meta.fields, ['user_id', 'question_id', 'question_no', 'marks_contest'])
+    assert.deepEqual(mapped.data[0], { user_id: 'S1', question_id: 'Q1', question_no: '1', marks_contest: '2' })
+    assert.deepEqual(initialColumnMapping('quiz', ['student_id', 'question_id', 'question_no', 'marks']), {
+      user_id: 'student_id',
+      question_id: 'question_id',
+      question_no: 'question_no',
+      marks_contest: 'marks',
+    })
   })
 })
 
@@ -198,6 +211,24 @@ describe('readCoding', () => {
     assert.equal(fractions['1002']['28548'], 1)
     assert.ok(issues.some((i) => /more than one row/i.test(i.text) && i.text.includes('1002')))
   })
+
+  it('treats a missing attendance column as present', async () => {
+    const withoutAttendance = await parse(CODING)
+    withoutAttendance.meta.fields = withoutAttendance.meta.fields.filter((field) => field !== 'Attendance')
+    withoutAttendance.data.forEach((row) => delete row.Attendance)
+    const result = readCoding(withoutAttendance)
+    assert.deepEqual(result.students, [
+      { id: '1001', name: 'Asha', absent: false },
+      { id: '1002', name: 'Bala', absent: false },
+      { id: '1003', name: 'Chitra', absent: false },
+    ])
+  })
+
+  it('reports missing required columns instead of throwing', () => {
+    const result = readCoding(parse('user_id,question_id\nS1,Q1\n'))
+    assert.equal(result.questions.length, 0)
+    assert.ok(result.issues.some((item) => item.level === 'error' && /missing required column/i.test(item.text)))
+  })
 })
 
 const QUIZ = `user_id,question_id,question_no,difficulty_level,question_type,student_name,attempt_count,marks_contest,Attendance
@@ -240,6 +271,17 @@ S1,177536,2,MCQ,Asha,1,0,Present
     assert.deepEqual(result.questions.map((q) => q.id), ['177520', '177536'])
     assert.deepEqual(result.students, [{ id: 'S1', name: 'Asha', absent: false }])
     assert.deepEqual(result.fractions.S1, { 177520: 1, 177536: 0 })
+  })
+
+  it('treats a missing attendance column as present', () => {
+    const result = readQuiz(parse(QUIZ.replace(',Attendance', '')))
+    assert.ok(result.students.every((student) => !student.absent))
+  })
+
+  it('reports missing required columns instead of throwing', () => {
+    const result = readQuiz(parse('user_id,question_id\nS1,Q1\n'))
+    assert.equal(result.questions.length, 0)
+    assert.ok(result.issues.some((item) => item.level === 'error' && /missing required column/i.test(item.text)))
   })
 })
 
