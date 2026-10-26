@@ -37,6 +37,10 @@ across them.
 
 ## `student_scores.csv` (required)
 
+The Upload page accepts either of these forms:
+
+### Wide form
+
 One row per student, one column per question.
 
 - The first column is `student_id` (unique, case-sensitive).
@@ -46,6 +50,20 @@ One row per student, one column per question.
 - For every other question a cell is a number from 0 up to the question's `marks` (decimals allowed for
   partial credit), or **blank for unattempted**. `0` means attempted and
   scored zero. No other placeholders (`NA`, `-`, ...) are accepted.
+
+### Long form
+
+One row per student/question with these columns:
+
+| column | rule |
+| --- | --- |
+| `student_id` | The cohort student's id. |
+| `question_id` | The exam config question id. Commas and spaces in numeric ids are ignored. |
+| `marks` | A number from 0 up to that question's configured marks, or blank for unattempted. |
+
+Extra columns are ignored. Each `student_id`/`question_id` pair must occur at most once.
+The set of question IDs must match the exam config exactly; missing config questions
+are rejected, as are score questions that are not in the config.
 
 ## `students.csv` (the cohort)
 
@@ -74,4 +92,4 @@ question unattempted.
 
 ## Converting the analytics team's sheets
 
-Data → **Sheet converter** (or `node scripts/convert.js`, see the comment at the top of the script) turns the question listing, the coding scores, the quiz scores and the enrolled students into the cohort file, `exam_config.csv`, `student_scores.csv` and `attendance.csv`. Each sheet is recognised by its columns. Total marks of the coding questions and of the quiz questions are given on the page and divided equally over the questions of that type; coding scores follow the share of test cases passed, negative quiz marks count as 0, and a blank stays unattempted. Enrolled students who appear in no score sheet stay in the cohort and count as absent. Listing rows that are not in the score sheets are listed so they can be added or left out, and every cell can be edited before downloading.
+Data → **Sheet converter** (or `node scripts/convert.js`, see the comment at the top of the script) turns a question listing or an existing `exam_config.csv`, one or more coding or quiz score sheets, and the enrolled students into the cohort file, `exam_config.csv`, `student_scores.csv` and `attendance.csv`. Each source sheet is recognised by its columns. Multiple score sheets of the same type are merged; if the same student/question score appears in more than one file, the higher score is kept with a note. An existing exam config supplies metadata and is checked against the marks sheets; config questions without marks are shown in the preview. The converter produces the wide score form; the Upload page also accepts the long score form described above. Total marks of the coding questions and of the quiz questions are given on the page and divided equally over the questions of that type; coding scores follow the share of test cases passed, negative quiz marks count as 0, and a blank stays unattempted. Enrolled students who appear in no score sheet stay in the cohort and count as absent. Listing rows that are not in the score sheets are listed so they can be added or left out, and every cell can be edited before downloading.

@@ -64,6 +64,11 @@ describe('assembleExam: questions', () => {
   it('converts one sheet on its own', async () => {
     const quizOnly = assembleExam({ ...(await load(['listing', 'quiz'])), totalMarks: TOTALS })
     assert.deepEqual(quizOnly.config.map((r) => r.question_id), ['10', '11'])
+    assert.deepEqual(quizOnly.extras.map((r) => [r.question_id, r.question_type]), [
+      ['20', 'assignment'],
+      ['22', 'assignment'],
+      ['30', 'assignment'],
+    ])
     const codingOnly = assembleExam({ ...(await load(['listing', 'coding'])), totalMarks: TOTALS })
     assert.deepEqual(codingOnly.config.map((r) => r.question_id), ['20'])
   })

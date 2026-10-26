@@ -2,10 +2,10 @@
   <div class="flex flex-col gap-6">
     <PageHeader help="page.converter"
       title="Sheet converter"
-      description="Turns the analytics team's sheets into the files the Cohorts and Upload pages take: the students (cohort), the exam config, the scores and the attendance. Nothing is imported here: check and edit the result, then download the CSVs."
+      description="Turns the analytics team's source sheets into the files the Cohorts and Upload pages take: the students (cohort), the exam config, the scores and the attendance. Nothing is imported here: check and edit the result, then download the CSVs."
     />
 
-    <SectionCard title="Sheets" help="converter.sheets" description="Choose any of: the question listing, the coding scores, the quiz scores and the enrolled students. Each sheet is recognised by its columns.">
+    <SectionCard title="Sheets" help="converter.sheets" description="Choose any of: a question listing or exam_config.csv, one or more coding score files, one or more quiz score files and enrolled students. Each sheet is recognised by its columns; score files of the same type are merged.">
       <FileInput multiple aria-label="Sheets to convert" @change="addFiles" />
       <ul v-if="loaded.length" class="flex flex-col gap-1 text-sm">
         <li v-for="item in loaded" :key="item.type" class="flex flex-wrap items-center gap-2">
@@ -60,10 +60,11 @@ import ExamPreview from '@/tools/converter/ExamPreview.vue'
 import { parseCsv } from '@/lib/csv.js'
 import { assembleExam } from '@/lib/convert/assemble.js'
 import { readCoding } from '@/lib/convert/coding.js'
-import { detectSheet, SHEET_LABELS } from '@/lib/convert/detect.js'
+import { detectSheet, explainUnrecognizedSheet, SHEET_LABELS } from '@/lib/convert/detect.js'
 import { readEnrolled } from '@/lib/convert/enrolled.js'
 import { readListing } from '@/lib/convert/listing.js'
 import { readQuiz } from '@/lib/convert/quiz.js'
+import { mergeScoreResults } from '@/lib/convert/common.js'
 
 const READERS = { listing: readListing, coding: readCoding, quiz: readQuiz, enrolled: readEnrolled }
 const UNITS = { listing: 'rows', coding: 'questions', quiz: 'questions', enrolled: 'students' }
@@ -92,8 +93,13 @@ async function addFiles(files) {
   for (const file of files) {
     const parsed = await parseCsv((await file.text()).replace(/^﻿/, ''))
     const type = detectSheet(parsed.meta.fields)
-    if (!type) rejected.value.push(`${file.name}: the columns match none of the four sheets`)
-    else sheets[type] = { fileName: file.name, result: READERS[type](parsed) }
+    if (!type) rejected.value.push(`${file.name}: ${explainUnrecognizedSheet(parsed.meta.fields)}`)
+    else if ((type === 'coding' || type === 'quiz') && sheets[type]) {
+      sheets[type] = {
+        fileName: `${sheets[type].fileName}, ${file.name}`,
+        result: mergeScoreResults(sheets[type].result, READERS[type](parsed)),
+      }
+    } else sheets[type] = { fileName: file.name, result: READERS[type](parsed) }
   }
 }
 

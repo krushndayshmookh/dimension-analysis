@@ -86,15 +86,14 @@ export function assembleExam({ listing, coding, quiz, enrolled, totalMarks }) {
   }
 
   // Listing rows that did not become questions.
-  const wantedTypes = new Set(sheets.map(({ kind }) => KINDS[kind].type))
   const hasSets = (listing?.questions ?? []).some((q) => q.set)
   const extras = []
   for (const q of listing?.questions ?? []) {
     if (sheetIds.has(q.id)) continue
     let reason = null
-    if (!hasSets || set === null) reason = wantedTypes.has(q.type) ? 'not in the score sheets' : null
-    else if (!q.set) reason = !q.type || wantedTypes.has(q.type) ? 'has no set' : null
-    else if (q.set === set && wantedTypes.has(q.type)) reason = `in set ${set} but not in the score sheets`
+    if (!hasSets || set === null) reason = 'not in the score sheets'
+    else if (!q.set) reason = 'has no set'
+    else if (q.set === set) reason = `in set ${set} but not in the score sheets`
     if (!reason) continue
     const kind = q.type === 'assignment' ? 'coding' : 'quiz'
     extras.push({ ...configRow(kind, q.id, q, '', q.problems.filter((p) => p !== 'no set')), reason, listingRow: q.row })

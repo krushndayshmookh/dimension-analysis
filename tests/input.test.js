@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { readAttendance, readExamConfig, readScores, readStudentNames, readDataset } from '../src/lib/input.js'
+import { normalizeScoresInput, readAttendance, readExamConfig, readScores, readStudentNames, readDataset } from '../src/lib/input.js'
 import { CONFIG_CSV, SCORES_CSV, STUDENTS_CSV, parse } from './fixtures.js'
 
 const configWith = (rows) =>
@@ -255,6 +255,24 @@ describe('readDataset', () => {
     assert.equal(dataset.questions.length, 3)
     assert.deepEqual(dataset.students.map((s) => [s.id, s.name, s.section, s.absent]), [['S1', 'Alice', 'A', false], ['S2', 'Bob', 'A', false], ['S3', 'Cara', 'B', false]])
     assert.deepEqual(dataset.students[0].scores, { Q1: 2, Q2: 4, Q3: 10 })
+  })
+
+  describe('normalizeScoresInput', () => {
+    it('converts long-form marks into the wide score shape and cleans question ids', async () => {
+      const parsed = await parse('student_id,question_id,marks,assessment_id\nS1,177520,2,60099\nS1,"177,521",0,60099\nS2,177520,,60099\n')
+      const normalized = normalizeScoresInput(parsed)
+      assert.deepEqual(normalized.meta.fields, ['student_id', '177520', '177521'])
+      assert.deepEqual(normalized.data, [
+        { student_id: 'S1', '177520': '2', '177521': '0' },
+        { student_id: 'S2', '177520': '' },
+      ])
+      assert.equal(normalized.meta.longForm, true)
+    })
+
+    it('reports duplicate student/question rows', async () => {
+      const normalized = normalizeScoresInput(await parse('student_id,question_id,marks\nS1,Q1,1\nS1,Q1,2\n'))
+      assert.ok(normalized.errors.some((error) => error.type === 'LongFormDuplicate'))
+    })
   })
 
   it('needs a cohort', async () => {

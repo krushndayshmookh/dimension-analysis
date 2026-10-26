@@ -12,7 +12,7 @@ export function readQuiz(parsed) {
 
   for (const raw of parsed.data ?? []) {
     const row = lowerRow(raw)
-    const studentId = cleanId(row.user_id)
+    const studentId = cleanId(row.user_id || row.student_id)
     const questionId = cleanId(row.question_id)
     if (!studentId || !questionId) continue
 

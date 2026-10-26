@@ -20,7 +20,19 @@ function solveRateOf(row) {
 export function readListing(parsed) {
   const seen = new Set()
   const questions = (parsed.data ?? []).flatMap((raw, index) => {
-    const row = lowerRow(raw)
+    const source = lowerRow(raw)
+    const row = source.question_id
+      ? {
+          ...source,
+          'question id': source.question_id,
+          type: source.question_type,
+          difficulty: source.question_difficulty,
+          dimensions: source.question_dimension,
+          topics: source.question_topics,
+          set: source.set ?? '',
+          'expected solve rate': source.expected_solve_rate ?? '',
+        }
+      : source
     if (Object.values(row).every((v) => v === '')) return []
     const problems = []
 

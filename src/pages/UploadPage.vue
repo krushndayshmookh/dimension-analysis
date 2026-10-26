@@ -41,7 +41,7 @@
           </Field>
           <Field label="Student scores *" html-for="scoresFile">
             <FileInput id="scoresFile" aria-label="Student scores file" @change="(f) => pick('scores', f)" />
-            <template #hint>student_id, then one column per question_id: marks, or for mcq questions the option chosen. Blank = unattempted. A cohort student with no row is absent.</template>
+            <template #hint>Wide format: student_id, then one column per question_id. Long format is also accepted: student_id, question_id, marks. Blank = unattempted. A cohort student with no row is absent.</template>
           </Field>
           <Field label="Attendance (optional)" html-for="attendanceFile">
             <FileInput id="attendanceFile" aria-label="Attendance file" @change="(f) => pick('attendance', f)" />
@@ -82,7 +82,7 @@ import SectionCard from '@/components/common/SectionCard.vue'
 import SelectField from '@/components/common/SelectField.vue'
 import { EXAM_LANDING_PAGE } from '@/pages/registry.js'
 import { parseCsv } from '@/lib/csv.js'
-import { readDataset } from '@/lib/input.js'
+import { normalizeScoresInput, readDataset } from '@/lib/input.js'
 import { checkDataQuality } from '@/lib/quality.js'
 import { questionSummaries } from '@/lib/reuse.js'
 import * as api from '@/api.js'
@@ -128,7 +128,7 @@ async function analyze() {
     const cohort = await api.getCohort(cohortId.value)
     const result = readDataset({
       config: await parseCsv(files.config),
-      scores: await parseCsv(files.scores),
+      scores: normalizeScoresInput(await parseCsv(files.scores)),
       cohort: cohort.students,
       attendance: files.attendance ? await parseCsv(files.attendance) : null,
     })
